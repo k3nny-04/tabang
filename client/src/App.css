@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+@import 'tailwindcss';
+@import 'mapbox-gl/dist/mapbox-gl.css';
+
+@theme {
+  /* Backgrounds */
+  --color-bg-primary: #f4f4f5;
+  --color-bg-secondary: #e8e8ea;
+  --color-bg-tertiary: #dddddf;
+
+  /* Surfaces */
+  --color-surface: #fafafa;
+  --color-surface-elevated: #f2f2f3;
+  --color-surface-hover: #f0f0f1;
+
+  /* Text */
+  --color-text-primary: #1c1c1e;
+  --color-text-secondary: #3a3a3d;
+  --color-text-muted: #6b6b70;
+
+  /* Borders */
+  --color-border-light: #d6d6d8;
+  --color-border-medium: #c2c2c5;
+
+  /* Status (Neutral Tones) */
+  --color-status-pending: #5c5c61;
+  --color-status-progress: #2f2f33;
+  --color-status-resolved: #4a4a4f;
+}
+
+html {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: 'Roboto', sans-serif;
+}
+
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-family: 'Roboto', sans-serif;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* Buttons */
+button {
+  cursor: pointer;
+  outline: none;
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-light);
+  transition: all 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-muted);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--color-text-secondary);
+  box-shadow: 0 0 0 3px rgba(28, 28, 30, 0.08); /* soft neutral focus ring */
+}
