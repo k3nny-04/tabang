@@ -1,13 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { useLocationContext } from "../providers/useLocationContext";
 import { FaCrosshairs } from "react-icons/fa";
+import { SearchBox } from "@mapbox/search-js-react";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.184907 };
 const ZOOM = 15;
-
-mapboxgl.accessToken = "pk.eyJ1Ijoia2VubnkwNCIsImEiOiJjbW03dGd5NGwwYnN0MnJzOHF3eDB3NzZ0In0.igXRXuCuaDbtoPbOci8RdQ";
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const Map = () => {
   const {
@@ -19,12 +19,16 @@ const Map = () => {
 
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
+  const [mapInstance, setMapInstance] = useState(null);
   const currentMarkerRef = useRef(null);
   const pinnedMarkerRef = useRef(null);
   const initialized = useRef(false);
 
+  const [inputValue, setInputValue] = useState("");
+
   useEffect(() => {
     if (initialized.current || !mapContainerRef.current) return;
+    initialized.current = true;
 
     const initialCenter = currentLocation || DEFAULT_LOCATION;
 
@@ -36,6 +40,7 @@ const Map = () => {
     });
 
     mapRef.current.on("load", () => {
+      setMapInstance(mapRef.current);
       if (!currentLocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -67,8 +72,15 @@ const Map = () => {
       });
     });
 
-    initialized.current = true;
-  }, );
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+      initialized.current = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current || !currentLocation) return;
@@ -111,9 +123,34 @@ const Map = () => {
 
   return (
     <div className="relative h-full w-full">
+      {/* SEARCH */}
+      {mapInstance && (
+        <div className="absolute top-4 left-4 z-20 w-100 max-w-[calc(100vw-2rem)]">
+          <SearchBox 
+            accessToken={import.meta.env.VITE_MAPBOX_ACCESS_TOKEN}
+            map={mapInstance}
+            mapboxgl={mapboxgl}
+            value={inputValue}
+            onChange={(val) => setInputValue(val)}
+            marker
+            theme={{
+              variables: {
+                fontFamily: 'Roboto, sans-serif',
+                colorBackground: '#fafafa', 
+                colorText: '#1c1c1e',      
+                colorPrimary: '#1c1c1e',    
+                // border: '1px solid #000000', 
+                borderRadius: '0.5rem',     
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' // Tailwind shadow-lg
+              },
+            }}
+          />
+        </div>
+      )}
+      {/* MAP */}
       <div ref={mapContainerRef} className="h-full w-full" />
 
-      {/* Recenter Button */}
+      {/* RECENTER */}
       <div className="absolute right-2 bottom-2 z-10">
         <button
           onClick={handleRecenter}
