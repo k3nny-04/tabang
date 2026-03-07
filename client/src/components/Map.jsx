@@ -2,8 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { useLocationContext } from "../providers/useLocationContext";
 import { FaCrosshairs } from "react-icons/fa";
+import { MdLayers } from "react-icons/md";
 import { SearchBox } from "@mapbox/search-js-react";
 import "mapbox-gl/dist/mapbox-gl.css";
+import evacData from "../data/evac_data";
+import BottomSheet from "./BottomSheet";
+import Layers from "./Layers";
+import { useLayers } from "../providers/useLayersContext";
 
 const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.184907 };
 const ZOOM = 15;
@@ -17,15 +22,25 @@ const Map = () => {
     setPinnedLocation,
   } = useLocationContext();
 
+  // Map States
   const mapRef = useRef(null);
   const mapContainerRef = useRef(null);
   const [mapInstance, setMapInstance] = useState(null);
-  const currentMarkerRef = useRef(null);
-  const pinnedMarkerRef = useRef(null);
   const initialized = useRef(false);
 
+  // Pin States
+  const currentMarkerRef = useRef(null);
+  const pinnedMarkerRef = useRef(null);
+
+  // Search State
   const [inputValue, setInputValue] = useState("");
 
+  // Layer States
+  const evacMarkersRef = useRef([]);
+  const { activeLayers, toggleLayer } = useLayers();
+  const [layersOpen, setLayersOpen] = useState(false);
+
+  // Effect for initializing the map
   useEffect(() => {
     if (initialized.current || !mapContainerRef.current) return;
     initialized.current = true;
@@ -82,6 +97,7 @@ const Map = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Effect for current location marker
   useEffect(() => {
     if (!mapRef.current || !currentLocation) return;
 
@@ -94,6 +110,7 @@ const Map = () => {
       .addTo(mapRef.current);
   }, [currentLocation]);
 
+  // Effect for pinned location marker
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -108,6 +125,38 @@ const Map = () => {
         .addTo(mapRef.current);
     }
   }, [pinnedLocation]);
+
+  // Effect for evacuation shelter markers
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Remove existing markers first
+    evacMarkersRef.current.forEach((marker) => marker.remove());
+    evacMarkersRef.current = [];
+
+    if (!activeLayers.evacShelters) return;
+
+    // Deduplicate
+    const unique = [];
+    const seen = new Set();
+
+    evacData.forEach((item) => {
+      const key = `${item.Evacuation_Name}-${item.Lat}-${item.Long}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(item);
+      }
+    });
+
+    // Create markers
+    unique.forEach((item) => {
+      const marker = new mapboxgl.Marker({ color: "#4f46e5" }) 
+        .setLngLat([item.Long, item.Lat])
+        .addTo(mapRef.current);
+
+      evacMarkersRef.current.push(marker);
+    });
+  }, [activeLayers.evacShelters]);
 
   const handleRecenter = () => {
     if (!mapRef.current) return;
@@ -150,8 +199,9 @@ const Map = () => {
       {/* MAP */}
       <div ref={mapContainerRef} className="h-full w-full" />
 
-      {/* RECENTER */}
-      <div className="absolute right-2 bottom-2 z-10">
+      {/* Floating Controls */}
+      <div className="absolute right-2 bottom-2 z-10 flex flex-col items-end gap-3">
+        {/* RECENTER */}
         <button
           onClick={handleRecenter}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-text-primary shadow-lg transition hover:opacity-90 active:scale-95"
@@ -159,7 +209,27 @@ const Map = () => {
         >
           <FaCrosshairs className="text-lg" />
         </button>
+        {/* LAYERS */}
+        <button
+          onClick={() => setLayersOpen(true)}
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-900 text-white shadow-lg transition hover:opacity-90 active:scale-95"
+          aria-label="Layers"
+        >
+          <MdLayers className="text-lg" />
+        </button>
+
       </div>
+
+      <BottomSheet
+        open={layersOpen}
+        onClose={() => setLayersOpen(false)}
+        title="Map Layers"
+      >
+        <Layers
+          activeLayers={activeLayers}
+          toggleLayer={toggleLayer}
+        />
+      </BottomSheet>
     </div>
   );
 };

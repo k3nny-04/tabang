@@ -5,7 +5,9 @@ import { useState } from 'react'
 import MapPage from './pages/MapPage';
 import AccountPage from './pages/AccountPage';
 import Navbar from './components/NavBar';
-import ReportDialog from './components/ReportDialog';
+import { LayersProvider } from './providers/LayersProvider';
+import BottomSheet from './components/BottomSheet';
+import ReportForm from './components/ReportForm';
 
 function App() {
   const [reportOpen, setReportOpen] = useState(false);
@@ -13,6 +15,7 @@ function App() {
   return (
     <BrowserRouter>
       <LocationProvider>
+      <LayersProvider>
         <div className='relative flex h-screen flex-col transition-colors'>
           <main className='flex-1 overflow-hidden'>
             <Routes>
@@ -22,8 +25,12 @@ function App() {
             </Routes>
           </main>
           <Navbar onReportClick={() => setReportOpen(true)} />
-          <ReportDialog open={reportOpen} onClose={() => setReportOpen(false)} />
+
+          <BottomSheet open={reportOpen} onClose={() => setReportOpen(false)} title="Report an Issue">
+            <ReportForm/>
+          </BottomSheet>
         </div>
+      </LayersProvider>
       </LocationProvider>
     </BrowserRouter>
   )
