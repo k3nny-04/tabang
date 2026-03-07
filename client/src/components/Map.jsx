@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { useLocationContext } from "../providers/useLocationContext";
-import { FaCrosshairs } from "react-icons/fa";
-import { MdLayers } from "react-icons/md";
+import { FaCrosshairs, FaPhone, FaRegCopy } from "react-icons/fa";
+import { MdLayers, MdDirections, MdMessage } from "react-icons/md";
 import { SearchBox } from "@mapbox/search-js-react";
+import { FaHouse } from "react-icons/fa6";
+import { createRoot } from "react-dom/client";
 import "mapbox-gl/dist/mapbox-gl.css";
 import evacData from "../data/evac_data";
 import BottomSheet from "./BottomSheet";
 import Layers from "./Layers";
 import { useLayers } from "../providers/useLayersContext";
+import { copyToClipboard } from "../utils/clipboard";
 
 const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.184907 };
 const ZOOM = 15;
@@ -136,26 +139,94 @@ const Map = () => {
 
     if (!activeLayers.evacShelters) return;
 
-    // Deduplicate
-    const unique = [];
-    const seen = new Set();
-
-    evacData.forEach((item) => {
-      const key = `${item.Evacuation_Name}-${item.Lat}-${item.Long}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        unique.push(item);
-      }
-    });
-
     // Create markers
-    unique.forEach((item) => {
-      const marker = new mapboxgl.Marker({ color: "#4f46e5" }) 
-        .setLngLat([item.Long, item.Lat])
-        .addTo(mapRef.current);
+    evacData.forEach((item) => {
+      // Marker
+      const markerEl = document.createElement("div");
+      markerEl.className = "flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 border-2 border-white shadow-lg";
+      const markerRoot = createRoot(markerEl);
+      markerRoot.render(<FaHouse className="text-white text-sm" />);
 
+      // Popup
+      const popupEl = document.createElement("div");
+      const popupRoot = createRoot(popupEl);
+      const hasContact = !!item.Contact;
+
+      popupRoot.render(
+        <div className="p-3 text-text-primary font-sans text-sm">
+
+          {/* Title */}
+          <h3 className="font-semibold wrap-break-word">
+            {item.Evacuation_Name || "Unnamed Shelter"}
+          </h3>
+          {/* Barangay */}
+          {item.Barangay && (
+            <p className="text-xs text-text-secondary wrap-break-word">
+              Barangay {item.Barangay}
+            </p>
+          )}
+          {/* Divider */}
+          <div className="my-2 border-t border-border-light" />
+          {/* Capacity */}
+          {item.Capacity && (
+            <p className="text-xs text-text-secondary wrap-break-word">
+              Capacity: <span className="font-medium">{item.Capacity}</span>
+            </p>
+          )}
+          {/* Manager */}
+          {item.Manager && (
+            <p className="text-xs text-text-secondary wrap-break-word">
+              Manager: <span className="font-medium">{item.Manager}</span>
+            </p>
+          )}
+          {/* Contact */}
+          {hasContact && (
+            <div className="flex items-center gap-2 text-xs text-text-secondary mt-1">
+              <span className="font-medium">{item.Contact}</span>
+              <button
+                onClick={() => copyToClipboard(item.Contact.toString())}
+                className="text-text-muted hover:text-text-primary transition"
+                title="Copy number"
+              >
+                <FaRegCopy size={12} />
+              </button>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="mt-3 flex gap-2">
+            <button className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover">
+              <FaPhone size={12} />
+              Call
+            </button>
+
+            <button className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover">
+              <MdMessage size={13} />
+              Message
+            </button>
+
+            <button className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover">
+              <MdDirections size={13} />
+              Go
+            </button>
+          </div>
+        </div>
+      );
+
+      const popup = new mapboxgl.Popup({
+        offset: 25,
+        maxWidth: "300px",
+        closeButton: false
+      }).setDOMContent(popupEl);
+      /* ---------- Marker Instance ---------- */
+
+      const marker = new mapboxgl.Marker(markerEl)
+        .setLngLat([item.Long, item.Lat])
+        .setPopup(popup)
+        .addTo(mapRef.current);
       evacMarkersRef.current.push(marker);
     });
+    console.log("Evac Shelter number:", evacMarkersRef.current.length);
   }, [activeLayers.evacShelters]);
 
   const handleRecenter = () => {

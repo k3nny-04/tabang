@@ -91,15 +91,6 @@ const evacData = [
   },
   {
     "Barangay": "Calauag",
-    "Evacuation_Name": "Camarines Sur National High School Annex",
-    "Capacity": 1500,
-    "Manager": "Lenon O. Vibar",
-    "Contact": 9301072328,
-    "Lat": 13.63390754,
-    "Long": 123.1925831
-  },
-  {
-    "Barangay": "Calauag",
     "Evacuation_Name": "Calauag Barangay Hall",
     "Capacity": 750,
     "Manager": "Marlyn G. Balcueva",
@@ -234,15 +225,6 @@ const evacData = [
     "Long": 123.1936694
   },
   {
-    "Barangay": "Dinaga",
-    "Evacuation_Name": "Naga City People's Mall",
-    "Capacity": 50,
-    "Manager": "Jerry O. Casin",
-    "Contact": 9772377412,
-    "Lat": 13.62064354,
-    "Long": 123.1836593
-  },
-  {
     "Barangay": "Del Rosario",
     "Evacuation_Name": "Del Rosario Barangay Hall",
     "Capacity": 100,
@@ -290,7 +272,7 @@ const evacData = [
   {
     "Barangay": "Igualdad",
     "Evacuation_Name": "Naga City People's Mall",
-    "Capacity": 600,
+    "Capacity": 1150,
     "Manager": "Kgd. Julius M. Vargas",
     "Contact": 9618421944,
     "Lat": 13.62064354,
@@ -306,15 +288,6 @@ const evacData = [
     "Long": 123.181903
   },
   {
-    "Barangay": "Lerma",
-    "Evacuation_Name": "Jmr Coliseum",
-    "Capacity": "1,000",
-    "Manager": "Ronald C. Garcia",
-    "Contact": 9387900617,
-    "Lat": 13.62017779,
-    "Long": 123.1882364
-  },
-  {
     "Barangay": "Liboton",
     "Evacuation_Name": "Liboton Barangay Hall",
     "Capacity": 30,
@@ -326,7 +299,7 @@ const evacData = [
   {
     "Barangay": "Liboton",
     "Evacuation_Name": "Camarines Sur National High School Annex",
-    "Capacity": 265,
+    "Capacity": 4765,
     "Manager": "Rodelia Masapol/Mark Villaflores",
     "Contact": 9517642821,
     "Lat": 13.63390754,
@@ -421,24 +394,6 @@ const evacData = [
     "Contact": 9998353465,
     "Lat": 13.63437367,
     "Long": 123.1953915
-  },
-  {
-    "Barangay": "Penafrancia",
-    "Evacuation_Name": "Camarines Sur National High School Annex",
-    "Capacity": "3,000",
-    "Manager": "Levi P. Eres Jr.",
-    "Contact": 9187951493,
-    "Lat": 13.63390754,
-    "Long": 123.1925831
-  },
-  {
-    "Barangay": "Sabang",
-    "Evacuation_Name": "Naga City People's Mall",
-    "Capacity": 500,
-    "Manager": "Maria Crestina S. Mendoza",
-    "Contact": 9674181751,
-    "Lat": 13.62064354,
-    "Long": 123.1836593
   },
   {
     "Barangay": "Sabang",
@@ -542,7 +497,7 @@ const evacData = [
   {
     "Barangay": "Triangulo",
     "Evacuation_Name": "Jmr Coliseum",
-    "Capacity": 500,
+    "Capacity": 1500,
     "Manager": "Diana F. Colcuera",
     "Contact": 9631778260,
     "Lat": 13.62017779,

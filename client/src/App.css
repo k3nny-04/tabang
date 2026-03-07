@@ -71,3 +71,8 @@ select:focus {
   border-color: var(--color-text-secondary);
   box-shadow: 0 0 0 3px rgba(28, 28, 30, 0.08); 
 }
+
+.mapboxgl-popup-content {
+  border-radius: 0.75rem;
+  padding: 12px;
+}
