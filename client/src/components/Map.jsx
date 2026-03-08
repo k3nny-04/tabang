@@ -195,12 +195,16 @@ const Map = () => {
 
           {/* Actions */}
           <div className="mt-3 flex gap-2">
-            <button className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover">
+            <button 
+            className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover"
+            disabled={!hasContact}>
               <FaPhone size={12} />
               Call
             </button>
 
-            <button className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover">
+            <button 
+            className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover"
+            disabled={!hasContact}>
               <MdMessage size={13} />
               Message
             </button>

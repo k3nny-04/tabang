@@ -1,39 +1,81 @@
-import './App.css'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import { LocationProvider } from './providers/LocationProvider'
-import { useState } from 'react'
-import MapPage from './pages/MapPage';
-import AccountPage from './pages/AccountPage';
-import Navbar from './components/NavBar';
-import { LayersProvider } from './providers/LayersProvider';
-import BottomSheet from './components/BottomSheet';
-import ReportForm from './components/ReportForm';
+import "./App.css";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { LocationProvider } from "./providers/LocationProvider";
+import { useState } from "react";
+import MapPage from "./pages/MapPage";
+import AccountPage from "./pages/AccountPage";
+import Navbar from "./components/NavBar";
+import { LayersProvider } from "./providers/LayersProvider";
+import BottomSheet from "./components/BottomSheet";
+import ReportForm from "./components/ReportForm";
+import { AuthProvider } from "./providers/AuthProvider";
+import LoginPage from "./pages/LoginPage";
+import EmailLoginPage from "./pages/EmailLoginPage";
+import { useAuthContext } from "./providers/useAuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
 
-function App() {
+const AppContent = () => {
+  const { user, loading } = useAuthContext();
   const [reportOpen, setReportOpen] = useState(false);
 
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        Loading...
+      </div>
+    );
+  }
+
   return (
-    <BrowserRouter>
-      <LocationProvider>
+    <LocationProvider>
       <LayersProvider>
-        <div className='relative flex h-screen flex-col transition-colors'>
-          <main className='flex-1 overflow-hidden'>
+        <div className="relative flex h-screen flex-col transition-colors">
+          <main className="flex-1 overflow-hidden">
             <Routes>
-              <Route path='/' element={<Navigate to='/map' replace/>}/>
-              <Route path='/map' element={<MapPage/>}/>
-              <Route path='/account' element={<AccountPage/>}/>
+              {/* DEFAULT */}
+              <Route path="/" element={<Navigate to="/map" replace />} />
+
+              {/* PUBLIC ROUTES */}
+              <Route element={<PublicRoute />}>
+                {/* <Route path="/login" element={<LoginPage />} /> */}
+                <Route path="/login-email" element={<EmailLoginPage />} />
+              </Route>
+
+              {/* PROTECTED ROUTES */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/map" element={<MapPage />} />
+                <Route path="/account" element={<AccountPage />} />
+              </Route>
             </Routes>
           </main>
-          <Navbar onReportClick={() => setReportOpen(true)} />
 
-          <BottomSheet open={reportOpen} onClose={() => setReportOpen(false)} title="Report an Issue">
-            <ReportForm/>
-          </BottomSheet>
+          {user && (
+            <>
+              <Navbar onReportClick={() => setReportOpen(true)} />
+              <BottomSheet
+                open={reportOpen}
+                onClose={() => setReportOpen(false)}
+                title="Report an Issue"
+              >
+                <ReportForm />
+              </BottomSheet>
+            </>
+          )}
         </div>
       </LayersProvider>
-      </LocationProvider>
-    </BrowserRouter>
-  )
-}
+    </LocationProvider>
+  );
+};
 
-export default App
+const App = () => {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+};
+
+export default App;
