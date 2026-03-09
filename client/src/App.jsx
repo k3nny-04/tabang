@@ -9,11 +9,11 @@ import { LayersProvider } from "./providers/LayersProvider";
 import BottomSheet from "./components/BottomSheet";
 import ReportForm from "./components/ReportForm";
 import { AuthProvider } from "./providers/AuthProvider";
-import LoginPage from "./pages/LoginPage";
 import EmailLoginPage from "./pages/EmailLoginPage";
 import { useAuthContext } from "./providers/useAuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import SignupPage from "./pages/SignUpPage";
 
 const AppContent = () => {
   const { user, loading } = useAuthContext();
@@ -39,7 +39,8 @@ const AppContent = () => {
               {/* PUBLIC ROUTES */}
               <Route element={<PublicRoute />}>
                 {/* <Route path="/login" element={<LoginPage />} /> */}
-                <Route path="/login-email" element={<EmailLoginPage />} />
+                <Route path="/login" element={<EmailLoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
               </Route>
 
               {/* PROTECTED ROUTES */}

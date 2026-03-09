@@ -13,7 +13,7 @@ const ProtectedRoute = () => {
   }
 
   if (!user) {
-    return <Navigate to="/login-email" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   return (

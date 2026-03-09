@@ -138,7 +138,7 @@ const EmailLoginPage = () => {
         <div className="mt-auto text-center text-sm text-text-muted">
           Don't have an account?{" "}
           <Link
-            // to="/signup"
+            to="/signup"
             className="font-bold text-text-primary hover:underline"
           >
             Sign Up

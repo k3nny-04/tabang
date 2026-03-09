@@ -230,7 +230,7 @@ const Map = () => {
         .addTo(mapRef.current);
       evacMarkersRef.current.push(marker);
     });
-    console.log("Evac Shelter number:", evacMarkersRef.current.length);
+    // console.log("Evac Shelter number:", evacMarkersRef.current.length);
   }, [activeLayers.evacShelters]);
 
   const handleRecenter = () => {
