@@ -143,7 +143,7 @@ const Map = () => {
     evacData.forEach((item) => {
       // Marker
       const markerEl = document.createElement("div");
-      markerEl.className = "flex h-9 w-9 items-center justify-center rounded-full bg-indigo-600 border-2 border-white shadow-lg";
+      markerEl.className = "flex h-9 w-9 items-center justify-center rounded-full bg-green-600 border-2 border-white shadow-lg";
       const markerRoot = createRoot(markerEl);
       markerRoot.render(<FaHouse className="text-white text-sm" />);
 
