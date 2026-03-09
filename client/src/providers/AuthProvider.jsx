@@ -8,11 +8,13 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber
 } from "firebase/auth";
+import { usersApi } from "../api/usersApi";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [userDoc, setUserDoc] = useState(null); 
   const [loading, setLoading] = useState(true);
   const [confirmationResult, setConfirmationResult] = useState(null);
 
@@ -79,9 +81,27 @@ export const AuthProvider = ({ children }) => {
 
   // --- Listen for Auth State ---
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setLoading(false);
+      
+      if (currentUser) {
+        try {
+          const res = await usersApi.getUser(currentUser.uid);
+          if (res.success) {
+            setUserDoc(res.data);
+          } else {
+            console.warn("User document not found in Firestore.");
+            setUserDoc(null);
+          }
+        } catch (error) {
+          console.error("Error fetching user document:", error);
+          setUserDoc(null);
+        }
+      } else {
+        setUserDoc(null);
+      }
+
+      setLoading(false); 
     });
 
     return unsubscribe;
@@ -89,6 +109,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    userDoc,
     loading,
     login,
     signup,

@@ -57,9 +57,9 @@ const AppContent = () => {
               <BottomSheet
                 open={reportOpen}
                 onClose={() => setReportOpen(false)}
-                title="Report an Issue"
+                title="Create a Report"
               >
-                <ReportForm />
+                <ReportForm onSuccess={() => setReportOpen(false)} />
               </BottomSheet>
             </>
           )}

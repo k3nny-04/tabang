@@ -12,6 +12,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useLocationContext } from "../providers/useLocationContext";
+import { reportsApi } from "../api/reportsApi";
+import { useAuthContext } from "../providers/useAuthContext";
 
 const REPORT_TABS = [
   { type: "RESCUE", label: "Rescue", icon: AlertTriangle },
@@ -19,9 +21,12 @@ const REPORT_TABS = [
   { type: "INCIDENT", label: "Incident", icon: Flame },
 ];
 
-const ReportForm = () => {
+// TODO: Add photo upload functionality
+const ReportForm = ({ onSuccess }) => {
   const { pinnedLocation } = useLocationContext();
+  const { user } = useAuthContext();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     reportType: "RESCUE",
     description: "",
@@ -51,7 +56,18 @@ const ReportForm = () => {
     update("supplies", [...form.supplies, { item: "", quantity: 1 }]);
   };
 
-  const handleSubmit = () => {
+  const handleReset = () => {
+    setForm({
+      reportType: "RESCUE",
+      description: "",
+      priority: 3,
+      supplies: [],
+      photo: null,
+      numberOfPeople: 0,
+    });
+  };
+
+  const handleSubmit = async () => {
     if (!pinnedLocation) return alert("No pinned location");
     if (!form.description.trim())
       return alert("Description is required");
@@ -61,12 +77,12 @@ const ReportForm = () => {
     }
 
     const base = {
-      report_type: form.reportType,
+      createdBy: user.uid,
+      reportType: form.reportType,
       description: form.description,
       location: pinnedLocation,
-      prio_level:
+      prioLevel:
         form.reportType === "RESCUE" ? 1 : form.priority,
-      timestamp: new Date().toISOString(),
       status: "PENDING",
     };
 
@@ -77,11 +93,30 @@ const ReportForm = () => {
     } else if (form.reportType === "RESCUE") {
       payload = {
         ...base,
-        number_of_people: form.numberOfPeople,
+        numberOfPeople: form.numberOfPeople,
+        photo: form.photo
+      };
+    } else if (form.reportType === "INCIDENT") {
+      payload = {
+        ...base,
+        photo: form.photo
       };
     }
-
-    console.log("Submitting report", payload);
+    
+    try {
+      setIsSubmitting(true);
+      console.log("Submitting report", payload);
+      await reportsApi.createReport(payload);
+      alert("Report submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      alert("Failed to submit report. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+    
+    handleReset();
+    if(onSuccess) onSuccess();
   };
 
   return (
@@ -336,12 +371,12 @@ const ReportForm = () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) =>
-                  update(
-                    "photo",
-                    e.target.files ? e.target.files[0] : null
-                  )
-                }
+                // onChange={(e) =>
+                //   update(
+                //     "photo",
+                //     e.target.files ? e.target.files[0] : null
+                //   )
+                // }
               />
             </label>
           </div>
@@ -353,9 +388,10 @@ const ReportForm = () => {
         <button
           type="button"
           onClick={handleSubmit}
-          className="w-full rounded-xl bg-text-primary py-3 text-sm font-semibold text-bg-primary transition active:scale-95 hover:bg-text-secondary"
+          className="w-full rounded-xl bg-text-primary py-3 text-sm font-semibold text-bg-primary shadow-lg transition-opacity hover:opacity-90 disabled:opacity-50"
+          disabled={isSubmitting}
         >
-          Submit Report
+          {isSubmitting ? "Submitting..." : "Submit Report"}
         </button>
       </div>
     </form>
