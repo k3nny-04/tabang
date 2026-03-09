@@ -56,7 +56,7 @@ const EmailLoginPage = () => {
         <img 
           src={logoImg} 
           alt="TABANG Logo" 
-          className="h-64 w-auto object-contain drop-shadow-2xl -mb-13" 
+          className="h-64 w-auto object-contain drop-shadow-2xl -mb-15" 
         />
         
         <h1 className="text-4xl font-black tracking-[0.2em] text-bg-primary drop-shadow-md">
