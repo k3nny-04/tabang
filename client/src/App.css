@@ -76,3 +76,11 @@ select:focus {
   border-radius: 0.75rem;
   padding: 12px;
 }
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

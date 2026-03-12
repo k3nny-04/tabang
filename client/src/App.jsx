@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { LocationProvider } from "./providers/LocationProvider";
 import { useState } from "react";
 import MapPage from "./pages/MapPage";
@@ -14,10 +14,15 @@ import { useAuthContext } from "./providers/useAuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import SignupPage from "./pages/SignUpPage";
+import UserReportsPage from "./pages/UserReportsPage";
 
 const AppContent = () => {
   const { user, loading } = useAuthContext();
   const [reportOpen, setReportOpen] = useState(false);
+  const location = useLocation();
+
+  const hideNavbarPaths = ['/my-reports'];
+  const shouldShowNavbar = user && !hideNavbarPaths.includes(location.pathname);
 
   if (loading) {
     return (
@@ -38,7 +43,6 @@ const AppContent = () => {
 
               {/* PUBLIC ROUTES */}
               <Route element={<PublicRoute />}>
-                {/* <Route path="/login" element={<LoginPage />} /> */}
                 <Route path="/login" element={<EmailLoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
               </Route>
@@ -47,21 +51,23 @@ const AppContent = () => {
               <Route element={<ProtectedRoute />}>
                 <Route path="/map" element={<MapPage />} />
                 <Route path="/account" element={<AccountPage />} />
+                <Route path="/my-reports" element={<UserReportsPage />} />
               </Route>
             </Routes>
           </main>
 
+          {shouldShowNavbar && (
+            <Navbar onReportClick={() => setReportOpen(true)} />
+          )}
+
           {user && (
-            <>
-              <Navbar onReportClick={() => setReportOpen(true)} />
-              <BottomSheet
-                open={reportOpen}
-                onClose={() => setReportOpen(false)}
-                title="Create a Report"
-              >
-                <ReportForm onSuccess={() => setReportOpen(false)} />
-              </BottomSheet>
-            </>
+            <BottomSheet
+              open={reportOpen}
+              onClose={() => setReportOpen(false)}
+              title="Create a Report"
+            >
+              <ReportForm onSuccess={() => setReportOpen(false)} />
+            </BottomSheet>
           )}
         </div>
       </LayersProvider>

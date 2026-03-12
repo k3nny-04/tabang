@@ -115,7 +115,7 @@ const SignupPage = () => {
         <img 
           src={logoImg} 
           alt="TABANG Logo" 
-          className="h-32 w-auto object-contain drop-shadow-xl -mb-8" 
+          className="h-32 w-auto object-contain drop-shadow-xl -mb-8 -mt-" 
         />
         <h1 className="text-2xl font-black tracking-[0.2em] text-bg-primary drop-shadow-md">
           TABANG

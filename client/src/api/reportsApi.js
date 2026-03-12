@@ -9,7 +9,6 @@ import {
   query,
   where,
   onSnapshot,
-  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase-config";
 
@@ -19,12 +18,22 @@ export const reportsApi = {
   /**
    * Create a new report
    */
-  createReport: async (reportData) => {
+createReport: async (reportData) => {
     try {
       const reportsRef = collection(db, REPORTS_COLLECTION);
+      const timestamp = new Date().toISOString();
+      const initialStatus = reportData.status || 'PENDING';
+
       const docRef = await addDoc(reportsRef, {
         ...reportData,
-        createdAt: serverTimestamp(),
+        createdAt: timestamp,
+        remarks: [
+          {
+            comment: "Your report has been submitted and is now pending for review. We will get back to you as soon as possible.",
+            dateRemarked: timestamp,
+            status: initialStatus
+          }
+        ]
       });
       return { success: true, reportId: docRef.id };
     } catch (error) {
@@ -58,7 +67,7 @@ export const reportsApi = {
   getReportsByUser: async (userId) => {
     try {
       const reportsRef = collection(db, REPORTS_COLLECTION);
-      const q = query(reportsRef, where("citizenId", "==", userId));
+      const q = query(reportsRef, where("createdBy", "==", userId));
 
       const querySnapshot = await getDocs(q);
 
@@ -82,7 +91,7 @@ export const reportsApi = {
       const reportRef = doc(db, REPORTS_COLLECTION, reportId);
       await updateDoc(reportRef, {
         ...updateData,
-        updatedAt: serverTimestamp(),
+        updatedAt: new Date().toISOString(),
       });
       return { success: true };
     } catch (error) {
