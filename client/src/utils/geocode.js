@@ -7,7 +7,7 @@ export const getAddressFromCoordinates = async (lat, lng) => {
   }
 
   try {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&types=address,poi,neighborhood,locality,place`;
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}&types=poi,address,neighborhood,locality,place`;
     const response = await fetch(url);
     
     if (!response.ok) {
