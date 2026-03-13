@@ -83,7 +83,6 @@ const SignupPage = () => {
         contactNo: formattedContactNo,
         email,
         role: "CITIZEN",
-        reports: []
       });
 
       navigate("/map");

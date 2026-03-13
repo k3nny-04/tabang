@@ -23,7 +23,7 @@ const REPORT_TABS = [
 
 // TODO: Add photo upload functionality
 const ReportForm = ({ onSuccess }) => {
-  const { pinnedLocation } = useLocationContext();
+  const { pinnedLocation, pinnedAddress } = useLocationContext();
   const { user } = useAuthContext();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -165,7 +165,7 @@ const ReportForm = ({ onSuccess }) => {
           <div className="flex items-center gap-2 rounded-lg border border-border-light bg-bg-secondary px-3 py-2 text-sm text-text-muted">
             <MapPin size={16} />
             {pinnedLocation
-              ? `${pinnedLocation.lat.toFixed(5)}, ${pinnedLocation.lng.toFixed(5)}`
+              ? pinnedAddress
               : "No pinned location"}
           </div>
         </div>
