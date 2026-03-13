@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuthContext } from "../providers/useAuthContext";
+import BottomSheet from "../components/BottomSheet";
+import ReportTimeline from "../components/ReportTimeline";
 import { reportsApi } from "../api/reportsApi";
 import { Link } from "react-router-dom";
 import {
@@ -22,6 +24,7 @@ const UserReportsPage = () => {
   const { user } = useAuthContext();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedReport, setSelectedReport] = useState(null); 
 
   // Filters & Sorting State
   const [activeTab, setActiveTab] = useState("PENDING");
@@ -184,7 +187,7 @@ const UserReportsPage = () => {
           filteredAndSortedReports.map((report) => (
             <div 
               key={report.id}
-              onClick={() => console.log("Open timeline dialog for:", report.id)}
+              onClick={() => setSelectedReport(report)}
               className="bg-surface rounded-2xl p-4 shadow-sm border border-gray-100 active:scale-[0.98] transition-transform cursor-pointer"
             >
               {/* Top Row: Icon, Type, Description & Status */}
@@ -248,6 +251,17 @@ const UserReportsPage = () => {
           ))
         )}
       </div>
+
+      {/* Timeline Bottom Sheet */}
+      <BottomSheet
+        open={!!selectedReport}
+        onClose={() => setSelectedReport(null)}
+        title="Report Timeline"
+      >
+        {selectedReport && (
+          <ReportTimeline remarks={selectedReport.remarks} />
+        )}
+      </BottomSheet>
     </div>
   );
 };
