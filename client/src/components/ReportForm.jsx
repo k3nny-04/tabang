@@ -14,6 +14,7 @@ import {
 import { useLocationContext } from "../providers/useLocationContext";
 import { reportsApi } from "../api/reportsApi";
 import { useAuthContext } from "../providers/useAuthContext";
+import { uploadToCloudinary } from "../utils/upload";
 
 const REPORT_TABS = [
   { type: "RESCUE", label: "Rescue", icon: AlertTriangle },
@@ -21,7 +22,6 @@ const REPORT_TABS = [
   { type: "INCIDENT", label: "Incident", icon: Flame },
 ];
 
-// TODO: Add photo upload functionality
 const ReportForm = ({ onSuccess }) => {
   const { pinnedLocation, pinnedAddress } = useLocationContext();
   const { user } = useAuthContext();
@@ -75,39 +75,46 @@ const ReportForm = ({ onSuccess }) => {
     if (form.reportType === "SUPPLY" && form.supplies.length === 0) {
       return alert("Add at least one supply item");
     }
-
-    const base = {
-      createdBy: user.uid,
-      reportType: form.reportType,
-      description: form.description,
-      location: pinnedLocation,
-      prioLevel:
-        form.reportType === "RESCUE" ? 1 : form.priority,
-      status: "PENDING",
-    };
-
-    let payload = base;
-
-    if (form.reportType === "SUPPLY") {
-      payload = { ...base, supplies: form.supplies };
-    } else if (form.reportType === "RESCUE") {
-      payload = {
-        ...base,
-        numberOfPeople: form.numberOfPeople,
-        photo: form.photo
-      };
-    } else if (form.reportType === "INCIDENT") {
-      payload = {
-        ...base,
-        photo: form.photo
-      };
-    }
     
     try {
       setIsSubmitting(true);
+
+      let photoUrl = null;
+      if(form.photo) {
+        photoUrl = await uploadToCloudinary(form.photo);
+      }
+
+      const base = {
+        createdBy: user.uid,
+        reportType: form.reportType,
+        description: form.description,
+        location: pinnedLocation,
+        prioLevel:
+          form.reportType === "RESCUE" ? 1 : form.priority,
+        status: "PENDING",
+      };
+
+      let payload = base;
+
+      if (form.reportType === "SUPPLY") {
+        payload = { ...base, supplies: form.supplies };
+      } else if (form.reportType === "RESCUE") {
+        payload = {
+          ...base,
+          numberOfPeople: form.numberOfPeople,
+          photo: photoUrl
+        };
+      } else if (form.reportType === "INCIDENT") {
+        payload = {
+          ...base,
+          photo: photoUrl
+        };
+      }
+
       console.log("Submitting report", payload);
       await reportsApi.createReport(payload);
       alert("Report submitted successfully!");
+      
     } catch (error) {
       console.error("Error submitting report:", error);
       alert("Failed to submit report. Please try again.");
@@ -371,12 +378,12 @@ const ReportForm = ({ onSuccess }) => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                // onChange={(e) =>
-                //   update(
-                //     "photo",
-                //     e.target.files ? e.target.files[0] : null
-                //   )
-                // }
+                onChange={(e) =>
+                  update(
+                    "photo",
+                    e.target.files ? e.target.files[0] : null
+                  )
+                }
               />
             </label>
           </div>
