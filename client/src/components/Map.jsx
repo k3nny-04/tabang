@@ -299,6 +299,7 @@ const Map = () => {
         open={layersOpen}
         onClose={() => setLayersOpen(false)}
         title="Map Layers"
+        height={35}
       >
         <Layers
           activeLayers={activeLayers}

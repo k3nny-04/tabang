@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 
 const CLOSE_THRESHOLD = 120;
 
-const BottomSheet = ({ open, onClose, title, children }) => {
+const BottomSheet = ({ open, onClose, title, children, height=70 }) => {
   const startY = useRef(0);
   const [dragY, setDragY] = useState(0);
   const [dragging, setDragging] = useState(false);
@@ -36,8 +36,9 @@ const BottomSheet = ({ open, onClose, title, children }) => {
 
       {/* Sheet */}
       <div
-        className="fixed inset-x-0 bottom-0 z-60 flex h-[70%] flex-col rounded-t-2xl bg-surface shadow-xl transition-transform duration-300"
+        className="fixed inset-x-0 bottom-0 z-60 flex flex-col rounded-t-2xl bg-surface shadow-xl transition-transform duration-300"
         style={{
+          height: `${height}%`,
           transform: open
             ? dragging
               ? `translateY(${dragY}px)`
