@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useAuthContext } from '../providers/useAuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { usersApi } from '../api/usersApi'; 
-import logoImg from '../assets/logo.png';
 
 const SignupPage = () => {
   const { signup } = useAuthContext();
@@ -112,9 +111,9 @@ const SignupPage = () => {
       
       <div className="flex flex-col items-center justify-center relative pt-8 pb-12 z-10 shrink-0">
         <img 
-          src={logoImg} 
+          src='/edited-logo.png'
           alt="TABANG Logo" 
-          className="h-32 w-auto object-contain drop-shadow-xl -mb-8 -mt-" 
+          className="h-12 w-auto object-contain drop-shadow-xl mb-3" 
         />
         <h1 className="text-2xl font-black tracking-[0.2em] text-bg-primary drop-shadow-md">
           TABANG
