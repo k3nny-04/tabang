@@ -279,9 +279,9 @@ const ReportForm = ({ onSuccess }) => {
             </label>
 
             {form.supplies.map((s, i) => (
-              <div key={i} className="flex gap-2">
+              <div key={i} className="flex items-center gap-1.5 sm:gap-2">
                 <input
-                  className="flex-1 rounded-lg border border-border-light bg-surface px-2 py-1 text-sm"
+                  className="min-w-0 flex-1 rounded-lg border border-border-light bg-surface px-2 py-1 text-sm"
                   placeholder="Item"
                   value={s.item}
                   onChange={(e) =>
@@ -289,7 +289,7 @@ const ReportForm = ({ onSuccess }) => {
                   }
                 />
 
-                <div className="flex items-center gap-1">
+                <div className="flex shrink-0 items-center gap-1">
                   <button
                     type="button"
                     onClick={() =>
@@ -315,7 +315,7 @@ const ReportForm = ({ onSuccess }) => {
                         Math.max(1, Number(e.target.value))
                       )
                     }
-                    className="w-12 rounded border border-border-light bg-surface px-2 py-1 text-center text-sm"
+                    className="w-10 rounded border border-border-light bg-surface px-0 py-1 text-center text-sm"
                   />
 
                   <button
@@ -332,7 +332,7 @@ const ReportForm = ({ onSuccess }) => {
                 <button
                   type="button"
                   onClick={() => removeSupply(i)}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg border border-border-light bg-surface text-red-500"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border-light bg-surface text-red-500"
                 >
                   <Trash2 size={16} />
                 </button>

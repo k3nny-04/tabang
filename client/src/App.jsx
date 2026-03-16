@@ -65,6 +65,7 @@ const AppContent = () => {
               open={reportOpen}
               onClose={() => setReportOpen(false)}
               title="Create a Report"
+              height={85}
             >
               <ReportForm onSuccess={() => setReportOpen(false)} />
             </BottomSheet>
