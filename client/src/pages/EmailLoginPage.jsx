@@ -53,7 +53,7 @@ const EmailLoginPage = () => {
       <div className="flex flex-1 flex-col items-center justify-center relative pb-16 z-10">
         
         <img 
-          src='/edited-logo.ong'
+          src='/edited-logo.png'
           alt="TABANG Logo" 
           className="h-28 w-auto object-contain drop-shadow-2xl mb-8" 
         />
@@ -82,7 +82,7 @@ const EmailLoginPage = () => {
       </div>
 
       {/* Bottom Section - Form */}
-      <div className="flex h-[55%] w-full flex-col bg-surface px-8 pt-4 pb-10 z-20">
+      <div className="flex h-[55%] w-full flex-col bg-surface px-8 pt-4 pb-10 z-20 overflow-y-auto">
         
         <form onSubmit={handleLogin} className="flex flex-col space-y-5 flex-1 mt-4">
           
