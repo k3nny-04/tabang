@@ -117,7 +117,7 @@ const ReportForm = ({ onSuccess }) => {
       
     } catch (error) {
       console.error("Error submitting report:", error);
-      alert("Failed to submit report. Please try again.");
+      alert("Failed to submit report. Please try again. Error: ", error);
     } finally {
       setIsSubmitting(false);
     }
