@@ -93,6 +93,9 @@ const Map = () => {
     });
 
     mapRef.current.on("click", (e) => {
+      if (e.originalEvent.target.tagName !== 'CANVAS') {
+        return; 
+      }
       setPinnedLocation({
         lat: e.lngLat.lat,
         lng: e.lngLat.lng,
