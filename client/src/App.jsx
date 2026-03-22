@@ -36,8 +36,8 @@ const AppContent = () => {
   return (
     <LocationProvider>
       <LayersProvider>
-        <div className="relative flex h-screen flex-col transition-colors">
-          <main className="flex-1 overflow-hidden">
+        <div className="relative flex h-dvh flex-col transition-colors">
+          <main className="flex-1 overflow-auto">
             {<LocationOnboarding />}
 
             <Routes>

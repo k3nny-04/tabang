@@ -431,7 +431,7 @@ const Map = () => {
         open={layersOpen}
         onClose={() => setLayersOpen(false)}
         title="Map Layers"
-        height={35}
+        height={40}
       >
         <Layers
           activeLayers={activeLayers}
