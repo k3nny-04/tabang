@@ -387,7 +387,7 @@ const Map = () => {
       <div ref={mapContainerRef} className="h-full w-full" />
 
       {/* FIND NEAREST EVAC */}
-      <div className="absolute left-0 right-0 top-15 z-10 flex justify-center px-4 pointer-events-none">
+      <div className="absolute left-0 right-0 top-15 z-10 flex justify-center md:justify-start px-4 pointer-events-none">
         <button
           onClick={handleFindShelter}
           className="pointer-events-auto flex items-center gap-2 rounded-full bg-text-primary px-5 py-3 text-sm font-semibold text-bg-primary shadow-xl ring-4 ring-text-primary/20 transition-all active:scale-95"
