@@ -15,6 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import SignupPage from "./pages/SignUpPage";
 import UserReportsPage from "./pages/UserReportsPage";
+import LocationOnboarding from "./components/LocationOnBoarding";
 
 const AppContent = () => {
   const { user, loading } = useAuthContext();
@@ -37,6 +38,8 @@ const AppContent = () => {
       <LayersProvider>
         <div className="relative flex h-screen flex-col transition-colors">
           <main className="flex-1 overflow-hidden">
+            {<LocationOnboarding />}
+
             <Routes>
               {/* DEFAULT */}
               <Route path="/" element={<Navigate to="/map" replace />} />

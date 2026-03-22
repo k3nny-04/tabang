@@ -91,9 +91,9 @@ const Map = () => {
             });
           },
           () => {
-            alert(
-              "Please enable location services to get your current location."
-            );
+            // alert(
+            //   "Please enable location services to get your current location."
+            // );
           }
         );
       }
