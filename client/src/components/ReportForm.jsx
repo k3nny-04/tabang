@@ -15,11 +15,20 @@ import { useLocationContext } from "../providers/useLocationContext";
 import { reportsApi } from "../api/reportsApi";
 import { useAuthContext } from "../providers/useAuthContext";
 import { uploadToCloudinary } from "../utils/upload";
+import { Select, MenuItem, FormControl } from "@mui/material";
+import { Flag } from "lucide-react";
 
 const REPORT_TABS = [
   { type: "RESCUE", label: "Rescue", icon: AlertTriangle },
   { type: "SUPPLY", label: "Supply", icon: Package },
   { type: "INCIDENT", label: "Incident", icon: Flame },
+];
+
+const priorityOptions = [
+  { value: 1, label: "Urgent" },
+  { value: 2, label: "High" },
+  { value: 3, label: "Medium" },
+  { value: 4, label: "Low" }
 ];
 
 const ReportForm = ({ onSuccess }) => {
@@ -179,28 +188,16 @@ const ReportForm = ({ onSuccess }) => {
 
         {/* Priority */}
         {form.reportType !== "RESCUE" ? (
-          <div>
+          <div className="flex flex-col">
             <label className="mb-1 block text-sm font-medium text-text-primary">
               Priority
             </label>
-            <div className="relative">
-              <select
-                value={form.priority}
-                onChange={(e) =>
-                  update("priority", Number(e.target.value))
-                }
-                className="w-full appearance-none rounded-lg border border-border-light bg-surface px-3 py-3 pr-10 text-sm text-text-primary focus:border-text-secondary focus:outline-none"
-              >
-                <option value={1}>Urgent</option>
-                <option value={2}>High</option>
-                <option value={3}>Medium</option>
-                <option value={4}>Low</option>
-              </select>
-              <ChevronDown
-                size={18}
-                className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-text-muted"
-              />
-            </div>
+            <MuiThemedSelect
+              icon={Flag}
+              value={form.priority}
+              onChange={(e) => update("priority", Number(e.target.value))}
+              options={priorityOptions}
+            />
           </div>
         ) : (
           <div className="rounded-lg border border-red-500 bg-red-50 px-3 py-2 text-sm text-red-600">
@@ -402,6 +399,88 @@ const ReportForm = ({ onSuccess }) => {
         </button>
       </div>
     </form>
+  );
+};
+
+// eslint-disable-next-line no-unused-vars
+const MuiThemedSelect = ({ icon: Icon, value, onChange, options }) => {
+  return (
+    <FormControl size="small" fullWidth>
+      <Select
+        value={value}
+        onChange={onChange}
+        displayEmpty
+        // 1. Replaced hardcoded 'white' with your Tailwind surface class
+        className="bg-surface text-text-primary" 
+        IconComponent={() => (
+          <ChevronDown 
+            size={18} 
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" 
+          />
+        )}
+        renderValue={(selected) => {
+          const selectedLabel = typeof options[0] === 'object' 
+            ? options.find(opt => opt.value === selected)?.label 
+            : selected;
+
+          return (
+            <div className="flex items-center gap-2 pr-4 text-sm font-medium text-text-primary">
+              <Icon size={16} className="shrink-0 text-text-muted" />
+              <span className="leading-none">{selectedLabel}</span>
+            </div>
+          );
+        }}
+        sx={{
+          borderRadius: '0.5rem', // matches rounded-lg
+          boxShadow: 'none', // removes MUI's default floating look to match your flat design
+          '.MuiSelect-select': {
+            paddingTop: '12px',    // matches py-3
+            paddingBottom: '12px', // matches py-3
+            paddingLeft: '12px',   // matches px-3
+            paddingRight: '40px !important', // matches pr-10
+            display: 'flex',
+            alignItems: 'center', 
+          },
+          // 2. The Border Fix
+          '.MuiOutlinedInput-notchedOutline': {
+            // Uses your Tailwind variable, falling back to a solid gray/blackish if needed
+            borderColor: 'var(--border-light, #9ca3af)', 
+          },
+          '&:hover .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'var(--text-secondary, #4b5563)',
+          },
+          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+            borderColor: 'var(--text-secondary, #111827)', // Dark focus ring
+            borderWidth: '1px', // Keeps it 1px so it doesn't jump in size when clicked
+          },
+        }}
+        MenuProps={{
+          PaperProps: {
+            // Ensure the dropdown menu background also matches your theme
+            className: "bg-surface", 
+            sx: {
+              borderRadius: '0.5rem',
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+              marginTop: '4px',
+            }
+          }
+        }}
+      >
+        {options.map((opt) => {
+          const val = typeof opt === 'object' ? opt.value : opt;
+          const label = typeof opt === 'object' ? opt.label : opt;
+          return (
+            <MenuItem 
+              key={val} 
+              value={val} 
+              className="text-sm font-medium text-text-primary hover:bg-bg-secondary"
+            >
+              {label}
+            </MenuItem>
+          );
+        })}
+      </Select>
+    </FormControl>
   );
 };
 

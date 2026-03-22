@@ -4,7 +4,7 @@ const LayersContext = createContext(null);
 
 export const LayersProvider = ({ children }) => {
   const [activeLayers, setActiveLayers] = useState({
-    evacShelters: false,
+    evacShelters: true,
   });
 
   const toggleLayer = (layer) => {

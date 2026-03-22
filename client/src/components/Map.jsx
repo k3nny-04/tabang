@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { useLocationContext } from "../providers/useLocationContext";
-import { FaCrosshairs, FaPhone, FaRegCopy } from "react-icons/fa";
-import { MdLayers, MdDirections, MdMessage } from "react-icons/md";
+import { FaCrosshairs } from "react-icons/fa";
+import { MdLayers } from "react-icons/md";
 import { SearchBox } from "@mapbox/search-js-react";
 import { FaHouse } from "react-icons/fa6";
 import { createRoot } from "react-dom/client";
@@ -11,19 +11,25 @@ import evacData from "../data/evac_data";
 import BottomSheet from "./BottomSheet";
 import Layers from "./Layers";
 import { useLayers } from "../providers/useLayersContext";
-import { copyToClipboard } from "../utils/clipboard";
+import { Tent } from "lucide-react";
+import { findNearest, getDistance } from "geolib";
+import { getDirections } from "../utils/directions";
+import NearestShelterCard from "./NearestShelterCard";
+import ShelterPopup from "./ShelterPopup";
 
 const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.184907 };
 const ZOOM = 15;
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const Map = () => {
+  // Location states
   const {
     currentLocation,
     setCurrentLocation,
     pinnedLocation,
     setPinnedLocation,
   } = useLocationContext();
+  const latestLocations = useRef({ currentLocation, pinnedLocation});
 
   // Map States
   const mapRef = useRef(null);
@@ -42,6 +48,16 @@ const Map = () => {
   const evacMarkersRef = useRef([]);
   const { activeLayers, toggleLayer } = useLayers();
   const [layersOpen, setLayersOpen] = useState(false);
+
+  // Shelter State
+  const [nearestShelter, setNearestShelter] = useState(null);
+  const [distanceInfo, setDistanceInfo] = useState("");
+  const [routeData, setRouteData] = useState(null);
+
+  // Effect for updating locations
+  useEffect(() => {
+    latestLocations.current = { currentLocation, pinnedLocation};
+  }, [currentLocation, pinnedLocation]);
 
   // Effect for initializing the map
   useEffect(() => {
@@ -84,6 +100,9 @@ const Map = () => {
     });
 
     mapRef.current.on("click", (e) => {
+      if (e.originalEvent.target.tagName !== 'CANVAS') {
+        return; 
+      }
       setPinnedLocation({
         lat: e.lngLat.lat,
         lng: e.lngLat.lng,
@@ -123,7 +142,7 @@ const Map = () => {
     }
 
     if (pinnedLocation) {
-      pinnedMarkerRef.current = new mapboxgl.Marker()
+      pinnedMarkerRef.current = new mapboxgl.Marker({ color: "#1c1c1e "})
         .setLngLat([pinnedLocation.lng, pinnedLocation.lat])
         .addTo(mapRef.current);
     }
@@ -150,79 +169,13 @@ const Map = () => {
       // Popup
       const popupEl = document.createElement("div");
       const popupRoot = createRoot(popupEl);
-      const hasContact = !!item.Contact;
-
-      popupRoot.render(
-        <div className="p-3 text-text-primary font-sans text-sm">
-
-          {/* Title */}
-          <h3 className="font-semibold wrap-break-word">
-            {item.Evacuation_Name || "Unnamed Shelter"}
-          </h3>
-          {/* Barangay */}
-          {item.Barangay && (
-            <p className="text-xs text-text-secondary wrap-break-word">
-              Barangay {item.Barangay}
-            </p>
-          )}
-          {/* Divider */}
-          <div className="my-2 border-t border-border-light" />
-          {/* Capacity */}
-          {item.Capacity && (
-            <p className="text-xs text-text-secondary wrap-break-word">
-              Capacity: <span className="font-medium">{item.Capacity}</span>
-            </p>
-          )}
-          {/* Manager */}
-          {item.Manager && (
-            <p className="text-xs text-text-secondary wrap-break-word">
-              Manager: <span className="font-medium">{item.Manager}</span>
-            </p>
-          )}
-          {/* Contact */}
-          {hasContact && (
-            <div className="flex items-center gap-2 text-xs text-text-secondary mt-1">
-              <span className="font-medium">{item.Contact}</span>
-              <button
-                onClick={() => copyToClipboard(item.Contact.toString())}
-                className="text-text-muted hover:text-text-primary transition"
-                title="Copy number"
-              >
-                <FaRegCopy size={12} />
-              </button>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="mt-3 flex gap-2">
-            <button 
-            className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover"
-            disabled={!hasContact}>
-              <FaPhone size={12} />
-              Call
-            </button>
-
-            <button 
-            className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover"
-            disabled={!hasContact}>
-              <MdMessage size={13} />
-              Message
-            </button>
-
-            <button className="flex flex-1 items-center justify-center gap-1 rounded-md bg-surface-elevated px-2 py-1 text-xs hover:bg-surface-hover">
-              <MdDirections size={13} />
-              Go
-            </button>
-          </div>
-        </div>
-      );
+      popupRoot.render(<ShelterPopup item={item} onGoClick={() => handleRouteToSpecificShelter(item)}/>);
 
       const popup = new mapboxgl.Popup({
         offset: 25,
         maxWidth: "300px",
-        closeButton: false
+        closeButton: false,
       }).setDOMContent(popupEl);
-      /* ---------- Marker Instance ---------- */
 
       const marker = new mapboxgl.Marker(markerEl)
         .setLngLat([item.Long, item.Lat])
@@ -230,8 +183,61 @@ const Map = () => {
         .addTo(mapRef.current);
       evacMarkersRef.current.push(marker);
     });
-    // console.log("Evac Shelter number:", evacMarkersRef.current.length);
   }, [activeLayers.evacShelters]);
+  
+  // Effect for drawing the route
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    const sourceId = "route-source";
+    const layerId = "route-layer";
+
+    if (!routeData) {
+      if (mapInstance.getSource(sourceId)) {
+        mapInstance.getSource(sourceId).setData({ type: "FeatureCollection", features: [] });
+      }
+      return;
+    }
+
+    const geojson = {
+      type: "Feature",
+      properties: {},
+      geometry: routeData.geometry,
+    };
+
+    if (mapInstance.getSource(sourceId)) {
+      mapInstance.getSource(sourceId).setData(geojson);
+    } else {
+      mapInstance.addSource(sourceId, {
+        type: "geojson",
+        data: geojson,
+      });
+
+      mapInstance.addLayer({
+        id: layerId,
+        type: "line",
+        source: sourceId,
+        layout: {
+          "line-join": "round",
+          "line-cap": "round",
+        },
+        paint: {
+          "line-color": "#3a3a3d", 
+          "line-width": 6,
+          "line-opacity": 0.8,
+        },
+      });
+    }
+
+    const coordinates = routeData.geometry.coordinates;
+    const bounds = coordinates.reduce((b, coord) => {
+      return b.extend(coord);
+    }, new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]));
+
+    mapInstance.fitBounds(bounds, { padding: 60, duration: 1000 });
+
+  }, [mapInstance, routeData]);
+
 
   const handleRecenter = () => {
     if (!mapRef.current) return;
@@ -244,6 +250,113 @@ const Map = () => {
       duration: 1200,
     });
   };
+
+  const handleRouteToSpecificShelter = async (targetShelter) => {
+    const { currentLocation: latestCurrent, pinnedLocation: latestPinned } = latestLocations.current;
+    const activeLocation = latestPinned || latestCurrent;
+    
+    if (!activeLocation) {
+      alert("Please enable location services or pin your current location on the map.");
+      return;
+    }
+
+    const currentCoords = {
+      latitude: activeLocation.lat,
+      longitude: activeLocation.lng,
+    };
+
+    const formattedTarget = {
+      ...targetShelter,
+      latitude: targetShelter.Lat,
+      longitude: targetShelter.Long,
+    };
+
+    try {
+      const route = await getDirections(
+        { lat: currentCoords.latitude, lng: currentCoords.longitude },
+        { lat: formattedTarget.latitude, lng: formattedTarget.longitude }
+      );
+
+      const distanceInMeters = getDistance(currentCoords, formattedTarget);
+      const formattedDistance =
+        distanceInMeters >= 1000
+          ? `${(distanceInMeters / 1000).toFixed(1)} km`
+          : `${Math.round(distanceInMeters)} meters`;
+
+
+      setNearestShelter(formattedTarget);
+      setDistanceInfo(formattedDistance);
+      setRouteData(route);
+
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [formattedTarget.longitude, formattedTarget.latitude],
+          zoom: 15,
+          duration: 1200,
+        });
+
+
+        const popups = document.getElementsByClassName("mapboxgl-popup");
+        if (popups.length > 0) {
+          popups[0].remove();
+        }
+      }
+    } catch (error) {
+      console.error("Failed to calculate directions", error);
+      alert("Could not calculate a route to this shelter. Please try again.");
+    }
+  };
+
+  const handleFindShelter = async () => {
+    const activeLocation = pinnedLocation || currentLocation;
+    if(!activeLocation) {
+      alert(
+        "Please enable location services or pin your current location on the map."
+      );
+      return;
+    }
+
+    const currentCoords = {
+      latitude: activeLocation.lat,
+      longitude: activeLocation.lng
+    };
+    
+    const formattedEvacData = evacData.map((shelter) => ({
+      ...shelter,
+      latitude: shelter.Lat,
+      longitude: shelter.Long,
+    }))
+
+    try {
+      const nearest = findNearest(currentCoords, formattedEvacData);
+      const route = await getDirections(
+        { lat: currentCoords.latitude, lng: currentCoords.longitude },
+        { lat: nearest.latitude, lng: nearest.longitude }
+      );
+
+      const distanceInMeters = getDistance(currentCoords, nearest); 
+      const formattedDistance =
+        distanceInMeters >= 1000
+          ? `${(distanceInMeters / 1000).toFixed(1)} km`
+          : `${distanceInMeters} meters`
+
+      setNearestShelter(nearest);
+      setDistanceInfo(formattedDistance);
+      setRouteData(route);
+
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [nearest.longitude, nearest.latitude],
+          zoom: 15,
+          duration: 1200,
+        });
+      }
+      
+    } catch (error) {
+      console.error("Failed to calculate directions", error);
+      alert("Could not calculate a route to the nearest shelter. Please try again.");
+    }
+  }
 
   return (
     <div className="relative h-full w-full">
@@ -263,9 +376,8 @@ const Map = () => {
                 colorBackground: '#fafafa', 
                 colorText: '#1c1c1e',      
                 colorPrimary: '#1c1c1e',    
-                // border: '1px solid #000000', 
                 borderRadius: '0.5rem',     
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' // Tailwind shadow-lg
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' 
               },
             }}
           />
@@ -273,6 +385,26 @@ const Map = () => {
       )}
       {/* MAP */}
       <div ref={mapContainerRef} className="h-full w-full" />
+
+      {/* FIND NEAREST EVAC */}
+      <div className="absolute left-0 right-0 top-15 z-10 flex justify-center px-4 pointer-events-none">
+        <button
+          onClick={handleFindShelter}
+          className="pointer-events-auto flex items-center gap-2 rounded-full bg-text-primary px-5 py-3 text-sm font-semibold text-bg-primary shadow-xl ring-4 ring-text-primary/20 transition-all active:scale-95"
+        >
+          <Tent size={18} />
+          Find Nearest Shelter
+        </button>
+      </div>
+
+      <NearestShelterCard 
+        shelter={nearestShelter} 
+        distanceInfo={distanceInfo} 
+        onClose={() => {
+          setNearestShelter(null);
+          setRouteData(null);
+        }} 
+      />
 
       {/* Floating Controls */}
       <div className="absolute right-2 bottom-2 z-10 flex flex-col items-end gap-3">
