@@ -32,7 +32,7 @@ const NearestShelterCard = ({ shelter, distanceInfo, onClose }) => {
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
           <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-text-muted">
-            Nearest Evacuation Center
+            Evacuation Center
           </p>
           <h3 className="text-xl font-bold leading-tight text-text-primary">
             {name}

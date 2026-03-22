@@ -3,7 +3,7 @@ import { FaCheck, FaPhone, FaRegCopy } from "react-icons/fa";
 import { MdDirections, MdMessage } from "react-icons/md";
 import { copyToClipboard } from "../utils/clipboard";
 
-const ShelterPopup = ({ item }) => {
+const ShelterPopup = ({ item, onGoClick }) => {
   const [copied, setCopied] = useState(false);
 
   const name = item.Evacuation_Name || "Unnamed Shelter";
@@ -96,7 +96,10 @@ const ShelterPopup = ({ item }) => {
           Text
         </a>
 
-        <button className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border-light bg-surface py-1.5 text-xs font-medium text-text-primary transition hover:bg-bg-secondary active:scale-95">
+        <button 
+          onClick={onGoClick}
+          className="flex flex-1 items-center justify-center gap-1 rounded-md border border-border-light bg-surface py-1.5 text-xs font-medium text-text-primary transition hover:bg-bg-secondary active:scale-95"
+        >
           <MdDirections size={14} />
           Go
         </button>

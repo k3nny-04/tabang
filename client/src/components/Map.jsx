@@ -22,12 +22,14 @@ const ZOOM = 15;
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const Map = () => {
+  // Location states
   const {
     currentLocation,
     setCurrentLocation,
     pinnedLocation,
     setPinnedLocation,
   } = useLocationContext();
+  const latestLocations = useRef({ currentLocation, pinnedLocation});
 
   // Map States
   const mapRef = useRef(null);
@@ -51,6 +53,11 @@ const Map = () => {
   const [nearestShelter, setNearestShelter] = useState(null);
   const [distanceInfo, setDistanceInfo] = useState("");
   const [routeData, setRouteData] = useState(null);
+
+  // Effect for updating locations
+  useEffect(() => {
+    latestLocations.current = { currentLocation, pinnedLocation};
+  }, [currentLocation, pinnedLocation]);
 
   // Effect for initializing the map
   useEffect(() => {
@@ -162,14 +169,13 @@ const Map = () => {
       // Popup
       const popupEl = document.createElement("div");
       const popupRoot = createRoot(popupEl);
-      popupRoot.render(<ShelterPopup item={item}/>);
+      popupRoot.render(<ShelterPopup item={item} onGoClick={() => handleRouteToSpecificShelter(item)}/>);
 
       const popup = new mapboxgl.Popup({
         offset: 25,
         maxWidth: "300px",
         closeButton: false,
       }).setDOMContent(popupEl);
-      /* ---------- Marker Instance ---------- */
 
       const marker = new mapboxgl.Marker(markerEl)
         .setLngLat([item.Long, item.Lat])
@@ -186,10 +192,8 @@ const Map = () => {
     const sourceId = "route-source";
     const layerId = "route-layer";
 
-    // If we clear the route (e.g., closing the shelter popup)
     if (!routeData) {
       if (mapInstance.getSource(sourceId)) {
-        // Empty the line data to hide it
         mapInstance.getSource(sourceId).setData({ type: "FeatureCollection", features: [] });
       }
       return;
@@ -201,11 +205,9 @@ const Map = () => {
       geometry: routeData.geometry,
     };
 
-    // If the layer already exists, just update the data (fast)
     if (mapInstance.getSource(sourceId)) {
       mapInstance.getSource(sourceId).setData(geojson);
     } else {
-      // Otherwise, add the source and the visual layer rules
       mapInstance.addSource(sourceId, {
         type: "geojson",
         data: geojson,
@@ -227,7 +229,6 @@ const Map = () => {
       });
     }
 
-    // Automatically zoom and pan the map so the entire route fits on the screen perfectly
     const coordinates = routeData.geometry.coordinates;
     const bounds = coordinates.reduce((b, coord) => {
       return b.extend(coord);
@@ -248,6 +249,62 @@ const Map = () => {
       zoom: ZOOM,
       duration: 1200,
     });
+  };
+
+  const handleRouteToSpecificShelter = async (targetShelter) => {
+    const { currentLocation: latestCurrent, pinnedLocation: latestPinned } = latestLocations.current;
+    const activeLocation = latestPinned || latestCurrent;
+    
+    if (!activeLocation) {
+      alert("Please enable location services or pin your current location on the map.");
+      return;
+    }
+
+    const currentCoords = {
+      latitude: activeLocation.lat,
+      longitude: activeLocation.lng,
+    };
+
+    const formattedTarget = {
+      ...targetShelter,
+      latitude: targetShelter.Lat,
+      longitude: targetShelter.Long,
+    };
+
+    try {
+      const route = await getDirections(
+        { lat: currentCoords.latitude, lng: currentCoords.longitude },
+        { lat: formattedTarget.latitude, lng: formattedTarget.longitude }
+      );
+
+      const distanceInMeters = getDistance(currentCoords, formattedTarget);
+      const formattedDistance =
+        distanceInMeters >= 1000
+          ? `${(distanceInMeters / 1000).toFixed(1)} km`
+          : `${Math.round(distanceInMeters)} meters`;
+
+
+      setNearestShelter(formattedTarget);
+      setDistanceInfo(formattedDistance);
+      setRouteData(route);
+
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [formattedTarget.longitude, formattedTarget.latitude],
+          zoom: 15,
+          duration: 1200,
+        });
+
+
+        const popups = document.getElementsByClassName("mapboxgl-popup");
+        if (popups.length > 0) {
+          popups[0].remove();
+        }
+      }
+    } catch (error) {
+      console.error("Failed to calculate directions", error);
+      alert("Could not calculate a route to this shelter. Please try again.");
+    }
   };
 
   const handleFindShelter = async () => {
