@@ -11,7 +11,6 @@ import evacData from "../data/evac_data";
 import BottomSheet from "./BottomSheet";
 import Layers from "./Layers";
 import { useLayers } from "../providers/useLayersContext";
-import { Tent } from "lucide-react";
 import { findNearest, getDistance } from "geolib";
 import { getDirections } from "../utils/directions";
 import NearestShelterCard from "./NearestShelterCard";
@@ -466,7 +465,7 @@ const Map = () => {
           onClick={handleFindShelter}
           className="pointer-events-auto flex items-center gap-2 rounded-full bg-text-primary px-5 py-3 text-sm font-semibold text-bg-primary shadow-xl ring-4 ring-text-primary/20 transition-all active:scale-95"
         >
-          <Tent size={18} />
+          <FaHouse size={18} />
           Find Nearest Shelter
         </button>
       </div>

@@ -1,5 +1,6 @@
+import { FaHouse } from "react-icons/fa6";
 import { useLayers } from "../providers/useLayersContext";
-import { Tent, AlertTriangle, Users } from "lucide-react";
+import { AlertTriangle, Users } from "lucide-react";
 
 // eslint-disable-next-line no-unused-vars
 const LayerToggle = ({ label, icon: Icon, isActive, onClick, colorClass }) => (
@@ -37,7 +38,7 @@ const Layers = () => {
     <div className="space-y-1">
       <LayerToggle
         label="Evacuation Shelters"
-        icon={Tent}
+        icon={FaHouse}
         isActive={activeLayers.evacShelters}
         onClick={() => toggleLayer("evacShelters")}
         colorClass="text-green-600 bg-green-100" 
