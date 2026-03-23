@@ -1,25 +1,21 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuthContext } from "../providers/useAuthContext";
 
-const ProtectedRoute = () => {
+const AdminRoute = () => {
   const { user, userDoc, loading } = useAuthContext();
-
-  if (loading) {
-    return null;
-  }
+  if (loading) return null;
 
   // not logged in
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
-  if (userDoc?.role === "ADMIN") {
-    return <Navigate to="/admin-dashboard" replace />;
+  // avoid seeing citizen routes
+  if (userDoc?.role !== "ADMIN") {
+    return <Navigate to="/map" replace />;
   }
 
-  return (
-    <Outlet />
-  );
-}
+  return <Outlet />;
+};
 
-export default ProtectedRoute;
+export default AdminRoute;
