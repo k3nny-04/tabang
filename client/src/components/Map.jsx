@@ -124,12 +124,11 @@ const Map = () => {
 
 // Effect for current location marker
   useEffect(() => {
-    if (!mapRef.current || !currentLocation) return;
+    if (!mapInstance || !currentLocation) return;
 
     // 1. If the marker doesn't exist yet, create it!
     if (!currentMarkerRef.current) {
       const el = document.createElement("div");
-      // Slightly larger wrapper to fit the arrow
       el.className = "relative flex h-8 w-8 items-center justify-center transition-transform duration-300"; 
       
       el.innerHTML = `
@@ -143,7 +142,7 @@ const Map = () => {
         rotationAlignment: "map" // Ensures the rotation stays accurate if the user twists the map
       })
         .setLngLat([currentLocation.lng, currentLocation.lat])
-        .addTo(mapRef.current);
+        .addTo(mapInstance);
     } 
     // 2. If it already exists, just smoothly update its position
     else {
@@ -156,7 +155,7 @@ const Map = () => {
       currentMarkerRef.current.setRotation(heading);
     }
 
-  }, [currentLocation]);
+  }, [currentLocation, mapInstance]);
 
   // Effect for pinned location marker
   useEffect(() => {
