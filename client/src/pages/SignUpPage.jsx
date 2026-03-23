@@ -107,23 +107,27 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="relative flex h-screen flex-col bg-text-primary overflow-hidden">
-      
-      <div className="flex flex-col items-center justify-center relative pt-8 pb-12 z-10 shrink-0">
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-text-primary md:flex-row md:bg-surface">
+      {/* Branding Section */}
+      <div className="relative z-10 flex shrink-0 flex-col items-center justify-center bg-text-primary pt-8 pb-12 md:w-1/2 md:flex-none md:p-8 md:pb-8 md:shadow-[10px_0_20px_rgba(0,0,0,0.1)]">
         <img 
           src='/edited-logo.png' 
           alt="TABANG Logo" 
-          className="h-12 w-auto object-contain drop-shadow-xl mb-3" 
+          className="mb-3 h-12 w-auto object-contain drop-shadow-xl md:mb-8 md:h-40" 
         />
-        <h1 className="text-2xl font-black tracking-[0.2em] text-bg-primary drop-shadow-md">
+        <h1 className="text-2xl font-black tracking-[0.2em] text-bg-primary drop-shadow-md md:text-5xl">
           TABANG
         </h1>
+        <p className="mt-2 hidden max-w-sm text-center text-base font-light tracking-wider text-bg-tertiary opacity-90 md:block">
+          Join the community to access disaster response coordination and incident reporting.
+        </p>
       </div>
 
-      <div className="w-full relative z-20 -mb-1 -mt-16 shrink-0">
+      {/* Wave Transition (Mobile Only) */}
+      <div className="relative z-20 -mb-1 -mt-16 w-full shrink-0 md:hidden">
         <svg 
           viewBox="0 0 1440 280" 
-          className="w-full h-auto block text-surface" 
+          className="block h-auto w-full text-surface" 
           fill="currentColor" 
           preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -132,124 +136,133 @@ const SignupPage = () => {
         </svg>
       </div>
 
-      <div className="flex flex-col flex-1 w-full bg-surface px-8 pt-4 pb-8 z-20 overflow-y-auto">
-        
-        <h2 className="mb-6 text-center text-3xl font-bold text-text-primary">
-          Sign Up
-        </h2>
-
-        <form onSubmit={handleSignup} className="flex flex-col space-y-4">
+      {/* Form Section */}
+      <div className="z-20 flex w-full flex-1 flex-col items-center overflow-y-auto bg-surface px-8 pt-4 pb-8 md:w-1/2 md:flex-none md:justify-center md:p-12">
+        <div className="flex h-full w-full max-w-md flex-col md:h-auto">
           
-          {error && (
-            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200 text-center">
-              {error}
-            </div>
-          )}
+          <h2 className="mb-6 text-center text-3xl font-bold text-text-primary md:mb-8">
+            Create Account
+          </h2>
 
-          <div className="flex space-x-3">
-            <div className="flex flex-col w-1/2">
-              <label className="mb-1 ml-1 text-xs font-medium text-text-muted">First Name</label>
-              <input
-                type="text"
-                name="firstName"
-                placeholder="Juan"
-                className="w-full rounded-xl bg-bg-primary p-3.5 border-transparent focus:bg-white text-sm"
-                value={formData.firstName}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="flex flex-col w-1/2">
-              <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Last Name</label>
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Dela Cruz"
-                className="w-full rounded-xl bg-bg-primary p-3.5 border-transparent focus:bg-white text-sm"
-                value={formData.lastName}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Contact Number</label>
-            <div className="flex space-x-2">
-              <div className="flex items-center justify-center rounded-xl bg-bg-primary px-4 text-text-muted font-bold border border-transparent">
-                +63
+          <form onSubmit={handleSignup} className="flex flex-col space-y-4">
+            
+            {error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-center text-sm text-red-600">
+                {error}
               </div>
+            )}
+
+            <div className="flex space-x-3">
+              {/* FIRST NAME */}
+              <div className="flex w-1/2 flex-col">
+                <label className="mb-1 ml-1 text-xs font-medium text-text-muted">First Name</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  placeholder="Juan"
+                  className="w-full rounded-xl border border-gray-200 bg-bg-primary p-3.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-text-primary/50"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              {/* LAST NAME */}
+              <div className="flex w-1/2 flex-col">
+                <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Last Name</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Dela Cruz"
+                  className="w-full rounded-xl border border-gray-200 bg-bg-primary p-3.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-text-primary/50"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+            
+            {/* CONTACT NO */}
+            <div className="flex flex-col">
+              <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Contact Number</label>
+              <div className="flex space-x-2">
+                <div className="flex items-center justify-center rounded-xl border border-gray-200 bg-bg-primary px-4 font-bold text-text-muted">
+                  +63
+                </div>
+                <input
+                  type="tel"
+                  name="contactNo"
+                  maxLength="10"
+                  placeholder="9123456789"
+                  className="w-full rounded-xl border border-gray-200 bg-bg-primary p-3.5 text-sm tracking-wide focus:bg-white focus:outline-none focus:ring-2 focus:ring-text-primary/50"
+                  value={formData.contactNo}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
+
+            {/* EMAIL */}
+            <div className="flex flex-col">
+              <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Email</label>
               <input
-                type="tel"
-                name="contactNo"
-                maxLength="10"
-                placeholder="9123456789"
-                className="w-full rounded-xl bg-bg-primary p-3.5 border-transparent focus:bg-white text-sm tracking-wide"
-                value={formData.contactNo}
+                type="email"
+                name="email"
+                placeholder="juan@example.com"
+                className="w-full rounded-xl border border-gray-200 bg-bg-primary p-3.5 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-text-primary/50"
+                value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
+            
+            {/* PASSWORD */}
+            <div className="flex flex-col">
+              <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Password</label>
+              <input
+                type="password"
+                name="password"
+                placeholder="••••••••"
+                className="w-full rounded-xl border border-gray-200 bg-bg-primary p-3.5 text-sm tracking-widest focus:bg-white focus:outline-none focus:ring-2 focus:ring-text-primary/50"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            {/* CONFIRM PASSWORD */}
+            <div className="flex flex-col">
+              <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Confirm Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="••••••••"
+                className="w-full rounded-xl border border-gray-200 bg-bg-primary p-3.5 text-sm tracking-widest focus:bg-white focus:outline-none focus:ring-2 focus:ring-text-primary/50"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="mt-6 w-full rounded-xl bg-text-primary py-4 font-semibold text-white shadow-lg transition-all hover:bg-neutral-800 hover:shadow-xl active:scale-[0.98] disabled:opacity-50"
+              disabled={loading}
+            >
+              {loading ? "Creating Account..." : "Sign Up"}
+            </button>
+          </form>
+
+          <div className="mt-6 pb-4 text-center text-sm text-text-muted">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="font-bold text-text-primary transition-colors hover:text-blue-600 hover:underline"
+            >
+              Log In
+            </Link>
           </div>
 
-          <div className="flex flex-col">
-            <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="juan@example.com"
-              className="w-full rounded-xl bg-bg-primary p-3.5 border-transparent focus:bg-white text-sm"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Password</label>
-            <input
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              className="w-full rounded-xl bg-bg-primary p-3.5 border-transparent focus:bg-white text-sm tracking-widest"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mb-1 ml-1 text-xs font-medium text-text-muted">Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="••••••••"
-              className="w-full rounded-xl bg-bg-primary p-3.5 border-transparent focus:bg-white text-sm tracking-widest"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="mt-6 w-full rounded-xl bg-text-primary py-4 font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50 shadow-lg"
-            disabled={loading}
-          >
-            {loading ? "Creating Account..." : "Sign Up"}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-sm text-text-muted pb-4">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="font-bold text-text-primary hover:underline"
-          >
-            Log In
-          </Link>
         </div>
-
       </div>
     </div>
   );

@@ -17,14 +17,17 @@ import SignupPage from "./pages/SignUpPage";
 import UserReportsPage from "./pages/UserReportsPage";
 import LocationOnboarding from "./components/LocationOnBoarding";
 import { FaHouse } from "react-icons/fa6";
+import AdminRoute from "./components/AdminRoute";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import NotFoundPage from "./pages/NotFoundPage";
 
 const AppContent = () => {
-  const { user, loading } = useAuthContext();
+  const { user, userDoc, loading } = useAuthContext();
   const [reportOpen, setReportOpen] = useState(false);
   const location = useLocation();
 
-  const hideNavbarPaths = ['/my-reports'];
-  const shouldShowNavbar = user && !hideNavbarPaths.includes(location.pathname);
+  const hideNavbarPaths = ['/my-reports', '/admin-dashboard'];
+  const shouldShowNavbar = user && userDoc.role !== "ADMIN" && !hideNavbarPaths.includes(location.pathname);
 
   if (loading) {
     return (
@@ -55,7 +58,14 @@ const AppContent = () => {
 
             <Routes>
               {/* DEFAULT */}
-              <Route path="/" element={<Navigate to="/map" replace />} />
+              <Route 
+                path="/" 
+                element={
+                  userDoc?.role === "ADMIN" 
+                    ? <Navigate to="/admin-dashboard" replace /> 
+                    : <Navigate to="/map" replace />
+                } 
+              />
 
               {/* PUBLIC ROUTES */}
               <Route element={<PublicRoute />}>
@@ -69,6 +79,14 @@ const AppContent = () => {
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="/my-reports" element={<UserReportsPage />} />
               </Route>
+
+              {/* ADMIN ROUTES */}
+              <Route element={<AdminRoute />}>
+                <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+              </Route>
+              
+              {/* NOT FOUND */}
+              <Route path="*" element={<NotFoundPage/>}/>
             </Routes>
           </main>
 
@@ -76,7 +94,7 @@ const AppContent = () => {
             <Navbar onReportClick={() => setReportOpen(true)} />
           )}
 
-          {user && (
+          {user && userDoc.role !== "ADMIN" && (
             <BottomSheet
               open={reportOpen}
               onClose={() => setReportOpen(false)}

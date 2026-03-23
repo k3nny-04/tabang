@@ -82,7 +82,6 @@ export const AuthProvider = ({ children }) => {
   // --- Listen for Auth State ---
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
       
       if (currentUser) {
         try {
@@ -97,10 +96,11 @@ export const AuthProvider = ({ children }) => {
           console.error("Error fetching user document:", error);
           setUserDoc(null);
         }
+        setUser(currentUser);
       } else {
+        setUser(null)
         setUserDoc(null);
       }
-
       setLoading(false); 
     });
 
