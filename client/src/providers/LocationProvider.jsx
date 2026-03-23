@@ -1,4 +1,4 @@
-import { createContext, useState, useMemo, useEffect } from "react";
+import { createContext, useState, useMemo, useEffect, useRef } from "react";
 import { getAddressFromCoordinates } from "../utils/geocode";
 
 const LocationContext = createContext(undefined);
@@ -7,6 +7,16 @@ export const LocationProvider = ({ children }) => {
   const [currentLocation, setCurrentLocation] = useState(undefined);
   const [pinnedLocation, setPinnedLocation] = useState(undefined);
   const [pinnedAddress, setPinnedAddress] = useState("");
+  const [isTracking, setIsTracking] = useState(false);
+  const watchIdRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchAddress = async () => {
@@ -25,15 +35,52 @@ export const LocationProvider = ({ children }) => {
     fetchAddress();
   }, [pinnedLocation]);
 
+  const startLiveTracking = () => {
+    if (!navigator.geolocation) return;
+
+    setIsTracking(true);
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        setCurrentLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          heading: pos.coords.heading, 
+          speed: pos.coords.speed,    
+        });
+      },
+      (error) => {
+        console.warn("Live tracking lost", error);
+        setIsTracking(false);
+      },
+      {
+        enableHighAccuracy: true, 
+        maximumAge: 0,            
+        timeout: 5000,           
+      }
+    );
+  };
+
+  const stopLiveTracking = () => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+    }
+    setIsTracking(false);
+  };
+
   const value = useMemo(
     () => ({
       currentLocation,
       setCurrentLocation,
       pinnedLocation,
       setPinnedLocation,
-      pinnedAddress
+      pinnedAddress,
+      isTracking,
+      startLiveTracking,
+      stopLiveTracking,
     }),
-    [currentLocation, pinnedLocation, pinnedAddress]
+    [currentLocation, pinnedLocation, pinnedAddress, isTracking]
   );
 
   return (

@@ -15,6 +15,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import SignupPage from "./pages/SignUpPage";
 import UserReportsPage from "./pages/UserReportsPage";
+import LocationOnboarding from "./components/LocationOnBoarding";
+import { FaHouse } from "react-icons/fa6";
 
 const AppContent = () => {
   const { user, loading } = useAuthContext();
@@ -26,17 +28,31 @@ const AppContent = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        Loading...
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-surface gap-8">
+        <div className="relative flex h-24 w-24 items-center justify-center">
+          <div className="absolute h-full w-full animate-ping rounded-full bg-text-primary/10 duration-1000"></div>
+          
+          <div className="relative z-10 flex h-16 w-16 animate-bounce items-center justify-center rounded-full bg-text-primary shadow-xl">
+            <FaHouse className="text-bg-primary" size={32} />
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <p className="animate-pulse text-sm font-bold tracking-[0.2em] text-text-primary/70 uppercase">
+            Loading...
+          </p>
+        </div>
+
       </div>
     );
   }
-
+  
   return (
     <LocationProvider>
       <LayersProvider>
-        <div className="relative flex h-screen flex-col transition-colors">
-          <main className="flex-1 overflow-hidden">
+        <div className="relative flex h-dvh flex-col transition-colors">
+          <main className="flex-1 overflow-auto">
+            {<LocationOnboarding />}
+
             <Routes>
               {/* DEFAULT */}
               <Route path="/" element={<Navigate to="/map" replace />} />

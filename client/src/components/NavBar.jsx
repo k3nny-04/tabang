@@ -3,8 +3,8 @@ import { NavLink } from "react-router-dom";
 
 const Navbar = ({ onReportClick }) => {
   return (
-    <nav className="relative z-30 grid h-16 grid-cols-3 items-center border-t border-border-light bg-surface px-4 transition-colors">
-      
+    <nav className="relative z-30 w-full border-t border-border-light bg-surface pb-[env(safe-area-inset-bottom)] transition-colors">
+      <div className="grid h-16 grid-cols-3 items-center px-4">
       {/* Maps */}
       <NavLink
         to="/map"
@@ -45,6 +45,7 @@ const Navbar = ({ onReportClick }) => {
         <User size={22} />
         Account
       </NavLink>
+      </div>
     </nav>
   );
 };
