@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { useLocationContext } from "../providers/useLocationContext";
 import { FaCrosshairs } from "react-icons/fa";
-import { MdLayers } from "react-icons/md";
+import { MdLayers, MdLocationOff } from "react-icons/md";
 import { SearchBox } from "@mapbox/search-js-react";
 import { FaHouse } from "react-icons/fa6";
 import { createRoot } from "react-dom/client";
@@ -28,8 +28,12 @@ const Map = () => {
     setCurrentLocation,
     pinnedLocation,
     setPinnedLocation,
+    startLiveTracking,
+    stopLiveTracking,
+    isTracking
   } = useLocationContext();
   const latestLocations = useRef({ currentLocation, pinnedLocation});
+  const lastRouteFetchLocation = useRef(null);
 
   // Map States
   const mapRef = useRef(null);
@@ -119,17 +123,40 @@ const Map = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Effect for current location marker
+// Effect for current location marker
   useEffect(() => {
     if (!mapRef.current || !currentLocation) return;
 
-    if (currentMarkerRef.current) {
-      currentMarkerRef.current.remove();
+    // 1. If the marker doesn't exist yet, create it!
+    if (!currentMarkerRef.current) {
+      const el = document.createElement("div");
+      // Slightly larger wrapper to fit the arrow
+      el.className = "relative flex h-8 w-8 items-center justify-center transition-transform duration-300"; 
+      
+      el.innerHTML = `
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 h-0 w-0 border-l-[6px] border-r-[6px] border-b-8 border-l-transparent border-r-transparent border-b-blue-500 z-10"></div>
+        <div class="absolute h-4 w-4 rounded-full bg-blue-500 border-2 border-white shadow-[0_0_8px_rgba(0,0,0,0.3)] z-20"></div>
+        <div class="absolute h-4 w-4 rounded-full bg-blue-400 animate-ping opacity-75 z-0"></div>
+      `;
+
+      currentMarkerRef.current = new mapboxgl.Marker({ 
+        element: el,
+        rotationAlignment: "map" // Ensures the rotation stays accurate if the user twists the map
+      })
+        .setLngLat([currentLocation.lng, currentLocation.lat])
+        .addTo(mapRef.current);
+    } 
+    // 2. If it already exists, just smoothly update its position
+    else {
+      currentMarkerRef.current.setLngLat([currentLocation.lng, currentLocation.lat]);
     }
 
-    currentMarkerRef.current = new mapboxgl.Marker({ color: "red" })
-      .setLngLat([currentLocation.lng, currentLocation.lat])
-      .addTo(mapRef.current);
+    // 3. Apply the rotation if the phone's compass provides a heading
+    const heading = currentLocation.heading;
+    if (heading !== null && heading !== undefined && !isNaN(heading)) {
+      currentMarkerRef.current.setRotation(heading);
+    }
+
   }, [currentLocation]);
 
   // Effect for pinned location marker
@@ -183,6 +210,7 @@ const Map = () => {
         .addTo(mapRef.current);
       evacMarkersRef.current.push(marker);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLayers.evacShelters]);
   
   // Effect for drawing the route
@@ -238,6 +266,42 @@ const Map = () => {
 
   }, [mapInstance, routeData]);
 
+  // Effect for Live Routing Updates
+  useEffect(() => {
+    if (!nearestShelter || !currentLocation || !isTracking || pinnedLocation) return;
+
+    const currentCoords = {
+      latitude: currentLocation.lat,
+      longitude: currentLocation.lng,
+    };
+
+    // 1. Instantly update the distance display on the card
+    const distanceInMeters = getDistance(currentCoords, nearestShelter);
+    const formattedDistance =
+      distanceInMeters >= 1000
+        ? `${(distanceInMeters / 1000).toFixed(1)} km`
+        : `${Math.round(distanceInMeters)} meters`;
+        
+    setDistanceInfo(formattedDistance);
+
+    // 2. Check if we need to redraw the blue route line
+    if (lastRouteFetchLocation.current) {
+      const distanceFromLastFetch = getDistance(currentCoords, lastRouteFetchLocation.current);
+      // If they haven't moved more than 25 meters, don't spam the API for a new line
+      if (distanceFromLastFetch < 25) return; 
+    }
+
+    // 3. If they moved far enough, fetch a new route line
+    lastRouteFetchLocation.current = currentCoords;
+    getDirections(
+      { lat: currentCoords.latitude, lng: currentCoords.longitude },
+      { lat: nearestShelter.latitude, lng: nearestShelter.longitude }
+    )
+      .then((route) => setRouteData(route))
+      .catch((err) => console.error("Live route update failed", err));
+
+  }, [currentLocation, nearestShelter, isTracking, pinnedLocation]);
+
 
   const handleRecenter = () => {
     if (!mapRef.current) return;
@@ -272,6 +336,11 @@ const Map = () => {
     };
 
     try {
+      if (!latestPinned) {
+        startLiveTracking();
+        lastRouteFetchLocation.current = currentCoords;
+      }
+
       const route = await getDirections(
         { lat: currentCoords.latitude, lng: currentCoords.longitude },
         { lat: formattedTarget.latitude, lng: formattedTarget.longitude }
@@ -328,6 +397,11 @@ const Map = () => {
     }))
 
     try {
+      if (!pinnedLocation) {
+        startLiveTracking();
+        lastRouteFetchLocation.current = currentCoords;
+      }
+
       const nearest = findNearest(currentCoords, formattedEvacData);
       const route = await getDirections(
         { lat: currentCoords.latitude, lng: currentCoords.longitude },
@@ -403,11 +477,27 @@ const Map = () => {
         onClose={() => {
           setNearestShelter(null);
           setRouteData(null);
+          stopLiveTracking();
+          lastRouteFetchLocation.current = null;
         }} 
       />
 
       {/* Floating Controls */}
       <div className="absolute right-2 bottom-2 z-10 flex flex-col items-end gap-3">
+      {/* REMOVE PIN */}
+        {pinnedLocation && (
+          <button
+            onClick={() => {
+              setPinnedLocation(undefined);
+              setNearestShelter(null);
+              setRouteData(null);
+            }}
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-surface text-red-500 shadow-lg transition hover:bg-red-50 hover:text-red-600 active:scale-95"
+            aria-label="Remove Pin"
+          >
+            <MdLocationOff className="text-xl" />
+          </button>
+        )}
         {/* RECENTER */}
         <button
           onClick={handleRecenter}
