@@ -20,6 +20,8 @@ import { FaHouse } from "react-icons/fa6";
 import AdminRoute from "./components/AdminRoute";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import AdminLayout from "./components/AdminLayout";
+import ReportsPage from "./pages/admin/ReportsPage";
 
 const AppContent = () => {
   const { user, userDoc, loading } = useAuthContext();
@@ -82,7 +84,14 @@ const AppContent = () => {
 
               {/* ADMIN ROUTES */}
               <Route element={<AdminRoute />}>
-                <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+                <Route element={<AdminLayout/>}>
+                  <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
+                  <Route path="/admin-reports" element={<ReportsPage/>} />
+                  <Route path="/admin-shelters" element={<div>Shelters Page Placeholder</div>} />
+                  <Route path="/admin-responders" element={<div>Responders Page Placeholder</div>} />
+                  <Route path="/admin-users" element={<div>Users Page Placeholder</div>} />
+                  <Route path="/admin-inventory" element={<div>Inventory Page Placeholder</div>} />
+                </Route>
               </Route>
               
               {/* NOT FOUND */}
