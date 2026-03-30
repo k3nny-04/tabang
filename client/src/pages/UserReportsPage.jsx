@@ -16,6 +16,7 @@ import {
   FileText
 } from "lucide-react";
 import { Select, MenuItem, FormControl } from "@mui/material";
+import { getStatusColor } from "../utils/statusColor";
 
 const STATUS_TABS = ["PENDING", "VERIFIED", "IN PROGRESS", "RESOLVED"];
 const REPORT_TYPES = ["All", "Rescue", "Supply", "Incident"];
@@ -87,22 +88,6 @@ const UserReportsPage = () => {
       const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
       return sortBy === "newest" ? timeB - timeA : timeA - timeB;
     });
-
-  // Status Color Helper
-  const getStatusColor = (status) => {
-    switch (status?.toUpperCase()) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-700 border-yellow-200";
-      case "VERIFIED":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "IN PROGRESS":
-        return "bg-purple-100 text-purple-700 border-purple-200";
-      case "RESOLVED":
-        return "bg-green-100 text-green-700 border-green-200";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  };
 
   return (
     <div className="flex h-screen flex-col bg-bg-primary overflow-hidden">
