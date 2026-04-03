@@ -18,29 +18,30 @@ export const reportsApi = {
   /**
    * Create a new report
    */
-createReport: async (reportData) => {
-    try {
-      const reportsRef = collection(db, REPORTS_COLLECTION);
-      const timestamp = new Date().toISOString();
-      const initialStatus = reportData.status || 'PENDING';
+  createReport: async (reportData) => {
+      try {
+        const reportsRef = collection(db, REPORTS_COLLECTION);
+        const timestamp = new Date().toISOString();
+        const initialStatus = reportData.status || 'PENDING';
 
-      const docRef = await addDoc(reportsRef, {
-        ...reportData,
-        createdAt: timestamp,
-        remarks: [
-          {
-            comment: "Your report has been submitted and is now pending for review. We will get back to you as soon as possible.",
-            dateRemarked: timestamp,
-            status: initialStatus
-          }
-        ]
-      });
-      return { success: true, reportId: docRef.id };
-    } catch (error) {
-      console.error("Error creating report:", error);
-      throw error;
-    }
-  },
+        const docRef = await addDoc(reportsRef, {
+          ...reportData,
+          createdAt: timestamp,
+          remarks: [
+            {
+              comment: "Your report has been submitted and is now pending for review. We will get back to you as soon as possible.",
+              dateRemarked: timestamp,
+              status: initialStatus
+            }
+          ],
+          assignedTeam: null, 
+        });
+        return { success: true, reportId: docRef.id };
+      } catch (error) {
+        console.error("Error creating report:", error);
+        throw error;
+      }
+    },
 
   /**
    * Get a single report by its ID
@@ -120,7 +121,6 @@ createReport: async (reportData) => {
   streamAllReports: (callback) => {
     const reportsRef = collection(db, REPORTS_COLLECTION);
 
-    // onSnapshot listens for changes and pushes them to the callback
     const unsubscribe = onSnapshot(
       reportsRef,
       (snapshot) => {
@@ -156,6 +156,35 @@ createReport: async (reportData) => {
       },
       (error) => {
         console.error("Error streaming single report:", error);
+      },
+    );
+
+    return unsubscribe;
+  },
+
+  /**
+   * Stream UNASSIGNED reports
+   */
+  streamUnassignedReports: (callback) => {
+    const reportsRef = collection(db, REPORTS_COLLECTION);
+    
+    const q = query(
+      reportsRef, 
+      where("assignedTeam", "==", null),
+      where("status", "==", "VERIFIED")
+    );
+    
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const reports = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        callback(reports);
+      },
+      (error) => {
+        console.error("Error streaming unassigned reports:", error);
       },
     );
 

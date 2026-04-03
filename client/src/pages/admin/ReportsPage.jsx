@@ -8,7 +8,7 @@ import { getStatusColor } from "../../utils/statusColor";
 import ReportDetailsModal from "../../components/ReportDetailsModal";
 import ReportTimeline from "../../components/ReportTimeline";
 
-const AdminReportsPage = () => {
+const ReportsPage = () => {
   const {currentLocation, setCurrentLocation} = useLocationContext();
   const [loading, setLoading] = useState(true);
 
@@ -142,7 +142,7 @@ const AdminReportsPage = () => {
         };
 
         return (
-          <span className={`text-xs tracking-wider flex items-center gap-1.5 ${prio.textStyle}`}>
+          <span className={`text-xs tracking-wider flex items-center gap-1.5`}>
             {prio.label}
           </span>
         );
@@ -161,7 +161,7 @@ const AdminReportsPage = () => {
             <button 
               onClick={() => setTimelineReport(row)}
               title="View Update History"
-              className="p-1.5 text-gray-400 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 rounded-md transition-colors border border-gray-200"
+              className="p-1.5 text-gray-400 bg-gray-50 hover:text-text-primary hover:bg-gray-100 rounded-md transition-colors border border-gray-200"
             >
               <History size={14} />
             </button>
@@ -193,7 +193,7 @@ const AdminReportsPage = () => {
                   console.log("View on map:", row.location);
                 }}
                 title="Pinpoint on Map"
-                className="p-1 bg-gray-100 hover:bg-blue-100 hover:text-blue-600 text-gray-500 rounded-md transition-colors"
+                className="p-1 bg-gray-100 hover:text-text-primary hover:bg-gray-100 text-gray-500 rounded-md transition-colors"
               >
                 <MapPin size={14} />
               </button>
@@ -207,15 +207,15 @@ const AdminReportsPage = () => {
     },
     {
       key: "actions",
-      label: "Actions",
+      label: "",
       render: (row) => (
         <button 
           onClick={() => {
             setSelectedReport(row)
           }}
-          className="flex items-center text-sm font-semibold text-text-primary hover:text-blue-600 transition-colors bg-gray-100 px-3 py-1.5 rounded-lg hover:bg-blue-50"
+          className="p-2 text-gray-400 hover:text-text-primary hover:bg-gray-100 rounded-lg transition-colors"
         >
-          <Eye size={16} className="mr-1.5" /> View
+          <Eye size={18} />
         </button>
       )
     }
@@ -268,7 +268,7 @@ const AdminReportsPage = () => {
           >
             <div 
               className={`w-8 h-4.5 rounded-full p-0.5 transition-colors duration-200 ease-in-out flex items-center ${
-                showResolved ? 'bg-green-700' : 'bg-gray-300'
+                showResolved ? 'bg-text-primary' : 'bg-gray-300'
               }`}
             >
               <div 
@@ -345,4 +345,4 @@ const AdminReportsPage = () => {
   );
 };
 
-export default AdminReportsPage;
+export default ReportsPage;
