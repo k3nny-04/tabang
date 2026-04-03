@@ -23,6 +23,7 @@ import NotFoundPage from "./pages/NotFoundPage";
 import AdminLayout from "./components/AdminLayout";
 import ReportsPage from "./pages/admin/ReportsPage";
 import SheltersPage from "./pages/admin/SheltersPage";
+import RespondersPage from "./pages/admin/RespondersPage";
 
 const AppContent = () => {
   const { user, userDoc, loading } = useAuthContext();
@@ -89,7 +90,7 @@ const AppContent = () => {
                   <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
                   <Route path="/admin-reports" element={<ReportsPage/>} />
                   <Route path="/admin-shelters" element={<SheltersPage/>} />
-                  <Route path="/admin-responders" element={<div>Responders Page Placeholder</div>} />
+                  <Route path="/admin-responders" element={<RespondersPage/>} />
                   <Route path="/admin-users" element={<div>Users Page Placeholder</div>} />
                   <Route path="/admin-inventory" element={<div>Inventory Page Placeholder</div>} />
                 </Route>

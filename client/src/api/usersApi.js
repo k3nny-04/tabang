@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, query, collection, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../firebase-config'; 
 
 const USERS_COLLECTION = 'users';
@@ -68,5 +68,27 @@ export const usersApi = {
       console.error("Error deleting user:", error);
       throw error;
     }
+  },
+
+  /**
+   * Stream all users with the role 'RESPONDER' 
+   */
+  streamResponders: (callback) => {
+    const q = query(
+      collection(db, USERS_COLLECTION), 
+      where("role", "==", "RESPONDER")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const responders = snapshot.docs.map(doc => ({
+        id: doc.id, 
+        ...doc.data()
+      }));
+      callback(responders);
+    }, (error) => {
+      console.error("Error streaming responders:", error);
+    });
+
+    return unsubscribe;
   }
 };
