@@ -7,14 +7,35 @@ const NearestShelterCard = ({ shelter, distanceInfo, onClose }) => {
 
   if (!shelter) return null;
 
-  const name = shelter.Evacuation_Name || "Unnamed Evacuation Center";
-  const barangay = shelter.Barangay || "Location not specified";
-  const capacity = shelter.Capacity ? `${shelter.Capacity} people` : "Not specified";
-  const manager = shelter.Manager || "No manager listed";
+  const name = shelter.name || "Unnamed Evacuation Center";
+  const barangay = shelter.barangay || "Location not specified";
+  const manager = shelter.manager || "No manager listed";
+
+  const currentCapacity = shelter.currentCapacity || 0;
+  const maxCapacity = shelter.maxCapacity || parseInt(shelter.capacity) || 0;
+  
+  let capacityText = "Capacity: Not specified";
+  let badgeColor = "bg-bg-secondary text-text-secondary ring-border-light";
+
+  if (maxCapacity > 0) {
+    const percentage = currentCapacity / maxCapacity;
+    capacityText = `${currentCapacity} / ${maxCapacity} Occupied`;
+    
+    if (percentage >= 1) {
+      capacityText = `${currentCapacity} / ${maxCapacity} (FULL)`;
+      badgeColor = "bg-red-50 text-red-700 ring-red-200/60";
+    } else if (percentage >= 0.8) {
+      badgeColor = "bg-orange-50 text-orange-700 ring-orange-200/60";
+    } else {
+      badgeColor = "bg-emerald-50 text-emerald-700 ring-emerald-200/60";
+    }
+  } else if (shelter.Capacity) {
+    capacityText = `Capacity: ${shelter.Capacity}`;
+  }
 
   let contactNumber = null;
-  if (shelter.Contact) {
-    const rawContact = shelter.Contact.toString();
+  if (shelter.contact) {
+    const rawContact = shelter.contact.toString();
     contactNumber = rawContact.startsWith("0") ? rawContact : `0${rawContact}`;
   }
 
@@ -37,9 +58,15 @@ const NearestShelterCard = ({ shelter, distanceInfo, onClose }) => {
           <h3 className="text-xl font-bold leading-tight text-text-primary">
             {name}
           </h3>
-          <p className="mt-1.5 text-sm text-text-secondary">
-            Brgy. {barangay} • Capacity: {capacity}
-          </p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <p className="text-sm text-text-secondary">
+              Brgy. {barangay}
+            </p>
+            {/* --- NEW CAPACITY BADGE --- */}
+            <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold ring-1 ring-inset ${badgeColor}`}>
+              {capacityText}
+            </span>
+          </div>
         </div>
         
         <button 

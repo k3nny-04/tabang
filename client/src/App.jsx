@@ -30,8 +30,8 @@ const AppContent = () => {
   const [reportOpen, setReportOpen] = useState(false);
   const location = useLocation();
 
-  const hideNavbarPaths = ['/my-reports', '/admin-dashboard'];
-  const shouldShowNavbar = user && userDoc.role !== "ADMIN" && !hideNavbarPaths.includes(location.pathname);
+  const showNavbarPaths = ['/map', '/account'];
+  const shouldShowNavbar = user && userDoc?.role !== "ADMIN" && showNavbarPaths.includes(location.pathname);
 
   if (loading) {
     return (
@@ -105,7 +105,7 @@ const AppContent = () => {
             <Navbar onReportClick={() => setReportOpen(true)} />
           )}
 
-          {user && userDoc.role !== "ADMIN" && (
+          {user && userDoc?.role !== "ADMIN" && (
             <BottomSheet
               open={reportOpen}
               onClose={() => setReportOpen(false)}
