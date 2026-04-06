@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { LocationProvider } from "./providers/LocationProvider";
 import { useState } from "react";
 import MapPage from "./pages/MapPage";
@@ -24,14 +24,16 @@ import AdminLayout from "./components/AdminLayout";
 import ReportsPage from "./pages/admin/ReportsPage";
 import SheltersPage from "./pages/admin/SheltersPage";
 import RespondersPage from "./pages/admin/RespondersPage";
+import EmergencyModePage from "./pages/EmergencyModePage";
 
 const AppContent = () => {
   const { user, userDoc, loading } = useAuthContext();
   const [reportOpen, setReportOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const hideNavbarPaths = ['/my-reports', '/admin-dashboard'];
-  const shouldShowNavbar = user && userDoc.role !== "ADMIN" && !hideNavbarPaths.includes(location.pathname);
+  const showNavbarPaths = ['/map', '/account'];
+  const shouldShowNavbar = user && userDoc?.role !== "ADMIN" && showNavbarPaths.includes(location.pathname);
 
   if (loading) {
     return (
@@ -75,6 +77,7 @@ const AppContent = () => {
               <Route element={<PublicRoute />}>
                 <Route path="/login" element={<EmailLoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
+                <Route path="/emergency" element={<EmergencyModePage onBack={() => navigate('/login')} />} />
               </Route>
 
               {/* PROTECTED ROUTES */}
@@ -105,7 +108,7 @@ const AppContent = () => {
             <Navbar onReportClick={() => setReportOpen(true)} />
           )}
 
-          {user && userDoc.role !== "ADMIN" && (
+          {user && userDoc?.role !== "ADMIN" && (
             <BottomSheet
               open={reportOpen}
               onClose={() => setReportOpen(false)}

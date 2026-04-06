@@ -144,6 +144,22 @@ const EmailLoginPage = () => {
             </button>
 
           </form>
+          {/* Divider */}
+          <div className="relative mt-4 flex items-center py-2 text-sm text-text-muted">
+            <div className="grow border-t border-gray-200"></div>
+            <span className="mx-4 shrink-0 bg-surface px-2 text-xs font-bold uppercase tracking-widest text-text-muted">
+              OR
+            </span>
+            <div className="grow border-t border-gray-200"></div>
+          </div>
+
+          {/* Emergency Mode Button */}
+          <Link
+            to="/emergency"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-sm font-black border border-text-primary text-primary"
+          >
+            Offline Emergency Mode
+          </Link>
 
           {/* Footer Link */}
           <div className="mt-auto pt-8 text-center text-sm text-text-muted md:mt-6 md:pt-0">

@@ -7,7 +7,6 @@ import { SearchBox } from "@mapbox/search-js-react";
 import { FaHouse } from "react-icons/fa6";
 import { createRoot } from "react-dom/client";
 import "mapbox-gl/dist/mapbox-gl.css";
-import evacData from "../data/evac_data";
 import BottomSheet from "./BottomSheet";
 import Layers from "./Layers";
 import { useLayers } from "../providers/useLayersContext";
@@ -15,6 +14,7 @@ import { findNearest, getDistance } from "geolib";
 import { getDirections } from "../utils/directions";
 import NearestShelterCard from "./NearestShelterCard";
 import ShelterPopup from "./ShelterPopup";
+import { sheltersApi } from "../api/sheltersApi"; 
 
 const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.184907 };
 const ZOOM = 15;
@@ -47,15 +47,29 @@ const Map = () => {
   // Search State
   const [inputValue, setInputValue] = useState("");
 
-  // Layer States
+  // Layer & Data States
   const evacMarkersRef = useRef([]);
   const { activeLayers, toggleLayer } = useLayers();
   const [layersOpen, setLayersOpen] = useState(false);
+  
+  // Live Shelters State
+  const [shelters, setShelters] = useState([]);
 
   // Shelter State
   const [nearestShelter, setNearestShelter] = useState(null);
   const [distanceInfo, setDistanceInfo] = useState("");
   const [routeData, setRouteData] = useState(null);
+
+  // Effect to stream shelters
+  useEffect(() => {
+    const unsubscribe = sheltersApi.streamAllShelters((data) => {
+      setShelters(data);
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   // Effect for updating locations
   useEffect(() => {
@@ -94,9 +108,7 @@ const Map = () => {
             });
           },
           () => {
-            // alert(
-            //   "Please enable location services to get your current location."
-            // );
+            // alert("Please enable location services...");
           }
         );
       }
@@ -122,11 +134,10 @@ const Map = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-// Effect for current location marker
+  // Effect for current location marker
   useEffect(() => {
     if (!mapInstance || !currentLocation) return;
 
-    // 1. If the marker doesn't exist yet, create it!
     if (!currentMarkerRef.current) {
       const el = document.createElement("div");
       el.className = "relative flex h-8 w-8 items-center justify-center transition-transform duration-300"; 
@@ -139,17 +150,15 @@ const Map = () => {
 
       currentMarkerRef.current = new mapboxgl.Marker({ 
         element: el,
-        rotationAlignment: "map" // Ensures the rotation stays accurate if the user twists the map
+        rotationAlignment: "map"
       })
         .setLngLat([currentLocation.lng, currentLocation.lat])
         .addTo(mapInstance);
     } 
-    // 2. If it already exists, just smoothly update its position
     else {
       currentMarkerRef.current.setLngLat([currentLocation.lng, currentLocation.lat]);
     }
 
-    // 3. Apply the rotation if the phone's compass provides a heading
     const heading = currentLocation.heading;
     if (heading !== null && heading !== undefined && !isNaN(heading)) {
       currentMarkerRef.current.setRotation(heading);
@@ -183,15 +192,17 @@ const Map = () => {
 
     if (!activeLayers.evacShelters) return;
 
-    // Create markers
-    evacData.forEach((item) => {
-      // Marker
+    shelters.forEach((item) => {
+      const lat = item.location?.lat;
+      const lng = item.location?.lng;
+
+      if (!lng || !lat) return; // Skip if missing coordinates
+
       const markerEl = document.createElement("div");
       markerEl.className = "flex h-9 w-9 items-center justify-center rounded-full bg-green-600 border-2 border-white shadow-lg";
       const markerRoot = createRoot(markerEl);
       markerRoot.render(<FaHouse className="text-white text-sm" />);
 
-      // Popup
       const popupEl = document.createElement("div");
       const popupRoot = createRoot(popupEl);
       popupRoot.render(<ShelterPopup item={item} onGoClick={() => handleRouteToSpecificShelter(item)}/>);
@@ -203,13 +214,13 @@ const Map = () => {
       }).setDOMContent(popupEl);
 
       const marker = new mapboxgl.Marker(markerEl)
-        .setLngLat([item.Long, item.Lat])
+        .setLngLat([lng, lat])
         .setPopup(popup)
         .addTo(mapRef.current);
       evacMarkersRef.current.push(marker);
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLayers.evacShelters]);
+  }, [activeLayers.evacShelters, shelters]); 
   
   // Effect for drawing the route
   useEffect(() => {
@@ -273,7 +284,6 @@ const Map = () => {
       longitude: currentLocation.lng,
     };
 
-    // 1. Instantly update the distance display on the card
     const distanceInMeters = getDistance(currentCoords, nearestShelter);
     const formattedDistance =
       distanceInMeters >= 1000
@@ -282,14 +292,11 @@ const Map = () => {
         
     setDistanceInfo(formattedDistance);
 
-    // 2. Check if we need to redraw the blue route line
     if (lastRouteFetchLocation.current) {
       const distanceFromLastFetch = getDistance(currentCoords, lastRouteFetchLocation.current);
-      // If they haven't moved more than 25 meters, don't spam the API for a new line
       if (distanceFromLastFetch < 25) return; 
     }
 
-    // 3. If they moved far enough, fetch a new route line
     lastRouteFetchLocation.current = currentCoords;
     getDirections(
       { lat: currentCoords.latitude, lng: currentCoords.longitude },
@@ -329,9 +336,14 @@ const Map = () => {
 
     const formattedTarget = {
       ...targetShelter,
-      latitude: targetShelter.Lat,
-      longitude: targetShelter.Long,
+      latitude: targetShelter.location?.lat,
+      longitude: targetShelter.location?.lng,
     };
+
+    if (!formattedTarget.latitude || !formattedTarget.longitude) {
+      alert("This shelter is missing location data.");
+      return;
+    }
 
     try {
       if (!latestPinned) {
@@ -362,7 +374,6 @@ const Map = () => {
           duration: 1200,
         });
 
-
         const popups = document.getElementsByClassName("mapboxgl-popup");
         if (popups.length > 0) {
           popups[0].remove();
@@ -383,16 +394,28 @@ const Map = () => {
       return;
     }
 
+    if (shelters.length === 0) {
+      alert("Loading shelters. Please wait a moment and try again.");
+      return;
+    }
+
     const currentCoords = {
       latitude: activeLocation.lat,
       longitude: activeLocation.lng
     };
     
-    const formattedEvacData = evacData.map((shelter) => ({
-      ...shelter,
-      latitude: shelter.Lat,
-      longitude: shelter.Long,
-    }))
+    const formattedEvacData = shelters
+      .filter((shelter) => shelter.location?.lat && shelter.location?.lng) 
+      .map((shelter) => ({
+        ...shelter,
+        latitude: shelter.location.lat,
+        longitude: shelter.location.lng,
+      }));
+
+    if (formattedEvacData.length === 0) {
+      alert("No valid shelter locations found.");
+      return;
+    }
 
     try {
       if (!pinnedLocation) {

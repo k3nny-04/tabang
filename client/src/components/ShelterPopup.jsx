@@ -6,14 +6,35 @@ import { copyToClipboard } from "../utils/clipboard";
 const ShelterPopup = ({ item, onGoClick }) => {
   const [copied, setCopied] = useState(false);
 
-  const name = item.Evacuation_Name || "Unnamed Shelter";
-  const barangay = item.Barangay || "Location not specified";
-  const capacity = item.Capacity ? item.Capacity : "Not specified";
-  const manager = item.Manager || "No manager listed";
+  const name = item.name || "Unnamed Shelter";
+  const barangay = item.barangay || "Location not specified";
+  const manager = item.manager || "No manager listed";
+
+  const currentCapacity = item.currentCapacity || 0;
+  const maxCapacity = item.maxCapacity || parseInt(item.capacity) || 0;
+  
+  let capacityText = "Capacity: Not specified";
+  let badgeColor = "bg-bg-secondary text-text-secondary ring-border-light";
+
+  if (maxCapacity > 0) {
+    const percentage = currentCapacity / maxCapacity;
+    capacityText = `${currentCapacity} / ${maxCapacity} Occupied`;
+    
+    if (percentage >= 1) {
+      capacityText = `${currentCapacity} / ${maxCapacity} (FULL)`;
+      badgeColor = "bg-red-50 text-red-700 ring-red-200/60";
+    } else if (percentage >= 0.8) {
+      badgeColor = "bg-orange-50 text-orange-700 ring-orange-200/60";
+    } else {
+      badgeColor = "bg-emerald-50 text-emerald-700 ring-emerald-200/60";
+    }
+  } else if (item.capacity) {
+    capacityText = `Capacity: ${item.capacity}`;
+  }
 
   let contactNumber = null;
-  if (item.Contact) {
-    const rawContact = item.Contact.toString();
+  if (item.contact) {
+    const rawContact = item.contact.toString();
     contactNumber = rawContact.startsWith("0") ? rawContact : `0${rawContact}`;
   }
 
@@ -40,10 +61,12 @@ const ShelterPopup = ({ item, onGoClick }) => {
       {/* Divider */}
       <div className="my-2 border-t border-border-light" />
 
-      {/* Capacity */}
-      <p className="mb-1 text-xs text-text-secondary wrap-break-word">
-        Capacity: <span className="font-medium text-text-primary">{capacity}</span>
-      </p>
+      {/* Capacity Indicator */}
+      <div className="mb-2">
+        <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold ring-1 ring-inset ${badgeColor}`}>
+          {capacityText}
+        </span>
+      </div>
 
       {/* Manager */}
       <p className="mb-1 text-xs text-text-secondary wrap-break-word">
