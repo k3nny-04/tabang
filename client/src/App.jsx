@@ -77,7 +77,14 @@ const AppContent = () => {
               <Route element={<PublicRoute />}>
                 <Route path="/login" element={<EmailLoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
-                <Route path="/emergency" element={<EmergencyModePage onBack={() => navigate('/login')} />} />
+                <Route 
+                  path="/emergency" 
+                  element={
+                  <EmergencyModePage 
+                    onBack={() => navigate('/login')} 
+                    onSuccess={() => navigate('/login')}
+                  />} 
+                />
               </Route>
 
               {/* PROTECTED ROUTES */}
