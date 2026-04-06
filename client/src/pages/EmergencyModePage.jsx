@@ -91,7 +91,7 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
     const incidentType = `${form.description.toUpperCase()}-${name}`;
     const peopleCount = form.numberOfPeople;
     
-    const smsMessage = `SOS|1|${incidentType}|${peopleCount}|${locString}`;
+    const smsMessage = `SOS|${incidentType}|${peopleCount}|${locString}`;
     
     const smsLink = `sms:${EMERGENCY_NUMBER}?body=${encodeURIComponent(smsMessage)}`;
 
