@@ -30,7 +30,7 @@ const PEOPLE_RANGES = [
   { val: "16+", label: "Mass" }
 ];
 
-const EMERGENCY_NUMBER = "+639123456789"; 
+const EMERGENCY_NUMBER = "+639260087068"; 
 
 const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
   const { currentLocation, setCurrentLocation } = useLocationContext();
