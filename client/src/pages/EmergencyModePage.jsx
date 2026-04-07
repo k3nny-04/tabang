@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
 import { 
   FaMapMarkerAlt, 
-  FaShieldAlt, 
   FaUser, 
   FaWater,
   FaFire,
   FaHouseDamage,
   FaFirstAid,
-  FaEllipsisH,
   FaPaperPlane,
   FaSyncAlt,
   FaArrowLeft,
-  FaHandsHelping 
+  FaCarCrash
 } from "react-icons/fa";
+import { RiCriminalFill } from "react-icons/ri";
 import { useLocationContext } from "../providers/useLocationContext";
 
 const INCIDENT_TYPES = [
@@ -20,19 +19,18 @@ const INCIDENT_TYPES = [
   { name: "Fire", icon: FaFire },
   { name: "Earthquake", icon: FaHouseDamage },
   { name: "Medical", icon: FaFirstAid },
-  { name: "Trapped", icon: FaHandsHelping }, 
-  { name: "Other", icon: FaEllipsisH }
+  { name: "Crime", icon:  RiCriminalFill}, 
+  { name: "Accident", icon: FaCarCrash }
 ];
 
 const PEOPLE_RANGES = [
-  { val: "1", label: "Person" },
-  { val: "2-3", label: "People" },
-  { val: "4-7", label: "Group" },
-  { val: "8-15", label: "Large" },
+  { val: "1-3", label: "Person" },
+  { val: "4-7", label: "People" },
+  { val: "8-15", label: "Group" },
   { val: "16+", label: "Mass" }
 ];
 
-const EMERGENCY_NUMBER = "+639123456789"; 
+const EMERGENCY_NUMBER = "+639260087068"; 
 
 const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
   const { currentLocation, setCurrentLocation } = useLocationContext();
@@ -93,7 +91,7 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
     const incidentType = `${form.description.toUpperCase()}-${name}`;
     const peopleCount = form.numberOfPeople;
     
-    const smsMessage = `SOS|RESCUE|${incidentType}|${peopleCount}|${locString}`;
+    const smsMessage = `SOS|${incidentType}|${peopleCount}|${locString}`;
     
     const smsLink = `sms:${EMERGENCY_NUMBER}?body=${encodeURIComponent(smsMessage)}`;
 
@@ -120,7 +118,7 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
         </div>
 
         {/* Banner */}
-        <div className="flex flex-col gap-1 rounded-xl bg-red-50 p-5 text-red-600 border border-red-500 shadow-md">
+        {/* <div className="flex flex-col gap-1 rounded-xl bg-red-50 p-5 text-red-600 border border-red-500 shadow-md">
           <div className="flex items-center gap-2 text-sm font-black tracking-widest uppercase">
             <FaShieldAlt className="text-lg" />
             Offline Emergency Mode
@@ -128,7 +126,7 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
           <p className="text-[13px] font-medium leading-snug text-red-600">
             Your request will be converted into an SMS and sent directly to local responders. Please stay calm and conserve battery.
           </p>
-        </div>
+        </div> */}
 
         {/* Location Display */}
         <div className="flex flex-col gap-3">
@@ -204,7 +202,7 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
         {/* Number of People */}
         <div className="flex flex-col gap-3">
           <label className="text-xs font-black tracking-widest text-[#666] uppercase">
-            People To Rescue
+            Number of People In Emergency
           </label>
           <div className="flex flex-wrap gap-2">
             {PEOPLE_RANGES.map((range) => (
@@ -218,9 +216,9 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
                 }`}
               >
                 <span className="text-xl font-black">{range.val}</span>
-                <span className="text-[9px] font-bold tracking-widest uppercase opacity-80">
+                {/* <span className="text-[9px] font-bold tracking-widest uppercase opacity-80">
                   {range.label}
-                </span>
+                </span> */}
               </button>
             ))}
           </div>
@@ -236,7 +234,7 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
             className="flex w-full items-center justify-center gap-3 rounded-xl bg-text-primary py-4 text-sm font-black tracking-widest text-white uppercase transition-all hover:bg-[#a00d12] active:scale-[0.98]"
           >
             <FaPaperPlane className="text-lg" />
-            Dispatch via SMS
+            Send via SMS
           </button>
         </div>
       </div>

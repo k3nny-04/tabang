@@ -140,7 +140,7 @@ const ReportDetailsModal = ({ report, onClose, onUpdateReport }) => {
                       Individuals
                     </span>
                     <span className="text-xs font-medium text-gray-500">
-                      Reported on-site requiring immediate evacuation
+                      Reported on-site requiring immediate rescue assistance
                     </span>
                   </div>
                 </div>
