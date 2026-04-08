@@ -7,7 +7,6 @@ import {
   deleteDoc, 
   onSnapshot, 
   query,
-  serverTimestamp,
   orderBy
 } from "firebase/firestore";
 
@@ -34,7 +33,7 @@ export const teamsApi = {
       const payload = {
         ...teamData,
         status: "STANDBY", 
-        updatedAt: serverTimestamp()
+        updatedAt: new Date().toISOString()
       };
       const docRef = await addDoc(teamsCollection, payload);
       return docRef.id;
@@ -49,7 +48,7 @@ export const teamsApi = {
       const teamRef = doc(db, COLLECTION_NAME, teamId);
       await updateDoc(teamRef, {
         ...updatedData,
-        updatedAt: serverTimestamp()
+        updatedAt: new Date().toISOString()
       });
     } catch (error) {
       console.error("Error updating team:", error);

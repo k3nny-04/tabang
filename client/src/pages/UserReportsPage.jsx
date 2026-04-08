@@ -18,7 +18,7 @@ import {
 import { Select, MenuItem, FormControl } from "@mui/material";
 import { getStatusColor } from "../utils/statusColor";
 
-const STATUS_TABS = ["PENDING", "VERIFIED", "IN PROGRESS", "RESOLVED"];
+const STATUS_TABS = ["PENDING", "VERIFIED", "IN_PROGRESS", "RESOLVED"];
 const REPORT_TYPES = ["All", "Rescue", "Supply", "Incident"];
 
 const UserReportsPage = () => {
@@ -115,7 +115,7 @@ const UserReportsPage = () => {
                 : "bg-gray-100 text-text-muted hover:bg-gray-200"
             }`}
           >
-            {tab}
+            {tab.replace(/_/g, ' ')}
           </button>
         ))}
       </div>
@@ -197,7 +197,7 @@ const UserReportsPage = () => {
                 </div>
                 
                 <span className={`shrink-0 ml-2 px-2.5 py-1 rounded-md text-[10px] font-black tracking-wider border ${getStatusColor(report.status)}`}>
-                  {(report.status || 'PENDING').toUpperCase()}
+                  {(report.status || 'UPDATE').toUpperCase().replace(/_/g, ' ')}
                 </span>
               </div>
 
