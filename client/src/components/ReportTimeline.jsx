@@ -6,6 +6,7 @@ import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import { Clock } from 'lucide-react';
 import { getStatusColor } from '../utils/statusColor';
+import { formatBoldText } from '../utils/formatText';
 
 const ReportTimeline = ({ remarks = [] }) => {
   // Sort remarks to ensure the latest is always on top
@@ -82,7 +83,7 @@ const ReportTimeline = ({ remarks = [] }) => {
                   <span 
                     className={`text-[10px] font-black tracking-wider px-2 py-0.5 rounded border whitespace-nowrap mb-1.5 ${badgeColorClass}`}
                   >
-                    {(remark.status || 'UPDATE').toUpperCase()}
+                    {(remark.status || 'UPDATE').toUpperCase().replace(/_/g, ' ')}
                   </span>
                   
                   <div className="flex items-center text-[11px] font-medium text-text-muted">
@@ -92,8 +93,8 @@ const ReportTimeline = ({ remarks = [] }) => {
                 </div>
 
                 {/* Comment Bubble */}
-                <div className="bg-surface-elevated p-3.5 rounded-2xl rounded-tl-none border border-border-light text-sm text-text-primary w-full shadow-sm">
-                  {remark.comment}
+                <div className="bg-surface-elevated p-3.5 rounded-2xl rounded-tl-none border border-border-light text-sm text-text-primary w-full shadow-sm whitespace-pre-wrap">
+                  {formatBoldText(remark.comment)}
                 </div>
               </TimelineContent>
             </TimelineItem>

@@ -21,6 +21,7 @@ import {
 } from "@dnd-kit/core";
 import { teamsApi } from "../../api/teamsApi";
 import { reportsApi } from "../../api/reportsApi";
+import { usersApi } from "../../api/usersApi";
 
 
 // --- DRAGGABLE REPORT COMPONENT ---
@@ -94,11 +95,37 @@ const DroppableTeamCard = ({
   onRemoveReport,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [headName, setHeadName] = useState("Loading...");
 
   const { isOver, setNodeRef } = useDroppable({
     id: team.id,
     data: team,
   });
+
+  // Fetch the user's name when the component mounts or headId changes  
+  useEffect(() => {
+    const fetchHeadName = async () => {
+      if (!team.headId) {
+        setHeadName("Not assigned");
+        return;
+      }
+
+      try {
+        const result = await usersApi.getUser(team.headId);
+        if (result.success && result.data) {
+          const { firstName, lastName } = result.data;
+          setHeadName(`${firstName || ""} ${lastName || ""}`.trim() || "Unnamed User");
+        } else {
+          setHeadName("User not found");
+        }
+      } catch (error) {
+        console.error("Error fetching team head name:", error);
+        setHeadName("Error loading name");
+      }
+    };
+
+    fetchHeadName();
+  }, [team.headId]);
 
   return (
     <div className="w-full" style={{ perspective: "1000px" }}>
@@ -222,10 +249,10 @@ const DroppableTeamCard = ({
           <div className="space-y-3">
             <div className="bg-surface p-3 rounded-lg border border-border-light shadow-sm">
               <p className="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1.5 flex items-center gap-1.5">
-                <Users size={12} /> Head ID
+                <Users size={12} /> Team Head
               </p>
-              <p className="text-sm font-mono break-all text-text-primary font-medium">
-                {team.headId || "Not assigned"}
+              <p className="text-sm font-medium text-text-primary capitalize">
+                {headName}
               </p>
             </div>
 
@@ -346,22 +373,48 @@ const RespondersPage = () => {
 
     try {
       const assignedReportIds = reportsToDeploy.map(r => r.id);
+      const timeDeployed = new Date().toISOString();
+      const readableDispatchTime = new Date().toLocaleTimeString([], { 
+        hour: "2-digit", 
+        minute: "2-digit" 
+      });
+
+      let headName = "Assigned Responder";
+      if (team.headId) {
+        try {
+          const userResult = await usersApi.getUser(team.headId);
+          if (userResult.success && userResult.data) {
+            const { firstName, lastName } = userResult.data;
+            headName = `${firstName || ""} ${lastName || ""}`.trim() || headName;
+          }
+        } catch (error) {
+          console.error("Could not fetch team head details for remarks:", error);
+        }
+      }
 
       // Update the Team in Firestore: Set to DEPLOYED, add report IDs
       await teamsApi.updateTeam(team.id, {
         status: "DEPLOYED",
         assignedReports: assignedReportIds,
-        deployedAt: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        deployedAt: timeDeployed
       });
 
-      // Update each Report in Firestore: Set assignedTeam 
+      // Update each Report in Firestore: Set assignedTeam and append to remarks
       await Promise.all(
-        reportsToDeploy.map(report => 
-          reportsApi.updateReport(report.id, { 
+        reportsToDeploy.map(report => {
+          
+          const newRemark = {
+            comment: `Response team **${team.teamName || "Unnamed Team"}** has been dispatched to your location.\n\n**Team Head:** **${headName}**\n**Dispatch Time:** **${readableDispatchTime}**\n\nResponders are on the way. Please stay safe and keep your lines open.`,
+            dateRemarked: timeDeployed,
+            status: "IN_PROGRESS"
+          };
+
+          return reportsApi.updateReport(report.id, { 
             assignedTeam: team.id, 
-            // status: "DEPLOYED" 
-          })
-        )
+            status: "IN_PROGRESS",
+            remarks: [...(report.remarks || []), newRemark] 
+          });
+        })
       );
 
       // Clear staged map 
@@ -381,28 +434,49 @@ const RespondersPage = () => {
     }
   };
 
-  const handleResolveDeployment = async (deployedTeamId) => {
+const handleResolveDeployment = async (deployedTeamId) => {
     try {
       const teamToResolve = dbTeams.find(t => t.id === deployedTeamId);
       if (!teamToResolve) return;
 
-      // Update Team back to STANDBY and clear the report IDs
+      // 1. Update Team back to STANDBY and clear the report IDs
       await teamsApi.updateTeam(deployedTeamId, {
         status: "STANDBY",
         assignedReports: []
       });
 
-      // 2. Optional but recommended: Update all those reports to "RESOLVED"
-      // if (teamToResolve.assignedReports && teamToResolve.assignedReports.length > 0) {
-      //   await Promise.all(
-      //     teamToResolve.assignedReports.map(reportId => 
-      //       reportsApi.updateReport(reportId, { 
-      //         status: "RESOLVED" 
-      //         // Notice we leave assignedTeam as is, so you have a history of who did it!
-      //       })
-      //     )
-      //   );
-      // }
+      // 2. Update all those reports to "RESOLVED" and append the closing remark
+      if (teamToResolve.assignedReports && teamToResolve.assignedReports.length > 0) {
+        const isoTimestamp = new Date().toISOString();
+        
+        // Generic comment applicable to RESCUE, INCIDENT, and SUPPLY
+        const closingRemark = {
+          comment: `This report has been addressed and marked as resolved by the responding team.\n\nThank you for your cooperation. Please stay safe, and do not hesitate to submit a new request if further assistance is needed.`,
+          dateRemarked: isoTimestamp,
+          status: "RESOLVED"
+        };
+
+        await Promise.all(
+          teamToResolve.assignedReports.map(async (reportId) => {
+            try {
+              // Fetch the current report to get its existing remarks array
+              const reportRes = await reportsApi.getReport(reportId);
+              
+              if (reportRes.success && reportRes.data) {
+                const existingRemarks = reportRes.data.remarks || [];
+                
+                // Update the report with the new status and appended remarks
+                await reportsApi.updateReport(reportId, { 
+                  status: "RESOLVED",
+                  remarks: [...existingRemarks, closingRemark]
+                });
+              }
+            } catch (err) {
+              console.error(`Failed to update resolution for report ${reportId}:`, err);
+            }
+          })
+        );
+      }
 
     } catch (error) {
       console.error("Failed to resolve team:", error);
@@ -417,7 +491,7 @@ const RespondersPage = () => {
         onDragEnd={handleDragEnd}
         collisionDetection={pointerWithin}
       >
-        <div className="flex flex-col h-[calc(100vh-4rem)] min-h-150 space-y-6 w-full p-4 bg-bg-primary">
+        <div className="flex flex-col h-[calc(100vh-4rem)] min-h-150 space-y-6 w-full">
           {/* Header */}
           <div className="bg-surface p-6 rounded-2xl shadow-sm border border-border-light shrink-0">
             <h1 className="text-2xl font-black text-text-primary tracking-wide">
