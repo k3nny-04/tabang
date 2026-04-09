@@ -49,7 +49,7 @@ const Map = () => {
 
   // Layer & Data States
   const evacMarkersRef = useRef([]);
-  const { activeLayers, toggleLayer } = useLayers();
+  const { activeLayers } = useLayers();
   const [layersOpen, setLayersOpen] = useState(false);
   
   // Live Shelters State
@@ -92,13 +92,83 @@ const Map = () => {
 
     mapRef.current.on("load", () => {
       setMapInstance(mapRef.current);
+      
+      // --- ADD FLOOD HAZARD DATA ---
+      mapRef.current.addSource('noah-flood', {
+        type: 'vector',
+        url: 'mapbox://kenny04.3ap67c3z' 
+      });
+
+      mapRef.current.addLayer({
+        id: 'camarines-sur-flood-5yr',
+        type: 'fill',
+        source: 'noah-flood',
+        'source-layer': 'CamarinesSur-2bt53o', 
+        layout: { 'visibility': activeLayers.floodMap ? 'visible' : 'none' },
+        paint: {
+          'fill-color': [
+            'match', ['get', 'Var'], 
+            1, '#fde047',   // Low
+            2, '#f97316',   // Medium
+            3, '#dc2626',   // High
+            'transparent'
+          ],
+          'fill-opacity': 0.4
+        }
+      });
+
+      // --- ADD LANDSLIDE HAZARD DATA ---
+      mapRef.current.addSource('noah-landslide', {
+        type: 'vector',
+        url: 'mapbox://kenny04.c16t211p' 
+      });
+
+      mapRef.current.addLayer({
+        id: 'camarines-sur-landslide',
+        type: 'fill',
+        source: 'noah-landslide',
+        'source-layer': 'CamarinesSur_Landslides-2agkdp', 
+        layout: { 'visibility': activeLayers.landslide ? 'visible' : 'none' },
+        paint: {
+          'fill-color': [
+            'match', ['get', 'HAZ'], 
+            1, '#fde047',   // Low
+            2, '#f97316',   // Medium
+            3, '#dc2626',   // High
+            'transparent'
+          ],
+          'fill-opacity': 0.4
+        }
+      });
+
+      // --- ADD STORM SURGE HAZARD DATA ---
+      mapRef.current.addSource('noah-storm-surge', {
+        type: 'vector',
+        url: 'mapbox://kenny04.cbaxvf7y' 
+      });
+
+      mapRef.current.addLayer({
+        id: 'camarines-sur-storm-surge',
+        type: 'fill',
+        source: 'noah-storm-surge',
+        'source-layer': 'CamarinesSur_StormSurge-10zspw', 
+        layout: { 'visibility': activeLayers.stormSurge ? 'visible' : 'none' },
+        paint: {
+          'fill-color': [
+            'match', ['get', 'HAZ'], 
+            1, '#fde047',   // Low
+            2, '#f97316',   // Medium
+            3, '#dc2626',   // High
+            'transparent'
+          ],
+          'fill-opacity': 0.4
+        }
+      });
+
       if (!currentLocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            const coords = {
-              lat: pos.coords.latitude,
-              lng: pos.coords.longitude,
-            };
+            const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
             setCurrentLocation(coords);
 
             mapRef.current.flyTo({
@@ -107,21 +177,14 @@ const Map = () => {
               duration: 1200,
             });
           },
-          () => {
-            // alert("Please enable location services...");
-          }
+          () => {}
         );
       }
     });
 
     mapRef.current.on("click", (e) => {
-      if (e.originalEvent.target.tagName !== 'CANVAS') {
-        return; 
-      }
-      setPinnedLocation({
-        lat: e.lngLat.lat,
-        lng: e.lngLat.lng,
-      });
+      if (e.originalEvent.target.tagName !== 'CANVAS') return; 
+      setPinnedLocation({ lat: e.lngLat.lat, lng: e.lngLat.lng });
     });
 
     return () => {
@@ -133,6 +196,21 @@ const Map = () => {
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // --- EFFECT: TOGGLE ALL HAZARD LAYERS VISIBILITY ---
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    if (mapInstance.getLayer('camarines-sur-flood-5yr')) {
+      mapInstance.setLayoutProperty('camarines-sur-flood-5yr', 'visibility', activeLayers.floodMap ? 'visible' : 'none');
+    }
+    if (mapInstance.getLayer('camarines-sur-landslide')) {
+      mapInstance.setLayoutProperty('camarines-sur-landslide', 'visibility', activeLayers.landslide ? 'visible' : 'none');
+    }
+    if (mapInstance.getLayer('camarines-sur-storm-surge')) {
+      mapInstance.setLayoutProperty('camarines-sur-storm-surge', 'visibility', activeLayers.stormSurge ? 'visible' : 'none');
+    }
+  }, [mapInstance, activeLayers.floodMap, activeLayers.landslide, activeLayers.stormSurge]);
 
   // Effect for current location marker
   useEffect(() => {
@@ -186,7 +264,6 @@ const Map = () => {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Remove existing markers first
     evacMarkersRef.current.forEach((marker) => marker.remove());
     evacMarkersRef.current = [];
 
@@ -196,7 +273,7 @@ const Map = () => {
       const lat = item.location?.lat;
       const lng = item.location?.lng;
 
-      if (!lng || !lat) return; // Skip if missing coordinates
+      if (!lng || !lat) return; 
 
       const markerEl = document.createElement("div");
       markerEl.className = "flex h-9 w-9 items-center justify-center rounded-full bg-green-600 border-2 border-white shadow-lg";
@@ -307,12 +384,9 @@ const Map = () => {
 
   }, [currentLocation, nearestShelter, isTracking, pinnedLocation]);
 
-
   const handleRecenter = () => {
     if (!mapRef.current) return;
-
     const target = currentLocation || DEFAULT_LOCATION;
-
     mapRef.current.flyTo({
       center: [target.lng, target.lat],
       zoom: ZOOM,
@@ -361,7 +435,6 @@ const Map = () => {
         distanceInMeters >= 1000
           ? `${(distanceInMeters / 1000).toFixed(1)} km`
           : `${Math.round(distanceInMeters)} meters`;
-
 
       setNearestShelter(formattedTarget);
       setDistanceInfo(formattedDistance);
@@ -453,6 +526,58 @@ const Map = () => {
     }
   }
 
+  // --- DYNAMIC HAZARD LEGEND COMPONENT ---
+  const renderHazardLegend = () => {
+    if (!activeLayers.floodMap && !activeLayers.landslide && !activeLayers.stormSurge) return null;
+
+    let title = "";
+    let highLabel = "";
+    let medLabel = "";
+    let lowLabel = "";
+
+    if (activeLayers.floodMap) {
+      title = "5-Yr Flood Hazard";
+      highLabel = "High (>1.5m)";
+      medLabel = "Medium (0.5-1.5m)";
+      lowLabel = "Low (0-0.5m)";
+    } else if (activeLayers.stormSurge) {
+      title = "Storm Surge Hazard";
+      highLabel = "High (>1.5m depth/vel)";
+      medLabel = "Medium (0.5-1.5m depth/vel)";
+      lowLabel = "Low (0.2-0.5m depth)";
+    } else if (activeLayers.landslide) {
+      title = "Landslide Hazard";
+      highLabel = "High (No Dwelling)";
+      medLabel = "Medium (Intervention Req)";
+      lowLabel = "Low (Continuous Monitor)";
+    }
+
+    return (
+      <div className="absolute bottom-8 left-4 z-10 rounded-xl bg-surface p-3 text-xs text-text-primary shadow-xl border border-gray-200/50 pointer-events-none min-w-42.5">
+        <h4 className="mb-2 font-bold">{title}</h4>
+        
+        <div className="mb-1 flex items-center gap-2">
+          <span className="h-3 w-3 rounded-sm bg-[#dc2626] opacity-75 shrink-0"></span> 
+          <span>{highLabel}</span>
+        </div>
+        
+        <div className="mb-1 flex items-center gap-2">
+          <span className="h-3 w-3 rounded-sm bg-[#f97316] opacity-75 shrink-0"></span> 
+          <span>{medLabel}</span>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-sm bg-[#fde047] opacity-75 shrink-0"></span> 
+          <span>{lowLabel}</span>
+        </div>
+
+        <div className="mt-2 pt-2 border-t border-gray-200/60 text-[10px] text-gray-400 italic font-medium">
+          Source: PROJECT NOAH
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="relative h-full w-full">
       {/* SEARCH */}
@@ -478,6 +603,7 @@ const Map = () => {
           />
         </div>
       )}
+      
       {/* MAP */}
       <div ref={mapContainerRef} className="h-full w-full" />
 
@@ -503,9 +629,12 @@ const Map = () => {
         }} 
       />
 
+      {/* RENDER HAZARD LEGEND */}
+      {renderHazardLegend()}
+
       {/* Floating Controls */}
       <div className="absolute right-2 bottom-2 z-10 flex flex-col items-end gap-3">
-      {/* REMOVE PIN */}
+        {/* REMOVE PIN */}
         {pinnedLocation && (
           <button
             onClick={() => {
@@ -542,12 +671,9 @@ const Map = () => {
         open={layersOpen}
         onClose={() => setLayersOpen(false)}
         title="Map Layers"
-        height={40}
+        height={50} 
       >
-        <Layers
-          activeLayers={activeLayers}
-          toggleLayer={toggleLayer}
-        />
+        <Layers />
       </BottomSheet>
     </div>
   );
