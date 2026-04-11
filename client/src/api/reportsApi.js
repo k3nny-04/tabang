@@ -190,4 +190,33 @@ export const reportsApi = {
 
     return unsubscribe;
   },
+
+  /**
+   * Stream VERIFIED and PENDING incident reports
+   */
+  streamIncidentReports: (callback) => {
+    const reportsRef = collection(db, REPORTS_COLLECTION);
+    
+    const q = query(
+      reportsRef,
+      where("reportType", "==", "INCIDENT"),
+      where("status", "in", ["VERIFIED", "PENDING"])
+    );
+    
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const reports = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        callback(reports);
+      },
+      (error) => {
+        console.error("Error streaming incident reports:", error);
+      },
+    );
+
+    return unsubscribe;
+  },
 };

@@ -7,7 +7,8 @@ import {
   deleteDoc, 
   onSnapshot, 
   query,
-  orderBy
+  orderBy,
+  where
 } from "firebase/firestore";
 
 const COLLECTION_NAME = "teams";
@@ -25,6 +26,20 @@ export const teamsApi = {
       callback(teams);
     }, (error) => {
       console.error("Error streaming teams:", error);
+    });
+  },
+
+  streamDeployedTeams: (callback) => {
+    const q = query(teamsCollection, where("status", "==", "DEPLOYED"));
+    
+    return onSnapshot(q, (snapshot) => {
+      const teams = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      callback(teams);
+    }, (error) => {
+      console.error("Error streaming deployed teams:", error);
     });
   },
 
