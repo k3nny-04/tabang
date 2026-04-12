@@ -521,6 +521,18 @@ const Map = () => {
       return;
     }
 
+    // If we already have a location, fly there immediately 
+    // so the UI feels snappy while we wait for the GPS hardware to fetch the new, exact coords.
+    if (currentLocation) {
+      mapRef.current.flyTo({
+        center: [currentLocation.lng, currentLocation.lat],
+        zoom: ZOOM,
+        duration: 1200,
+      });
+    } else {
+      showToast("Locating you...", "info"); 
+    }
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -529,24 +541,18 @@ const Map = () => {
         mapRef.current.flyTo({
           center: [coords.lng, coords.lat],
           zoom: ZOOM,
-          duration: 1200,
+          duration: currentLocation ? 800 : 1200, 
         });
       },
       (error) => {
         console.warn("Unable to get current location", error);
-        if (currentLocation) {
-          mapRef.current.flyTo({
-            center: [currentLocation.lng, currentLocation.lat],
-            zoom: ZOOM,
-            duration: 1200,
-          });
-        } else {
+        if (!currentLocation) {
           showToast("Unable to refresh your current location.", "error");
         }
       },
       {
-        enableHighAccuracy: true,
-        maximumAge: 0,
+        enableHighAccuracy: true, 
+        maximumAge: 10000, 
         timeout: 10000,
       }
     );
