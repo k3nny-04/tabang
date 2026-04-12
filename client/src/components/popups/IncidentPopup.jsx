@@ -72,7 +72,7 @@ const IncidentPopup = ({ report }) => {
 
   return (
     <div className="w-60 p-2 text-sm font-sans text-text-primary">
-      <h3 className="font-semibold wrap-break-word text-base leading-tight">
+      <h3 className="font-semibold wrap-break-word text-base leading-tight line-clamp-5">
         {title}
       </h3>
 

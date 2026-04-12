@@ -21,8 +21,8 @@ import { teamsApi } from "../api/teamsApi";
 import { reportsApi } from "../api/reportsApi";
 import { useToast } from "../providers/useToastContext";
 
-const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.184907 };
-const ZOOM = 15;
+const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.192907 };
+const ZOOM = 13;
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const Map = () => {
