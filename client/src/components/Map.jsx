@@ -708,7 +708,7 @@ const Map = () => {
     }
 
     return (
-      <div className="absolute bottom-8 left-4 z-10 rounded-xl bg-surface p-3 text-xs text-text-primary shadow-xl border border-gray-200/50 pointer-events-none min-w-42.5">
+      <div className="absolute bottom-25 md:bottom-6 left-4 z-10 rounded-xl bg-surface px-3 py-2 text-xs text-text-primary shadow-xl border border-gray-200/50 pointer-events-none min-w-36">
         <h4 className="mb-2 font-bold">{title}</h4>
         
         <div className="mb-1 flex items-center gap-2">
@@ -787,8 +787,8 @@ const Map = () => {
       {/* RENDER HAZARD LEGEND */}
       {renderHazardLegend()}
 
-      {/* Floating Controls */}
-      <div className="absolute right-2 bottom-2 z-10 flex flex-col items-end gap-3">
+     {/* Floating Controls */}
+      <div className="absolute right-2 bottom-20 md:bottom-6 z-10 flex flex-col items-end gap-3">
         {/* REMOVE PIN */}
         {pinnedLocation && (
           <button
@@ -826,7 +826,7 @@ const Map = () => {
         open={layersOpen}
         onClose={() => setLayersOpen(false)}
         title="Map Layers"
-        height={50} 
+        height={65} 
       >
         <Layers />
       </BottomSheet>
