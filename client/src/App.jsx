@@ -25,6 +25,7 @@ import ReportsPage from "./pages/admin/ReportsPage";
 import SheltersPage from "./pages/admin/SheltersPage";
 import RespondersPage from "./pages/admin/RespondersPage";
 import EmergencyModePage from "./pages/EmergencyModePage";
+import { ToastProvider } from "./providers/ToastProvider";
 
 const AppContent = () => {
   const { user, userDoc, loading } = useAuthContext();
@@ -135,7 +136,9 @@ const App = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   );

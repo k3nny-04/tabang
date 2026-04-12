@@ -1,6 +1,7 @@
-import { FaHouse } from "react-icons/fa6";
+import { FaHouse, FaTriangleExclamation } from "react-icons/fa6";
+import { FaShieldAlt } from "react-icons/fa";
 import { useLayers } from "../providers/useLayersContext";
-import { AlertTriangle, ShieldAlert, Waves, Mountain, CloudLightning } from "lucide-react";
+import { Waves, CloudLightning } from "lucide-react";
 
 // eslint-disable-next-line no-unused-vars
 const LayerCard = ({ label, icon: Icon, isActive, onClick }) => (
@@ -57,13 +58,13 @@ const Layers = () => {
           />
           <LayerCard
             label="Incident Reports"
-            icon={AlertTriangle}
+            icon={FaTriangleExclamation}
             isActive={activeLayers.incidentReports}
             onClick={() => toggleLayer("incidentReports")}
           />
           <LayerCard
             label="Response Teams"
-            icon={ShieldAlert}
+            icon={FaShieldAlt}
             isActive={activeLayers.responseTeams}
             onClick={() => toggleLayer("responseTeams")}
           />

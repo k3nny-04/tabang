@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FaCheck, FaPhone, FaRegCopy } from "react-icons/fa";
 import { MdDirections, MdMessage } from "react-icons/md";
-import { copyToClipboard } from "../utils/clipboard";
+import { copyToClipboard } from "../../utils/clipboard";
 
 const ShelterPopup = ({ item, onGoClick }) => {
   const [copied, setCopied] = useState(false);

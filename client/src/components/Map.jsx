@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { useLocationContext } from "../providers/useLocationContext";
-import { FaCrosshairs } from "react-icons/fa";
+import { FaCrosshairs, FaShieldAlt } from "react-icons/fa";
 import { MdLayers, MdLocationOff } from "react-icons/md";
 import { SearchBox } from "@mapbox/search-js-react";
-import { FaHouse } from "react-icons/fa6";
+import { FaHouse, FaTriangleExclamation } from "react-icons/fa6";
 import { createRoot } from "react-dom/client";
 import "mapbox-gl/dist/mapbox-gl.css";
 import BottomSheet from "./BottomSheet";
@@ -13,11 +13,16 @@ import { useLayers } from "../providers/useLayersContext";
 import { findNearest, getDistance } from "geolib";
 import { getDirections } from "../utils/directions";
 import NearestShelterCard from "./NearestShelterCard";
-import ShelterPopup from "./ShelterPopup";
+import ShelterPopup from "./popups/ShelterPopup";
+import TeamPopup from "./popups/TeamPopup";
+import IncidentPopup from "./popups/IncidentPopup";
 import { sheltersApi } from "../api/sheltersApi"; 
+import { teamsApi } from "../api/teamsApi"; 
+import { reportsApi } from "../api/reportsApi";
+import { useToast } from "../providers/useToastContext";
 
-const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.184907 };
-const ZOOM = 15;
+const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.192907 };
+const ZOOM = 13;
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const Map = () => {
@@ -44,26 +49,52 @@ const Map = () => {
   const currentMarkerRef = useRef(null);
   const pinnedMarkerRef = useRef(null);
 
-  // Search State
-  const [inputValue, setInputValue] = useState("");
-
   // Layer & Data States
   const evacMarkersRef = useRef([]);
+  const incidentMarkersRef = useRef([]);
+  const teamMarkersRef = useRef({}); // Use an object map to track moving team markers by ID
   const { activeLayers } = useLayers();
   const [layersOpen, setLayersOpen] = useState(false);
   
-  // Live Shelters State
+  // Live Streams State
   const [shelters, setShelters] = useState([]);
+  const [incidents, setIncidents] = useState([]);
+  const [teams, setTeams] = useState([]); // Added teams state
 
   // Shelter State
   const [nearestShelter, setNearestShelter] = useState(null);
   const [distanceInfo, setDistanceInfo] = useState("");
   const [routeData, setRouteData] = useState(null);
+  const [inputValue, setInputValue] = useState("");
+
+  const { showToast } = useToast();
 
   // Effect to stream shelters
   useEffect(() => {
     const unsubscribe = sheltersApi.streamAllShelters((data) => {
       setShelters(data);
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  // Effect to stream teams
+  useEffect(() => {
+    const unsubscribe = teamsApi.streamDeployedTeams((data) => {
+      setTeams(data);
+    });
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
+
+  // Effect to stream incident reports
+  useEffect(() => {
+    const unsubscribe = reportsApi.streamIncidentReports((data) => {
+      setIncidents(data);
     });
 
     return () => {
@@ -298,6 +329,104 @@ const Map = () => {
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLayers.evacShelters, shelters]); 
+
+  // Effect for incident report markers
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    incidentMarkersRef.current.forEach((marker) => marker.remove());
+    incidentMarkersRef.current = [];
+
+    if (!activeLayers.incidentReports) return;
+
+    incidents.forEach((report) => {
+      const lat = report.location?.lat;
+      const lng = report.location?.lng;
+
+      if (!lng || !lat) return;
+
+      const markerEl = document.createElement("div");
+      markerEl.className = "flex h-9 w-9 items-center justify-center rounded-full bg-yellow-500 border-2 border-white shadow-lg";
+      const markerRoot = createRoot(markerEl);
+      markerRoot.render(<FaTriangleExclamation className="text-white text-[15px]" />);
+
+      const popupEl = document.createElement("div");
+      const popupRoot = createRoot(popupEl);
+      popupRoot.render(<IncidentPopup report={report} />);
+
+      const popup = new mapboxgl.Popup({
+        offset: 25,
+        maxWidth: "300px",
+        closeButton: false,
+      }).setDOMContent(popupEl);
+
+      const marker = new mapboxgl.Marker(markerEl)
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(mapRef.current);
+
+      incidentMarkersRef.current.push(marker);
+    });
+  }, [activeLayers.incidentReports, incidents]);
+
+  // --- NEW: Effect for Response Team moving markers ---
+  useEffect(() => {
+    if (!mapInstance) return;
+
+    // If the layer is turned off, clear all team markers from the map
+    if (!activeLayers.responseTeams) {
+      Object.values(teamMarkersRef.current).forEach((marker) => marker.remove());
+      teamMarkersRef.current = {};
+      return;
+    }
+
+    const currentTeamIds = new Set(teams.map((t) => t.id));
+
+    // Cleanup markers for teams that are no longer in the deployed stream
+    Object.keys(teamMarkersRef.current).forEach((id) => {
+      if (!currentTeamIds.has(id)) {
+        teamMarkersRef.current[id].remove();
+        delete teamMarkersRef.current[id];
+      }
+    });
+
+    // Add new markers or update positions of existing ones
+    teams.forEach((team) => {
+      const lat = team.location?.lat;
+      const lng = team.location?.lng;
+
+      if (!lng || !lat) return;
+
+      if (teamMarkersRef.current[team.id]) {
+        // Smoothly move the existing marker without recreating it
+        teamMarkersRef.current[team.id].setLngLat([lng, lat]);
+      } else {
+        // Create a new marker for newly deployed teams
+        const markerEl = document.createElement("div");
+        markerEl.className = "flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 border-2 border-white shadow-lg transition-transform duration-300";
+        const markerRoot = createRoot(markerEl);
+        markerRoot.render(<FaShieldAlt className="text-white text-[15px]" />);
+
+        const popupEl = document.createElement("div");
+        const popupRoot = createRoot(popupEl);
+        popupRoot.render(<TeamPopup team={team} />);
+
+        const popup = new mapboxgl.Popup({
+          offset: 25,
+          maxWidth: "300px",
+          closeButton: false,
+          closeOnClick: true,
+        }).setDOMContent(popupEl);
+
+        const marker = new mapboxgl.Marker(markerEl)
+          .setLngLat([lng, lat])
+          .setPopup(popup)
+          .addTo(mapInstance);
+
+        teamMarkersRef.current[team.id] = marker;
+      }
+    });
+  }, [activeLayers.responseTeams, teams, mapInstance]);
   
   // Effect for drawing the route
   useEffect(() => {
@@ -386,12 +515,47 @@ const Map = () => {
 
   const handleRecenter = () => {
     if (!mapRef.current) return;
-    const target = currentLocation || DEFAULT_LOCATION;
-    mapRef.current.flyTo({
-      center: [target.lng, target.lat],
-      zoom: ZOOM,
-      duration: 1200,
-    });
+
+    if (!navigator.geolocation) {
+      showToast("Geolocation is not available", "error");
+      return;
+    }
+
+    // If we already have a location, fly there immediately 
+    // so the UI feels snappy while we wait for the GPS hardware to fetch the new, exact coords.
+    if (currentLocation) {
+      mapRef.current.flyTo({
+        center: [currentLocation.lng, currentLocation.lat],
+        zoom: ZOOM,
+        duration: 1200,
+      });
+    } else {
+      showToast("Locating you...", "info"); 
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCurrentLocation(coords);
+
+        mapRef.current.flyTo({
+          center: [coords.lng, coords.lat],
+          zoom: ZOOM,
+          duration: currentLocation ? 800 : 1200, 
+        });
+      },
+      (error) => {
+        console.warn("Unable to get current location", error);
+        if (!currentLocation) {
+          showToast("Unable to refresh your current location.", "error");
+        }
+      },
+      {
+        enableHighAccuracy: true, 
+        maximumAge: 10000, 
+        timeout: 10000,
+      }
+    );
   };
 
   const handleRouteToSpecificShelter = async (targetShelter) => {
@@ -399,7 +563,7 @@ const Map = () => {
     const activeLocation = latestPinned || latestCurrent;
     
     if (!activeLocation) {
-      alert("Please enable location services or pin your current location on the map.");
+      showToast("Please enable location services or pin your current location on the map.", "error");
       return;
     }
 
@@ -415,7 +579,7 @@ const Map = () => {
     };
 
     if (!formattedTarget.latitude || !formattedTarget.longitude) {
-      alert("This shelter is missing location data.");
+      showToast("This shelter is missing location data.", "error");
       return;
     }
 
@@ -454,21 +618,22 @@ const Map = () => {
       }
     } catch (error) {
       console.error("Failed to calculate directions", error);
-      alert("Could not calculate a route to this shelter. Please try again.");
+      showToast("Could not calculate a route to this shelter. Please try again.", "error");
     }
   };
 
   const handleFindShelter = async () => {
     const activeLocation = pinnedLocation || currentLocation;
     if(!activeLocation) {
-      alert(
-        "Please enable location services or pin your current location on the map."
+      showToast(
+        "Please enable location services or pin your current location on the map.",
+        "error"
       );
       return;
     }
 
     if (shelters.length === 0) {
-      alert("Loading shelters. Please wait a moment and try again.");
+      showToast("Loading shelters. Please wait a moment and try again.", "warning");
       return;
     }
 
@@ -486,7 +651,7 @@ const Map = () => {
       }));
 
     if (formattedEvacData.length === 0) {
-      alert("No valid shelter locations found.");
+      showToast("No valid shelter locations found.", "error");
       return;
     }
 
@@ -522,7 +687,7 @@ const Map = () => {
       
     } catch (error) {
       console.error("Failed to calculate directions", error);
-      alert("Could not calculate a route to the nearest shelter. Please try again.");
+      showToast("Could not calculate a route to the nearest shelter. Please try again.", "error");
     }
   }
 
@@ -553,7 +718,7 @@ const Map = () => {
     }
 
     return (
-      <div className="absolute bottom-8 left-4 z-10 rounded-xl bg-surface p-3 text-xs text-text-primary shadow-xl border border-gray-200/50 pointer-events-none min-w-42.5">
+      <div className="absolute bottom-25 md:bottom-6 left-4 z-10 rounded-xl bg-surface px-3 py-2 text-xs text-text-primary shadow-xl border border-gray-200/50 pointer-events-none min-w-36">
         <h4 className="mb-2 font-bold">{title}</h4>
         
         <div className="mb-1 flex items-center gap-2">
@@ -632,8 +797,8 @@ const Map = () => {
       {/* RENDER HAZARD LEGEND */}
       {renderHazardLegend()}
 
-      {/* Floating Controls */}
-      <div className="absolute right-2 bottom-2 z-10 flex flex-col items-end gap-3">
+     {/* Floating Controls */}
+      <div className="absolute right-2 bottom-20 md:bottom-6 z-10 flex flex-col items-end gap-3">
         {/* REMOVE PIN */}
         {pinnedLocation && (
           <button
@@ -671,7 +836,7 @@ const Map = () => {
         open={layersOpen}
         onClose={() => setLayersOpen(false)}
         title="Map Layers"
-        height={50} 
+        height={65} 
       >
         <Layers />
       </BottomSheet>

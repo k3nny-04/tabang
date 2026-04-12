@@ -40,6 +40,31 @@ export const usersApi = {
   },
 
   /**
+   * Get only a user's name (firstName, lastName, fullName) by UID
+   */
+  getUserName: async (uid) => {
+    try {
+      const userRef = doc(db, USERS_COLLECTION, uid);
+      const docSnap = await getDoc(userRef);
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        return { 
+          success: true, 
+          firstName: data.firstName || "",
+          lastName: data.lastName || "",
+          fullName: data.fullName || `${data.firstName || ''} ${data.lastName || ''}`.trim()
+        };
+      } else {
+        return { success: false, message: "User not found" };
+      }
+    } catch (error) {
+      console.error("Error fetching user name:", error);
+      throw error;
+    }
+  },
+
+  /**
    * Update an existing user's data
    */
   updateUser: async (uid, updateData) => {
