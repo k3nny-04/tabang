@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { RiCriminalFill } from "react-icons/ri";
 import { useLocationContext } from "../providers/useLocationContext";
+import { useToast } from "../providers/useToastContext";
 
 const INCIDENT_TYPES = [
   { name: "Flood", icon: FaWater },
@@ -34,6 +35,7 @@ const EMERGENCY_NUMBER = "+639260087068";
 
 const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
   const { currentLocation, setCurrentLocation } = useLocationContext();
+  const { showToast } = useToast();
   const [locating, setLocating] = useState(false);
   
   const [form, setForm] = useState({
@@ -80,10 +82,10 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
   };
 
   const handleSubmit = () => {
-    if (!currentLocation) return alert("No location acquired. Please ensure GPS is active.");
-    if (!form.contactName.trim()) return alert("Please provide a contact name.");
-    if (!form.description) return alert("Please select an incident type.");
-    if (!form.numberOfPeople) return alert("Please select the number of people.");
+    if (!currentLocation) return showToast("No location acquired. Please ensure GPS is active.", "error");
+    if (!form.contactName.trim()) return showToast("Please provide a contact name.", "error");
+    if (!form.description) return showToast("Please select an incident type.", "error");
+    if (!form.numberOfPeople) return showToast("Please select the number of people.", "error");
 
     const locString = `${currentLocation.lat.toFixed(5)},${currentLocation.lng.toFixed(5)}`;
     
@@ -98,6 +100,7 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
     window.location.href = smsLink;
     
     handleReset();
+    showToast("Emergency sent. Please keep communication lines open. Stay safe, help is on the way!", "success");
     if (onSuccess) onSuccess();
   };
 

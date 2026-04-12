@@ -6,8 +6,8 @@ export const LayersProvider = ({ children }) => {
   const [activeLayers, setActiveLayers] = useState({
     // Markers (Multiple allowed)
     evacShelters: true,
-    incidentReports: false,
-    responseTeams: false,
+    incidentReports: true,
+    responseTeams: true,
     // Hazards (Mutually exclusive)
     floodMap: false,
     landslide: false,

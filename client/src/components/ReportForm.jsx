@@ -17,6 +17,7 @@ import { useAuthContext } from "../providers/useAuthContext";
 import { uploadToCloudinary } from "../utils/upload";
 import { Select, MenuItem, FormControl } from "@mui/material";
 import { Flag } from "lucide-react";
+import { useToast } from "../providers/useToastContext";
 
 const REPORT_TABS = [
   { type: "RESCUE", label: "Rescue", icon: AlertTriangle },
@@ -31,9 +32,16 @@ const priorityOptions = [
   { value: 4, label: "Low" }
 ];
 
+const TAB_DESCRIPTIONS = {
+  RESCUE: "Request immediate rescue or evacuation.",
+  SUPPLY: "Request food, water, or medical supplies.",
+  INCIDENT: "Report floods, blocked roads, or local hazards."
+};
+
 const ReportForm = ({ onSuccess }) => {
   const { pinnedLocation, pinnedAddress } = useLocationContext();
   const { user } = useAuthContext();
+  const { showToast } = useToast();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -77,12 +85,11 @@ const ReportForm = ({ onSuccess }) => {
   };
 
   const handleSubmit = async () => {
-    if (!pinnedLocation) return alert("No pinned location");
-    if (!form.description.trim())
-      return alert("Description is required");
+    if (!pinnedLocation) return showToast("Please pin a location on the map first.", "error");
+    if (!form.description.trim()) return showToast("Please provide a description for your report.", "error");
 
     if (form.reportType === "SUPPLY" && form.supplies.length === 0) {
-      return alert("Add at least one supply item");
+      return showToast("Please add at least one supply item.", "error");
     }
     
     try {
@@ -122,11 +129,14 @@ const ReportForm = ({ onSuccess }) => {
 
       console.log("Submitting report", payload);
       await reportsApi.createReport(payload);
-      alert("Report submitted successfully!");
+      
+      // Success toast
+      showToast("Report submitted successfully! View your report statuses in the Account Tab", "success");
       
     } catch (error) {
       console.error("Error submitting report:", error);
-      alert("Failed to submit report. Please try again.");
+      // Error toast
+      showToast("Failed to submit report. Please try again.", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -164,6 +174,13 @@ const ReportForm = ({ onSuccess }) => {
           })}
         </div>
 
+        {/* Tab Description */}
+        <div>
+          <p className="text-sm text-text-muted">
+            {TAB_DESCRIPTIONS[form.reportType]}
+          </p>
+        </div>
+
         {/* Location */}
         <div>
           <label className="mb-1 flex items-center gap-1 text-sm font-medium text-text-primary">
@@ -171,7 +188,7 @@ const ReportForm = ({ onSuccess }) => {
             <button
               type="button"
               onClick={() =>
-                alert("Move the pin on the map to change location")
+                showToast("Move the pin on the map to change location", "info")
               }
             >
               <Info size={14} className="text-text-muted" />
@@ -266,11 +283,7 @@ const ReportForm = ({ onSuccess }) => {
             onChange={(e) =>
               update("description", e.target.value)
             }
-            placeholder={
-              form.reportType === "RESCUE"
-                ? "Briefly describe the situation in your place (Hanggang saan na ang baha, may natumbang poste, etc.)"
-                : "Provide additional details about the report"
-            }
+            placeholder={"Provide additional details about the report"}
             className="w-full rounded-lg border border-border-light bg-surface px-3 py-2 text-sm text-text-primary focus:border-text-secondary focus:outline-none"
           />
         </div>

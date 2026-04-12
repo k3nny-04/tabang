@@ -19,6 +19,7 @@ import IncidentPopup from "./popups/IncidentPopup";
 import { sheltersApi } from "../api/sheltersApi"; 
 import { teamsApi } from "../api/teamsApi"; 
 import { reportsApi } from "../api/reportsApi";
+import { useToast } from "../providers/useToastContext";
 
 const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.184907 };
 const ZOOM = 15;
@@ -65,6 +66,8 @@ const Map = () => {
   const [distanceInfo, setDistanceInfo] = useState("");
   const [routeData, setRouteData] = useState(null);
   const [inputValue, setInputValue] = useState("");
+
+  const { showToast } = useToast();
 
   // Effect to stream shelters
   useEffect(() => {
@@ -514,7 +517,7 @@ const Map = () => {
     if (!mapRef.current) return;
 
     if (!navigator.geolocation) {
-      alert("Geolocation is not available");
+      showToast("Geolocation is not available", "error");
       return;
     }
 
@@ -538,7 +541,7 @@ const Map = () => {
             duration: 1200,
           });
         } else {
-          alert("Unable to refresh your current location.");
+          showToast("Unable to refresh your current location.", "error");
         }
       },
       {
@@ -554,7 +557,7 @@ const Map = () => {
     const activeLocation = latestPinned || latestCurrent;
     
     if (!activeLocation) {
-      alert("Please enable location services or pin your current location on the map.");
+      showToast("Please enable location services or pin your current location on the map.", "error");
       return;
     }
 
@@ -570,7 +573,7 @@ const Map = () => {
     };
 
     if (!formattedTarget.latitude || !formattedTarget.longitude) {
-      alert("This shelter is missing location data.");
+      showToast("This shelter is missing location data.", "error");
       return;
     }
 
@@ -609,21 +612,22 @@ const Map = () => {
       }
     } catch (error) {
       console.error("Failed to calculate directions", error);
-      alert("Could not calculate a route to this shelter. Please try again.");
+      showToast("Could not calculate a route to this shelter. Please try again.", "error");
     }
   };
 
   const handleFindShelter = async () => {
     const activeLocation = pinnedLocation || currentLocation;
     if(!activeLocation) {
-      alert(
-        "Please enable location services or pin your current location on the map."
+      showToast(
+        "Please enable location services or pin your current location on the map.",
+        "error"
       );
       return;
     }
 
     if (shelters.length === 0) {
-      alert("Loading shelters. Please wait a moment and try again.");
+      showToast("Loading shelters. Please wait a moment and try again.", "warning");
       return;
     }
 
@@ -641,7 +645,7 @@ const Map = () => {
       }));
 
     if (formattedEvacData.length === 0) {
-      alert("No valid shelter locations found.");
+      showToast("No valid shelter locations found.", "error");
       return;
     }
 
@@ -677,7 +681,7 @@ const Map = () => {
       
     } catch (error) {
       console.error("Failed to calculate directions", error);
-      alert("Could not calculate a route to the nearest shelter. Please try again.");
+      showToast("Could not calculate a route to the nearest shelter. Please try again.", "error");
     }
   }
 
