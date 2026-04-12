@@ -48,7 +48,7 @@ const NearestShelterCard = ({ shelter, distanceInfo, onClose }) => {
   };
 
   return (
-    <div className="absolute bottom-8 left-4 right-4 z-20 overflow-hidden rounded-2xl bg-surface p-5 shadow-2xl ring-1 ring-border-light animate-in slide-in-from-bottom-10 fade-in duration-300">
+    <div className="absolute bottom-6 left-4 right-4 z-1000 overflow-hidden rounded-2xl bg-surface p-5 shadow-2xl ring-1 ring-border-light animate-in slide-in-from-bottom-10 fade-in duration-300">
 
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>

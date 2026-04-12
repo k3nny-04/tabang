@@ -113,7 +113,12 @@ const IncidentPopup = ({ report }) => {
         {report.photo ? (
           <div>
             <span className="block font-semibold text-text-primary">Attachment</span>
-            <span className="block text-[11px] text-text-secondary">Photo attached</span>
+            <img 
+              src={report.photo} 
+              alt="Incident photo" 
+              className="mt-1 max-w-full h-auto rounded border border-border-light" 
+              style={{ maxHeight: '100px' }} // Optional: constrain height for popup
+            />
           </div>
         ) : null}
       </div>
