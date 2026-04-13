@@ -1,36 +1,3 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
-
-// const {setGlobalOptions} = require("firebase-functions");
-// const {onRequest} = require("firebase-functions/https");
-// const logger = require("firebase-functions/logger");
-
-// For cost control, you can set the maximum number of containers that can be
-// running at the same time. This helps mitigate the impact of unexpected
-// traffic spikes by instead downgrading performance. This limit is a
-// per-function limit. You can override the limit for each function using the
-// `maxInstances` option in the function's options, e.g.
-// `onRequest({ maxInstances: 5 }, (req, res) => { ... })`.
-// NOTE: setGlobalOptions does not apply to functions using the v1 API. V1
-// functions should each use functions.runWith({ maxInstances: 10 }) instead.
-// In the v1 API, each function can only serve one request per container, so
-// this will be the maximum concurrent request count.
-// setGlobalOptions({ maxInstances: 10 });
-
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
-
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
-
 const { onRequest } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const jwt = require("jsonwebtoken");
@@ -89,19 +56,47 @@ exports.httpSmsWebhook = onRequest(async (req, res) => {
       return res.status(200).send("Message ignored");
     }
 
-    // Format from frontend: SOS|IncidentType-Name|PeopleCount|lat,lng
+    // Format from frontend: SOS|[INCIDENT_TYPE]-[CONTACT_NAME]|[NUMBER_OF_PEOPLE]|[DETAIL_1,DETAIL_2,DETAIL_3]|[LATITUDE,LONGITUDE]
     const parts = messageContent.split("|");
     
-    if (parts.length < 4) {
+    if (parts.length < 5) {
       console.warn("Malformed SOS message format:", messageContent);
       return res.status(400).send("Malformed message format");
     }
 
-    const description = parts[1]; 
-    const numberOfPeople = parseInt(parts[2], 10) || 1;
-    const coords = parts[3].split(",");
+    // 1. Parse Name & Incident Type
+    const typeAndName = parts[1];
+    const splitIndex = typeAndName.indexOf("-");
+    const incidentType = splitIndex !== -1 ? typeAndName.substring(0, splitIndex) : "UNKNOWN";
+    const contactName = splitIndex !== -1 ? typeAndName.substring(splitIndex + 1) : typeAndName;
+
+    // 2. Parse People Range to a Number
+    const peopleRange = parts[2]; 
+    let parsedPeopleNumber = 1;
+
+    if (peopleRange.includes("-")) {
+      // Takes the max value in the range (e.g., '7' from '4-7')
+      parsedPeopleNumber = parseInt(peopleRange.split("-")[1], 10);
+    } else if (peopleRange.includes("+")) {
+      // Strips the plus and converts to integer (e.g., '16' from '16+')
+      parsedPeopleNumber = parseInt(peopleRange.replace("+", ""), 10);
+    } else {
+      // Fallback if it's already a clean number string or unknown
+      parsedPeopleNumber = parseInt(peopleRange, 10) || 1;
+    }
+
+    // 3. Parse and Format Details
+    const detailsArray = parts[3].split(",");
+    const formattedDetails = detailsArray.map(detail => `• ${detail}`).join("\n");
+
+    // 4. Construct Clean Multi-line Description (including exact range)
+    const description = `Incident: ${incidentType}\nContact Person: ${contactName}\nReported People: ${peopleRange}\n\nSpecific Details:\n${formattedDetails}`;
+
+    // 5. Parse Coordinates
+    const coords = parts[4].split(",");
     const latitude = parseFloat(coords[0]);
     const longitude = parseFloat(coords[1]);
+    
     const timestamp = new Date().toISOString();
 
     const reportData = {
@@ -113,7 +108,7 @@ exports.httpSmsWebhook = onRequest(async (req, res) => {
         lat: latitude,
         lng: longitude
       },
-      numberOfPeople: numberOfPeople,
+      numberOfPeople: parsedPeopleNumber, 
       photo: null,
       prioLevel: 1,
       reportType: "RESCUE",
@@ -127,7 +122,6 @@ exports.httpSmsWebhook = onRequest(async (req, res) => {
       ]
     };
 
-    // 8. Save to Firestore 
     const reportRef = db.collection("reports").doc();
     await reportRef.set(reportData);
 
