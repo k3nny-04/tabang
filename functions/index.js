@@ -127,8 +127,52 @@ exports.httpSmsWebhook = onRequest(async (req, res) => {
 
     console.log(`Successfully processed offline report from ${senderNumber}. Doc ID: ${reportRef.id}`);
     
-    return res.status(200).send("Report saved successfully");
+    // ==========================================
+    // 7. SCHEDULE AUTO-REPLY VIA HTTPSMS API
+    // ==========================================
+    const httpsmsApiKey = "uk_r393DYZ2veupx6jwBK_IKSv131n5HTvRTL9i7MFl9JyLI8QZ7IbZS279yKvOcqyx"; 
+    const systemPhoneNumber = "+639608029319"; 
+    
+    // Schedule the message for 1 minute (60000 ms) in the future
+    const scheduleTime = new Date(Date.now() + 60000); 
 
+    try {
+      const dispatchReply = `SOS RECEIVED 
+
+INCIDENT: ${incidentType.toUpperCase()}
+CONTACT: ${contactName.toUpperCase()}
+STATUS: LOGGED
+
+Your coordinates and emergency details have been successfully received by the system.
+
+**DISCLAIMER: This is only a test message**`;
+
+      // Send via HttpSms
+      const smsResponse = await fetch("https://api.httpsms.com/v1/messages/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": httpsmsApiKey
+        },
+        body: JSON.stringify({
+          from: systemPhoneNumber,
+          to: senderNumber,
+          content: dispatchReply,
+          send_at: scheduleTime.toISOString() 
+        })
+      });
+
+      if (!smsResponse.ok) {
+        const errorText = await smsResponse.text();
+        console.error("Failed to schedule auto-reply via HttpSms:", errorText);
+      } else {
+        console.log(`Auto-reply scheduled successfully for ${senderNumber} at ${scheduleTime.toISOString()}`);
+      }
+    } catch (smsError) {
+      console.error("Network error while trying to reach HttpSms API:", smsError);
+    }
+    
+    return res.status(200).send("Report saved and auto-reply scheduled successfully");
   } catch (error) {
     console.error("Error processing SMS webhook:", error);
     return res.status(500).send("Internal Server Error");
