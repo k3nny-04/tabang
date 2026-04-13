@@ -134,7 +134,7 @@ exports.httpSmsWebhook = onRequest(async (req, res) => {
     const systemPhoneNumber = "+639608029319"; 
     
     // Schedule the message for 1 minute (60000 ms) in the future
-    const scheduleTime = new Date(Date.now() + 60000); 
+    const scheduleTime = new Date(Date.now() + 30000); 
 
     try {
       const dispatchReply = `SOS RECEIVED 
