@@ -10,7 +10,7 @@ const ProtectedRoute = () => {
 
   // not logged in
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (userDoc?.role === "ADMIN") {

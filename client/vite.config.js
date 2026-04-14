@@ -10,22 +10,22 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['edited-logo.png', 'logo-192.png', 'logo-512.png', 'logo-black-192.png', 'logo-black-512.png'],
+      includeAssets: ['evac.png', 'map.png', 'sms.png', 'hazard.png', 'rescue.png', 'logo-black-192x192.png', 'logo-black-512x512.png', 'logo-1c1c1e.png'],
       manifest: {
         name: 'Tabang', 
         short_name: 'Tabang',
         description: 'Disaster Response Coordination and Incident Reporting Platform',
-        theme_color: '#f4f4f5', 
-        background_color: '#1c1c1e',
+        theme_color: '#1c1c1e', 
+        background_color: '#f4f4f5',
         display: 'standalone', 
         icons: [
           {
-            src: 'logo-black-192.png',
+            src: 'logo-black-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'logo-black-512.png',
+            src: 'logo-black-512x512.png',
             sizes: '512x512',
             type: 'image/png'
           }

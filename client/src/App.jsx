@@ -26,6 +26,7 @@ import SheltersPage from "./pages/admin/SheltersPage";
 import RespondersPage from "./pages/admin/RespondersPage";
 import EmergencyModePage from "./pages/EmergencyModePage";
 import { ToastProvider } from "./providers/ToastProvider";
+import SplashScreen from "./pages/SplashScreen";
 
 const AppContent = () => {
   const { user, userDoc, loading } = useAuthContext();
@@ -64,26 +65,17 @@ const AppContent = () => {
             {<LocationOnboarding />}
 
             <Routes>
-              {/* DEFAULT */}
-              <Route 
-                path="/" 
-                element={
-                  userDoc?.role === "ADMIN" 
-                    ? <Navigate to="/admin-dashboard" replace /> 
-                    : <Navigate to="/map" replace />
-                } 
-              />
-
               {/* PUBLIC ROUTES */}
               <Route element={<PublicRoute />}>
+                <Route path="/" element={<SplashScreen />} />
                 <Route path="/login" element={<EmailLoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route 
                   path="/emergency" 
                   element={
                   <EmergencyModePage 
-                    onBack={() => navigate('/login')} 
-                    onSuccess={() => navigate('/login')}
+                    onBack={() => navigate('/')} 
+                    onSuccess={() => navigate('/')}
                   />} 
                 />
               </Route>

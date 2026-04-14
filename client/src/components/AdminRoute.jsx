@@ -7,7 +7,7 @@ const AdminRoute = () => {
 
   // not logged in
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // avoid seeing citizen routes
