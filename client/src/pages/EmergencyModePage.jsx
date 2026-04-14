@@ -8,8 +8,6 @@ import {
   FaFirstAid,
   FaPaperPlane,
   FaSyncAlt,
-  FaArrowLeft,
-  FaArrowRight,
   FaCarCrash,
   FaCheckCircle
 } from "react-icons/fa";
@@ -161,229 +159,240 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
   };
 
   return (
-    <div className="flex min-h-dvh w-full flex-col bg-bg-primary text-text-primary">
-      <div className="flex flex-1 flex-col px-6 py-8 pb-32 max-w-md mx-auto w-full">
+    // Updated outer container to match the new splash/auth layouts
+    <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-surface md:items-center md:justify-center md:bg-bg-primary">
+      
+      {/* Mobile Container limits width on larger screens to simulate app view */}
+      <div className="relative flex h-full w-full flex-col bg-surface md:h-200 md:w-100 md:rounded-[2.5rem] md:shadow-2xl">
         
-        {/* Full-width Stepper Container */}
-        <div className="mb-10 -mx-6 sm:mx-0">
-          <Stepper 
-            activeStep={step - 1} 
-            alternativeLabel
-            sx={{
-              "& .MuiStepIcon-root.Mui-active": { color: "var(--color-text-primary, #1c1c1e)" },
-              "& .MuiStepIcon-root.Mui-completed": { color: "var(--color-text-primary, #1c1c1e)" },
-              "& .MuiStepConnector-line": { borderColor: "var(--color-border-medium, #c2c2c5)" },
-              "& .MuiStepIcon-text": { fill: "var(--color-surface, #fafafa)", fontWeight: "bold" }
-            }}
-          >
-            {[1, 2, 3, 4].map((label) => (
-              <Step key={label}>
-                <StepLabel></StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </div>
+        {/* Scrollable Form Content */}
+        <div className="flex flex-1 flex-col overflow-y-auto px-6 py-8 pb-32">
+          
+          <div className="mb-6 text-center">
+            <h1 className="text-3xl font-black text-red-600">SOS Offline</h1>
+            <p className="mt-1 text-xs font-bold text-text-muted uppercase tracking-widest">Emergency Reporting</p>
+          </div>
 
-        {/* STEP 1: LOCATION, CONTACT, PEOPLE */}
-        {step === 1 && (
-          <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-right-4">
-            
-            {/* Location Display */}
-            <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-text-muted">Current location</label>
-              <div className="flex w-full items-center justify-between gap-3 rounded-xl bg-surface px-5 py-4 shadow-sm">
-                <div className="flex items-center gap-3 overflow-hidden">
-                  <FaMapMarkerAlt className="text-text-muted shrink-0" />
-                  <span className="truncate text-[15px] font-bold text-text-primary">
-                    {locating ? "Acquiring..." : currentLocation ? `${currentLocation.lat.toFixed(4)}°, ${currentLocation.lng.toFixed(4)}°` : "Unavailable"}
-                  </span>
+          {/* Stepper Container */}
+          <div className="mb-8 -mx-8 sm:-mx-6">
+            <Stepper 
+              activeStep={step - 1} 
+              alternativeLabel
+              sx={{
+                "& .MuiStepIcon-root.Mui-active": { color: "var(--color-text-primary, #1c1c1e)" },
+                "& .MuiStepIcon-root.Mui-completed": { color: "var(--color-text-primary, #1c1c1e)" },
+                "& .MuiStepConnector-line": { borderColor: "var(--color-border-medium, #c2c2c5)" },
+                "& .MuiStepIcon-text": { fill: "var(--color-surface, #fafafa)", fontWeight: "bold" }
+              }}
+            >
+              {[1, 2, 3, 4].map((label) => (
+                <Step key={label}>
+                  <StepLabel></StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </div>
+
+          {/* STEP 1: LOCATION, CONTACT, PEOPLE */}
+          {step === 1 && (
+            <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4">
+              
+              {/* Location Display */}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-text-muted">Current location</label>
+                <div className="flex w-full items-center justify-between gap-3 rounded-xl border border-border-light bg-bg-primary px-5 py-4">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <FaMapMarkerAlt className="text-text-muted shrink-0" />
+                    <span className="truncate text-sm font-bold text-text-primary">
+                      {locating ? "Acquiring..." : currentLocation ? `${currentLocation.lat.toFixed(4)}°, ${currentLocation.lng.toFixed(4)}°` : "Unavailable"}
+                    </span>
+                  </div>
+                  <button 
+                    onClick={handleGetLocation} 
+                    disabled={locating} 
+                    className="p-1 text-text-muted transition-colors hover:text-text-primary disabled:opacity-50"
+                    aria-label="Refresh location"
+                  >
+                    <FaSyncAlt className={locating ? "animate-spin" : ""} />
+                  </button>
                 </div>
-                <button 
-                  onClick={handleGetLocation} 
-                  disabled={locating} 
-                  className="p-1 text-text-muted transition-colors hover:text-text-primary disabled:opacity-50"
-                  aria-label="Refresh location"
-                >
-                  <FaSyncAlt className={locating ? "animate-spin" : ""} />
-                </button>
+              </div>
+
+              {/* Contact Person */}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-text-muted">
+                  Contact person
+                </label>
+                <div className="relative flex w-full items-center rounded-xl border border-border-light bg-bg-primary">
+                  <FaUser className="absolute left-5 text-text-muted" />
+                  <input
+                    type="text"
+                    placeholder="Juan Dela Cruz"
+                    value={form.contactName}
+                    onChange={(e) => setForm({ ...form, contactName: e.target.value })}
+                    className="w-full rounded-xl bg-transparent py-4 pl-12 pr-6 text-sm font-bold text-text-primary placeholder:font-medium placeholder:text-text-muted focus:bg-white focus:outline-none focus:ring-2 focus:ring-text-primary/50"
+                  />
+                </div>
+              </div>
+
+              {/* Number of People */}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-text-muted">Number of people in emergency</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {PEOPLE_RANGES.map((range) => (
+                    <button
+                      key={range}
+                      onClick={() => setForm({ ...form, numberOfPeople: range })}
+                      className={`flex h-24 items-center justify-center rounded-xl p-2 transition-all active:scale-[0.98] ${
+                        form.numberOfPeople === range 
+                          ? "bg-text-primary text-surface shadow-md" 
+                          : "border border-border-light bg-bg-primary text-text-primary hover:bg-white"
+                      }`}
+                    >
+                      <span className="text-xl font-black">{range}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Contact Person */}
-            <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-text-muted">
-                Contact person
-              </label>
-              <div className="relative flex w-full items-center rounded-xl bg-surface shadow-sm">
-                <FaUser className="absolute left-5 text-text-muted" />
-                <input
-                  type="text"
-                  placeholder="Juan Dela Cruz"
-                  value={form.contactName}
-                  onChange={(e) => setForm({ ...form, contactName: e.target.value })}
-                  className="w-full rounded-xl bg-transparent py-4 pl-12 pr-6 text-[15px] font-bold text-text-primary placeholder:font-medium placeholder:text-text-muted focus:outline-none focus:ring-0"
-                />
-              </div>
-            </div>
-
-            {/* Number of People */}
-            <div className="flex flex-col gap-3">
-              <label className="text-sm font-semibold text-text-muted">Number of People in emergency</label>
-            <div className="grid grid-cols-2 gap-3">
-                {PEOPLE_RANGES.map((range) => (
+          {/* STEP 2: INCIDENT TYPE */}
+          {step === 2 && (
+            <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4">
+              <label className="text-sm font-semibold text-text-muted">Select incident type</label>
+              <div className="grid grid-cols-2 gap-4">
+                {INCIDENT_TYPES.map((type) => (
                   <button
-                    key={range}
-                    onClick={() => setForm({ ...form, numberOfPeople: range })}
-                    className={`flex h-32 items-center justify-center rounded-xl p-2 transition-all active:scale-[0.98] ${
-                      form.numberOfPeople === range 
+                    key={type.name}
+                    onClick={() => selectIncident(type.name)}
+                    className={`flex h-32 flex-col items-center justify-center gap-4 rounded-xl transition-all active:scale-[0.98] ${
+                      form.incidentType === type.name 
                         ? "bg-text-primary text-surface shadow-md" 
-                        : "bg-surface text-text-primary hover:bg-surface-hover shadow-sm"
+                        : "border border-border-light bg-bg-primary text-text-primary hover:bg-white"
                     }`}
                   >
-                    <span className="text-xl font-black">{range}</span>
+                    <type.icon className="text-3xl" />
+                    <span className="text-xs font-bold">{type.name}</span>
                   </button>
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* STEP 2: INCIDENT TYPE */}
-        {step === 2 && (
-          <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4">
-            <label className="text-sm font-semibold text-text-muted">Select incident type</label>
-            <div className="grid grid-cols-2 gap-4">
-              {INCIDENT_TYPES.map((type) => (
-                <button
-                  key={type.name}
-                  onClick={() => selectIncident(type.name)}
-                  className={`flex h-36 flex-col items-center justify-center gap-4 rounded-xl transition-all active:scale-[0.98] ${
-                    form.incidentType === type.name 
-                      ? "bg-text-primary text-surface shadow-md" 
-                      : "bg-surface text-text-primary hover:bg-surface-hover shadow-sm"
-                  }`}
-                >
-                  <type.icon className="text-4xl" />
-                  <span className="text-xs">{type.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 3: SPECIFIC DETAILS */}
-        {step === 3 && (
-          <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-right-4">
-            <div className="flex items-center gap-3 border-border-light">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-text-primary text-surface">
-                {INCIDENT_TYPES.find(t => t.name === form.incidentType)?.icon({ className: "text-xl" })}
-              </div>
-              <div>
-                <h2 className="text-lg font-black text-text-primary">{form.incidentType} details</h2>
-                <p className="text-xs font-medium text-text-muted">Tap to select status</p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-8">
-              {INCIDENT_QUESTIONS[form.incidentType].map((q) => (
-                <div key={q.key} className="flex flex-col gap-3">
-                  <label className="text-sm font-semibold text-text-muted">{q.label}</label>
-                  {/* Changed to flex-col with gap-2.5 for a clean, non-cramped list */}
-                  <div className="flex flex-col gap-2.5">
-                    {q.options.map(opt => (
-                      <button
-                        key={opt}
-                        onClick={() => updateDetail(q.key, opt)}
-                        className={`w-full rounded-xl px-4 py-4 text-center text-[13px] font-bold transition-all active:scale-[0.98] ${
-                          form.details[q.key] === opt 
-                            ? "bg-text-primary text-surface shadow-md" 
-                            : "bg-surface text-text-primary shadow-sm ring-1 ring-inset ring-border-light hover:bg-surface-hover"
-                        }`}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
+          {/* STEP 3: SPECIFIC DETAILS */}
+          {step === 3 && (
+            <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-right-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-text-primary text-surface">
+                  {INCIDENT_TYPES.find(t => t.name === form.incidentType)?.icon({ className: "text-xl" }) || <FaCheckCircle />}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* STEP 4: REVIEW & SEND */}
-        {step === 4 && (
-          <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-right-4">
-            
-            {/* Summary */}
-            <div className="flex flex-col gap-3 rounded-xl bg-surface p-5 shadow-sm">
-              <h3 className="text-xs font-bold text-text-muted border-b border-border-light pb-2 mb-2">Report summary</h3>
-              <div className="grid grid-cols-2 gap-y-3 text-sm">
-                <div className="text-text-muted font-medium text-xs">Contact</div>
-                <div className="font-black text-right">{form.contactName}</div>
-                
-                <div className="text-text-muted font-medium text-xs">Emergency</div>
-                <div className="font-black text-right text-text-primary">{form.incidentType}</div>
-                
-                <div className="text-text-muted font-medium text-xs">People</div>
-                <div className="font-black text-right">{form.numberOfPeople}</div>
+                <div>
+                  <h2 className="text-lg font-black text-text-primary">{form.incidentType} details</h2>
+                  <p className="text-xs font-medium text-text-muted">Tap to select status</p>
+                </div>
               </div>
-              
-              <div className="mt-2 pt-3 border-t border-border-light flex flex-col gap-2">
-                {INCIDENT_QUESTIONS[form.incidentType].map(q => (
-                  <div key={q.key} className="flex justify-between text-xs items-center gap-4">
-                    <span className="text-text-muted font-medium">{q.label}</span>
-                    <span className="font-black bg-bg-secondary text-text-primary px-2 py-1 rounded text-right">{form.details[q.key]}</span>
+
+              <div className="flex flex-col gap-6">
+                {INCIDENT_QUESTIONS[form.incidentType].map((q) => (
+                  <div key={q.key} className="flex flex-col gap-2">
+                    <label className="text-sm font-semibold text-text-muted">{q.label}</label>
+                    <div className="flex flex-col gap-2">
+                      {q.options.map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => updateDetail(q.key, opt)}
+                          className={`w-full rounded-xl px-4 py-4 text-center text-[13px] font-bold transition-all active:scale-[0.98] ${
+                            form.details[q.key] === opt 
+                              ? "bg-text-primary text-surface shadow-md" 
+                              : "border border-border-light bg-bg-primary text-text-primary hover:bg-white"
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+          )}
 
-            <div className="flex items-center gap-3 rounded-xl bg-surface-elevated p-4 text-text-primary shadow-sm">
-              <FaCheckCircle className="text-2xl shrink-0 text-green-700" />
-              <p className="text-xs font-medium leading-tight">Your request is ready. It will be converted into an SMS format on the next screen.</p>
+          {/* STEP 4: REVIEW & SEND */}
+          {step === 4 && (
+            <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-4">
+              
+              {/* Summary */}
+              <div className="flex flex-col gap-3 rounded-xl border border-border-light bg-bg-primary p-5">
+                <h3 className="text-xs font-bold text-text-muted border-b border-border-medium pb-2 mb-2">Report summary</h3>
+                <div className="grid grid-cols-2 gap-y-3 text-sm">
+                  <div className="text-text-muted font-medium text-xs">Contact</div>
+                  <div className="font-black text-right text-text-primary">{form.contactName}</div>
+                  
+                  <div className="text-text-muted font-medium text-xs">Emergency</div>
+                  <div className="font-black text-right text-text-primary">{form.incidentType}</div>
+                  
+                  <div className="text-text-muted font-medium text-xs">People</div>
+                  <div className="font-black text-right text-text-primary">{form.numberOfPeople}</div>
+                </div>
+                
+                <div className="mt-2 pt-3 border-t border-border-medium flex flex-col gap-2">
+                  {INCIDENT_QUESTIONS[form.incidentType].map(q => (
+                    <div key={q.key} className="flex justify-between text-xs items-center gap-4">
+                      <span className="text-text-muted font-medium">{q.label}</span>
+                      <span className="font-black bg-bg-secondary text-text-primary px-2 py-1 rounded text-right">{form.details[q.key]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-xl bg-surface-elevated p-4 text-text-primary border border-border-light">
+                <FaCheckCircle className="text-2xl shrink-0 text-green-700" />
+                <p className="text-xs font-medium leading-tight">Your request is ready. It will be converted into an SMS format on the next screen.</p>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Bottom Sticky Action Bar */}
-      <div className="fixed bottom-0 left-0 z-10 w-full  bg-surface px-6 py-5 shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
-        <div className="mx-auto flex w-full max-w-md gap-3">
-          
-          {/* Left Button: Exit (Step 1) or Back (Steps 2-4) */}
-          {step === 1 ? (
-            <button
-              onClick={onBack}
-              className="flex flex-1 items-center justify-center rounded-xl border border-text-primary bg-transparent py-4 text-sm font-bold text-text-primary transition-all hover:bg-surface-hover active:scale-[0.98]"
-            >
-              Exit
-            </button>
-          ) : (
-            <button
-              onClick={handleBack}
-              className="flex flex-1 items-center justify-center rounded-xl border border-text-primary bg-transparent py-4 text-sm font-bold text-text-primary transition-all hover:bg-surface-hover active:scale-[0.98]"
-            >
-              Back
-            </button>
-          )}
-          
-          {/* Right Button: Next (Steps 1-3) or Send (Step 4) */}
-          {step < 4 ? (
-            <button
-              onClick={handleNext}
-              className="flex flex-1 items-center justify-center gap-3 rounded-xl bg-text-primary py-4 text-sm font-bold text-surface shadow-md transition-all hover:opacity-90 active:scale-[0.98]"
-            >
-              Next Step
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              className="flex flex-1 items-center justify-center gap-3 rounded-xl bg-text-primary py-4 text-sm font-bold text-surface shadow-md transition-all hover:opacity-90 active:scale-[0.98]"
-            >
-              <FaPaperPlane className="text-lg" /> Send via SMS
-            </button>
-          )}
-          
+        {/* Bottom Sticky Action Bar inside the card container */}
+        <div className="absolute bottom-0 left-0 z-10 w-full rounded-b-[2.5rem] bg-surface px-6 py-5 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] border-t border-border-light md:rounded-b-[2.5rem]">
+          <div className="mx-auto flex w-full gap-3">
+            
+            {/* Left Button: Exit (Step 1) or Back (Steps 2-4) */}
+            {step === 1 ? (
+              <button
+                onClick={onBack}
+                className="flex flex-1 items-center justify-center rounded-2xl bg-bg-secondary py-4 text-center text-sm font-bold tracking-wide text-text-primary transition-transform hover:bg-bg-tertiary active:scale-[0.98]"
+              >
+                Exit
+              </button>
+            ) : (
+              <button
+                onClick={handleBack}
+                className="flex flex-1 items-center justify-center rounded-2xl bg-bg-secondary py-4 text-center text-sm font-bold tracking-wide text-text-primary transition-transform hover:bg-bg-tertiary active:scale-[0.98]"
+              >
+                Back
+              </button>
+            )}
+            
+            {/* Right Button: Next (Steps 1-3) or Send (Step 4) */}
+            {step < 4 ? (
+              <button
+                onClick={handleNext}
+                className="flex flex-1 items-center justify-center gap-3 rounded-2xl bg-text-primary py-4 text-center text-sm font-bold tracking-wide text-surface shadow-lg transition-transform hover:bg-text-secondary active:scale-[0.98]"
+              >
+                Next Step
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                className="flex flex-1 items-center justify-center gap-3 rounded-2xl bg-red-600 py-4 text-center text-sm font-bold tracking-wide text-white shadow-lg transition-transform hover:bg-red-700 active:scale-[0.98]"
+              >
+                <FaPaperPlane className="text-lg" /> Send via SMS
+              </button>
+            )}
+            
+          </div>
         </div>
       </div>
     </div>
