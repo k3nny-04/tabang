@@ -162,5 +162,70 @@ export const sheltersApi = {
       console.error("Error bulk adding shelters:", error);
       throw error;
     }
+  },
+
+  /**
+   * SPECIAL: Bulk update existing shelters to append hotlines based on barangay mapping.
+   * Handles Firestore's 500 operation limit per batch automatically.
+   */
+  bulkUpdateShelterHotlines: async (barangayHotlines) => {
+    if (!Array.isArray(barangayHotlines) || barangayHotlines.length === 0) {
+      throw new Error("Invalid or empty barangay hotlines array provided.");
+    }
+
+    try {
+      const sheltersRef = collection(db, SHELTERS_COLLECTION);
+      const querySnapshot = await getDocs(sheltersRef);
+
+      const timestamp = new Date().toISOString();
+      let currentBatch = writeBatch(db);
+      let batchArray = [];
+      let operationCount = 0;
+      let totalUpdated = 0;
+
+      querySnapshot.forEach((shelterDoc) => {
+        const shelterData = shelterDoc.data();
+        const shelterBarangay = shelterData.barangay;
+
+        if (shelterBarangay) {
+          // Find matching hotline object, using case-insensitive check
+          const match = barangayHotlines.find(
+            (b) => b.barangay.toLowerCase() === shelterBarangay.toLowerCase()
+          );
+
+          if (match && match.hotline) {
+            currentBatch.update(shelterDoc.ref, {
+              hotline: match.hotline,
+              updatedAt: timestamp,
+            });
+
+            operationCount++;
+            totalUpdated++;
+
+            // Commit and reset batch if nearing the 500 limit
+            if (operationCount === 490) {
+              batchArray.push(currentBatch.commit());
+              currentBatch = writeBatch(db);
+              operationCount = 0;
+            }
+          }
+        }
+      });
+
+      // Commit any remaining operations
+      if (operationCount > 0) {
+        batchArray.push(currentBatch.commit());
+      }
+
+      await Promise.all(batchArray);
+
+      return {
+        success: true,
+        message: `Successfully updated ${totalUpdated} shelters with assigned hotlines.`,
+      };
+    } catch (error) {
+      console.error("Error bulk updating shelter hotlines:", error);
+      throw error;
+    }
   }
 };
