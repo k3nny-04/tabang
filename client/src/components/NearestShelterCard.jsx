@@ -9,7 +9,7 @@ const NearestShelterCard = ({ shelter, distanceInfo, onClose }) => {
 
   const name = shelter.name || "Unnamed Evacuation Center";
   const barangay = shelter.barangay || "Location not specified";
-  const manager = shelter.manager || "No manager listed";
+  // const manager = shelter.manager || "No manager listed";
 
   const currentCapacity = shelter.currentCapacity || 0;
   const maxCapacity = shelter.maxCapacity || parseInt(shelter.capacity) || 0;
@@ -34,8 +34,8 @@ const NearestShelterCard = ({ shelter, distanceInfo, onClose }) => {
   }
 
   let contactNumber = null;
-  if (shelter.contact) {
-    const rawContact = shelter.contact.toString();
+  if (shelter.hotline) {
+    const rawContact = shelter.hotline.toString();
     contactNumber = rawContact.startsWith("0") ? rawContact : `0${rawContact}`;
   }
 
@@ -89,7 +89,7 @@ const NearestShelterCard = ({ shelter, distanceInfo, onClose }) => {
 
         <div className="rounded-xl bg-bg-secondary p-4 ring-1 ring-border-light/50">
           <p className="mb-2 text-sm text-text-secondary">
-            Manager: <span className="font-medium text-text-primary">{manager}</span>
+            <span className="font-medium text-text-primary">{barangay} Hotline</span>
           </p>
           
           {contactNumber ? (
