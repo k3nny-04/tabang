@@ -1,15 +1,57 @@
 import { useState, useEffect } from "react";
-import { X, MapPin, Calendar } from "lucide-react";
-import { getAddressFromCoordinates } from "../utils/geocode";
-import { getStatusColor } from "../utils/statusColor";
+import { X, MapPin, Calendar, User } from "lucide-react";
+import { getAddressFromCoordinates } from "../../utils/geocode";
+import { getStatusColor } from "../../utils/statusColor";
+import { usersApi } from "../../api/usersApi"; // Added API import
 
 const ReportDetailsModal = ({ report, onClose, onUpdateReport }) => {
   const [address, setAddress] = useState("Fetching address...");
   const [isFetchingAddress, setIsFetchingAddress] = useState(true);
   
+  // New state for creator name
+  const [creatorName, setCreatorName] = useState("Loading...");
+  
   const [remarks, setRemarks] = useState("");
   const [status, setStatus] = useState(report.status);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Fetch Creator Name
+  useEffect(() => {
+    let isMounted = true;
+    
+    const fetchCreatorName = async () => {
+      if (!report.createdBy) {
+        if (isMounted) setCreatorName("Unknown");
+        return;
+      }
+
+      // Check if the createdBy is an SMS phone number
+      if (String(report.createdBy).startsWith("+63")) {
+        if (isMounted) setCreatorName(`${report.createdBy} (From SMS)`);
+        return;
+      }
+
+      // Otherwise, fetch the user's name from Firestore
+      try {
+        const res = await usersApi.getUserName(report.createdBy);
+        if (isMounted) {
+          if (res.success) {
+            setCreatorName(res.fullName);
+          } else {
+            setCreatorName("Unknown Citizen");
+          }
+        }
+      } catch (error) {
+        if (isMounted) {
+          setCreatorName("Unknown Citizen");
+          console.error("Failed to fetch creator name:", error);
+        }
+      }
+    };
+
+    fetchCreatorName();
+    return () => { isMounted = false; };
+  }, [report.createdBy]);
 
   // Geocode Address
   useEffect(() => {
@@ -92,6 +134,15 @@ const ReportDetailsModal = ({ report, onClose, onUpdateReport }) => {
           <div className="w-full lg:w-3/5 p-6 overflow-y-auto custom-scrollbar border-b lg:border-b-0 lg:border-r border-gray-100 space-y-8">
         
             <div className="grid grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+              {/* Added Created By Field */}
+              <div>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Created By</span>
+                <div className="flex items-center text-sm font-medium text-gray-700">
+                  <User size={14} className="mr-2 text-gray-400" />
+                  <span className="truncate" title={creatorName}>{creatorName}</span>
+                </div>
+              </div>
+              
               <div>
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Date Reported</span>
                 <div className="flex items-center text-sm font-medium text-gray-700">
@@ -99,10 +150,12 @@ const ReportDetailsModal = ({ report, onClose, onUpdateReport }) => {
                   {new Date(report.createdAt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                 </div>
               </div>
-              <div>
+
+              <div className="col-span-2 pt-2 mt-2 border-t border-gray-200">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Priority</span>
                 {renderPriority(report.prioLevel)}
               </div>
+
               <div className="col-span-2 pt-2 mt-2 border-t border-gray-200">
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Location</span>
                 <div className="flex items-start text-sm font-medium text-gray-700">

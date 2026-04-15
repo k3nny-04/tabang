@@ -115,5 +115,27 @@ export const usersApi = {
     });
 
     return unsubscribe;
+  },
+
+  /**
+   * Stream all users with the role 'CITIZEN' 
+   */
+  streamCitizens: (callback) => {
+    const q = query(
+      collection(db, USERS_COLLECTION), 
+      where("role", "==", "CITIZEN")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const citizens = snapshot.docs.map(doc => ({
+        id: doc.id, 
+        ...doc.data()
+      }));
+      callback(citizens);
+    }, (error) => {
+      console.error("Error streaming citizens:", error);
+    });
+
+    return unsubscribe;
   }
 };

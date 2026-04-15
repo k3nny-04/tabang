@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import DataTable from "../../components/DataTable";
 import { useLocationContext } from "../../providers/useLocationContext";
-import { MapPin, Eye, History, X } from "lucide-react";
+import { MapPin, Eye, History, X, Trash2 } from "lucide-react";
 import { getDistance } from "geolib";
 import { reportsApi } from "../../api/reportsApi";
 import { getStatusColor } from "../../utils/statusColor"; 
-import ReportDetailsModal from "../../components/ReportDetailsModal";
+import ReportDetailsModal from "../../components/modals/ReportDetailsModal";
 import ReportTimeline from "../../components/ReportTimeline";
+import DeleteModal from "../../components/modals/DeleteModal";
 
 const ReportsPage = () => {
   const {currentLocation, setCurrentLocation} = useLocationContext();
@@ -16,6 +17,9 @@ const ReportsPage = () => {
   const [reports, setReports] = useState([]);
   const [selectedReport, setSelectedReport] = useState(null);
   const [timelineReport, setTimelineReport] = useState(null);
+  
+  // Deletion State
+  const [reportToDelete, setReportToDelete] = useState(null);
 
   // Filters & Sorting
   const [filterType, setFilterType] = useState("ALL");
@@ -92,7 +96,22 @@ const ReportsPage = () => {
     return filtered;
   }, [reports, filterType, filterStatus, sortBy, currentLocation, showResolved]);
 
-  // Table Colmuns
+  // Action Handlers for Deletion
+  const handleDelete = (report) => {
+    setReportToDelete(report);
+  };
+
+  const handleConfirmDelete = async (reportId) => {
+    try {
+      await reportsApi.deleteReport(reportId);
+      setReportToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete report:", error);
+      throw error; 
+    }
+  };
+
+  // Table Columns
   const columns = [
     { 
       key: "createdAt", 
@@ -142,7 +161,7 @@ const ReportsPage = () => {
         };
 
         return (
-          <span className={`text-xs tracking-wider flex items-center gap-1.5`}>
+          <span className={`text-xs tracking-wider flex items-center gap-1.5 ${prio.textStyle}`}>
             {prio.label}
           </span>
         );
@@ -209,14 +228,23 @@ const ReportsPage = () => {
       key: "actions",
       label: "",
       render: (row) => (
-        <button 
-          onClick={() => {
-            setSelectedReport(row)
-          }}
-          className="p-2 text-gray-400 hover:text-text-primary hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <Eye size={18} />
-        </button>
+        <div className="flex items-center justify-end gap-1">
+          <button 
+            onClick={() => {
+              setSelectedReport(row)
+            }}
+            className="p-2 text-gray-400 hover:text-text-primary hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Eye size={18} />
+          </button>
+          <button
+            onClick={() => handleDelete(row)}
+            title="Delete Report"
+            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
       )
     }
   ];
@@ -315,7 +343,7 @@ const ReportsPage = () => {
         />
       )}
 
-      {/* --- Remarks Timeline Modal --- */}
+      {/* Remarks Timeline Modal */}
       {timelineReport && (
         <div className="fixed inset-0 z-105 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 sm:p-6 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] border border-gray-200">
@@ -340,6 +368,21 @@ const ReportsPage = () => {
 
           </div>
         </div>
+      )}
+
+      {/* Dynamic Delete Modal */}
+      {reportToDelete && (
+        <DeleteModal
+          title="Delete Report?"
+          itemName={`${reportToDelete.reportType} Report`}
+          itemId={reportToDelete.id}
+          extraDetails={[
+            { label: "Type", value: reportToDelete.reportType },
+            { label: "Current Status", value: reportToDelete.status }
+          ]}
+          onClose={() => setReportToDelete(null)}
+          onConfirm={handleConfirmDelete}
+        />
       )}
     </div>
   );
