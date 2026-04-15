@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import {
+  Plus,
   AlertCircle,
   Users,
   Truck,
@@ -22,6 +23,7 @@ import {
 import { teamsApi } from "../../api/teamsApi";
 import { reportsApi } from "../../api/reportsApi";
 import { usersApi } from "../../api/usersApi";
+import AddTeamModal from "../../components/modals/AddTeamModal";
 
 
 // --- DRAGGABLE REPORT COMPONENT ---
@@ -308,6 +310,8 @@ const RespondersPage = () => {
   const [deployModal, setDeployModal] = useState({ isOpen: false, team: null });
   const [isDeploying, setIsDeploying] = useState(false);
 
+  const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
+
   useEffect(() => {
     const unsubscribeTeams = teamsApi.streamAllTeams((data) => {
       setDbTeams(data);
@@ -492,14 +496,25 @@ const handleResolveDeployment = async (deployedTeamId) => {
         collisionDetection={pointerWithin}
       >
         <div className="flex flex-col h-[calc(100vh-4rem)] min-h-150 space-y-6 w-full">
-          {/* Header */}
-          <div className="bg-surface p-6 rounded-2xl shadow-sm border border-border-light shrink-0">
-            <h1 className="text-2xl font-black text-text-primary tracking-wide">
-              Responders Page
-            </h1>
-            <p className="text-text-muted text-sm mt-1">
-              Assign reports and deploy teams.
-            </p>
+          {/* HEADER */}
+          <div className="bg-surface p-6 rounded-2xl shadow-sm border border-border-light shrink-0 flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-black text-text-primary tracking-wide">
+                Responders Page
+              </h1>
+              <p className="text-text-muted text-sm mt-1">
+                Assign reports and deploy teams.
+              </p>
+            </div>
+            
+            {/* ADD TEAM BUTTON */}
+            <button 
+              onClick={() => setIsAddTeamModalOpen(true)}
+              className="flex items-center gap-2 bg-text-primary text-surface px-4 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity shadow-sm"
+            >
+              <Plus size={18} />
+              Create Team
+            </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
@@ -726,6 +741,11 @@ const handleResolveDeployment = async (deployedTeamId) => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ADD TEAM MODAL INJECTION */}
+      {isAddTeamModalOpen && (
+        <AddTeamModal onClose={() => setIsAddTeamModalOpen(false)} />
       )}
       
     </>
