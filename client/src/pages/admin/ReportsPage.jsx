@@ -322,6 +322,7 @@ const ReportsPage = () => {
             <option value="PENDING">Pending</option>
             <option value="VERIFIED">Verified</option>
             <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
           </select>
           
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-text-primary text-white border border-transparent font-semibold text-sm rounded-xl px-4 py-2 outline-none cursor-pointer shadow-md">
