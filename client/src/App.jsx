@@ -15,7 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import SignupPage from "./pages/SignUpPage";
 import UserReportsPage from "./pages/UserReportsPage";
-import LocationOnboarding from "./components/LocationOnBoarding";
+import LocationOnboarding from "./components/modals/LocationOnBoardingModal";
 import { FaHouse } from "react-icons/fa6";
 import AdminRoute from "./components/AdminRoute";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
@@ -27,6 +27,7 @@ import RespondersPage from "./pages/admin/RespondersPage";
 import EmergencyModePage from "./pages/EmergencyModePage";
 import { ToastProvider } from "./providers/ToastProvider";
 import SplashScreen from "./pages/SplashScreen";
+import UsersPage from "./pages/admin/UsersPage";
 
 const AppContent = () => {
   const { user, userDoc, loading } = useAuthContext();
@@ -94,7 +95,7 @@ const AppContent = () => {
                   <Route path="/admin-reports" element={<ReportsPage/>} />
                   <Route path="/admin-shelters" element={<SheltersPage/>} />
                   <Route path="/admin-responders" element={<RespondersPage/>} />
-                  <Route path="/admin-users" element={<div>Users Page Placeholder</div>} />
+                  <Route path="/admin-users" element={<UsersPage/>} />
                   <Route path="/admin-inventory" element={<div>Inventory Page Placeholder</div>} />
                 </Route>
               </Route>

@@ -192,15 +192,14 @@ export const reportsApi = {
   },
 
   /**
-   * Stream VERIFIED and PENDING incident reports
+   * Stream NON RESOLVED reports
    */
-  streamIncidentReports: (callback) => {
+  streamNonResolvedReports: (callback) => {
     const reportsRef = collection(db, REPORTS_COLLECTION);
     
     const q = query(
       reportsRef,
-      where("reportType", "==", "INCIDENT"),
-      where("status", "in", ["VERIFIED", "PENDING"])
+      where("status", "!=", "RESOLVED"),
     );
     
     const unsubscribe = onSnapshot(

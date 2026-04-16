@@ -8,10 +8,13 @@ import {
   onSnapshot, 
   query,
   orderBy,
-  where
+  where,
+  writeBatch,
+  getDoc,
 } from "firebase/firestore";
 
 const COLLECTION_NAME = "teams";
+const USERS_COLLECTION = "users";
 const teamsCollection = collection(db, COLLECTION_NAME);
 
 export const teamsApi = {
@@ -28,6 +31,29 @@ export const teamsApi = {
       console.error("Error streaming teams:", error);
     });
   },
+
+    /**
+     * Get only a team's name 
+     */
+    getTeamName: async (teamId) => {
+      try {
+        const teamRef = doc(db, COLLECTION_NAME, teamId);
+        const docSnap = await getDoc(teamRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          return { 
+            success: true, 
+            teamName: data.teamName || ""
+          };
+        } else {
+          return { success: false, message: "Team not found" };
+        }
+      } catch (error) {
+        console.error("Error fetching team name:", error);
+        throw error;
+      }
+    },
 
   streamDeployedTeams: (callback) => {
     const q = query(teamsCollection, where("status", "==", "DEPLOYED"));
@@ -79,5 +105,33 @@ export const teamsApi = {
       console.error("Error deleting team:", error);
       throw error;
     }
-  }
+  },
+
+  createTeamWithMembers: async (teamName, headId, memberIds) => {
+    try {
+      const batch = writeBatch(db);
+      const teamRef = doc(teamsCollection); 
+      const newTeamId = teamRef.id;
+
+      batch.set(teamRef, {
+        teamName,
+        headId,
+        memberCount: memberIds.length,
+        status: "STANDBY",
+        assignedReports: [],
+        updatedAt: new Date().toISOString()
+      });
+
+      memberIds.forEach(responderId => {
+        const userRef = doc(db, USERS_COLLECTION, responderId);
+        batch.update(userRef, { teamId: newTeamId });
+      });
+
+      await batch.commit();
+      return newTeamId;
+    } catch (error) {
+      console.error("Error creating team with members:", error);
+      throw error;
+    }
+  },
 };

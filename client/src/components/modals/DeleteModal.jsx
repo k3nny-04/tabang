@@ -5,7 +5,7 @@ const DeleteModal = ({
   title = "Confirm Deletion", 
   itemName = "this item", 
   itemId, 
-  extraDetails = [], // Array of objects: { label: string, value: string }
+  extraDetails = [], 
   onClose, 
   onConfirm 
 }) => {

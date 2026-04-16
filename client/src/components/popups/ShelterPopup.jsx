@@ -8,7 +8,7 @@ const ShelterPopup = ({ item, onGoClick }) => {
 
   const name = item.name || "Unnamed Shelter";
   const barangay = item.barangay || "Location not specified";
-  const manager = item.manager || "No manager listed";
+  // const manager = item.manager || "No manager listed";
 
   const currentCapacity = item.currentCapacity || 0;
   const maxCapacity = item.maxCapacity || parseInt(item.capacity) || 0;
@@ -33,8 +33,8 @@ const ShelterPopup = ({ item, onGoClick }) => {
   }
 
   let contactNumber = null;
-  if (item.contact) {
-    const rawContact = item.contact.toString();
+  if (item.hotline) {
+    const rawContact = item.hotline.toString();
     contactNumber = rawContact.startsWith("0") ? rawContact : `0${rawContact}`;
   }
 
@@ -68,9 +68,9 @@ const ShelterPopup = ({ item, onGoClick }) => {
         </span>
       </div>
 
-      {/* Manager */}
+      {/* Hotline */}
       <p className="mb-1 text-xs text-text-secondary wrap-break-word">
-        Manager: <span className="font-medium text-text-primary">{manager}</span>
+        <span className="font-bold text-text-primary">{barangay} Hotline</span>
       </p>
 
       {/* Contact */}

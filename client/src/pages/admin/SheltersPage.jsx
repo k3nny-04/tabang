@@ -12,8 +12,8 @@ import {
 import { sheltersApi } from "../../api/sheltersApi";
 import DataTable from "../../components/DataTable";
 import { Edit2, Check, X, Loader2 } from "lucide-react";
-import ShelterDetailsModal from "../../components/ShelterDetailsModal";
-import DeleteModal from "../../components/DeleteModal";
+import ShelterDetailsModal from "../../components/modals/ShelterDetailsModal";
+import DeleteModal from "../../components/modals/DeleteModal";
 
 const ITEMS_PER_PAGE = 10;
 
