@@ -7,7 +7,9 @@
   updateDoc,
   deleteDoc,
   onSnapshot,
-  writeBatch
+  writeBatch,
+  query,
+  where
 } from "firebase/firestore";
 import { db } from "../firebase-config";
 
@@ -121,6 +123,32 @@ export const sheltersApi = {
       },
       (error) => {
         console.error("Error streaming all shelters:", error);
+      }
+    );
+
+    return unsubscribe;
+  },
+
+  /**
+   * Stream ONLY ACTIVE shelters in real-time
+   */
+  streamActiveShelters: (callback) => {
+    const sheltersRef = collection(db, SHELTERS_COLLECTION);
+    
+    // Query to filter at the database level
+    const activeQuery = query(sheltersRef, where("status", "==", "ACTIVE"));
+
+    const unsubscribe = onSnapshot(
+      activeQuery,
+      (snapshot) => {
+        const shelters = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        callback(shelters);
+      },
+      (error) => {
+        console.error("Error streaming active shelters:", error);
       }
     );
 

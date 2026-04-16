@@ -71,7 +71,7 @@ const Map = () => {
 
   // Effect to stream shelters
   useEffect(() => {
-    const unsubscribe = sheltersApi.streamAllShelters((data) => {
+    const unsubscribe = sheltersApi.streamActiveShelters((data) => {
       setShelters(data);
     });
 
