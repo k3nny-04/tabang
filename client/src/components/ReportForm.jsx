@@ -18,6 +18,7 @@ import { uploadToCloudinary } from "../utils/upload";
 import { Select, MenuItem, FormControl } from "@mui/material";
 import { Flag } from "lucide-react";
 import { useToast } from "../providers/useToastContext";
+import { getBarangayFromLocation } from "../utils/boundary";
 
 const REPORT_TABS = [
   { type: "RESCUE", label: "Rescue", icon: AlertTriangle },
@@ -87,6 +88,10 @@ const ReportForm = ({ onSuccess }) => {
   const handleSubmit = async () => {
     if (!pinnedLocation) return showToast("Please pin a location on the map first.", "error");
     if (!form.description.trim()) return showToast("Please provide a description for your report.", "error");
+    if (pinnedLocation && !getBarangayFromLocation(pinnedLocation.lat, pinnedLocation.lng)) {
+      showToast("Invalid location. Please select a point within Naga City limits.", "error");
+      return; 
+    }
 
     if (form.reportType === "SUPPLY" && form.supplies.length === 0) {
       return showToast("Please add at least one supply item.", "error");
