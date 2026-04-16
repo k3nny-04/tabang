@@ -31,7 +31,7 @@ const INCIDENT_QUESTIONS = {
   "Flood": [
     { key: "q1", label: "Water Level", options: ["Ankle/Knee", "Waist", "Neck/Roof"] },
     { key: "q2", label: "Water Status", options: ["Rising", "Stable", "Receding"] },
-    { key: "q3", label: "Evacuation Status", options: ["Can Walk Out", "Stranded", "Medical Evac Needed"] }
+    { key: "q3", label: "Evacuation Status", options: ["Stranded", "Medical Evac Needed"] }
   ],
   "Fire": [
     { key: "q1", label: "Fire Type", options: ["Building", "Electrical", "Chemical", "Vegetation"] },
@@ -46,7 +46,7 @@ const INCIDENT_QUESTIONS = {
   "Medical": [
     { key: "q1", label: "Consciousness", options: ["Awake", "Unconscious"] },
     { key: "q2", label: "Breathing", options: ["Normal", "Struggling", "Stopped"] },
-    { key: "q3", label: "Primary Issue", options: ["Bleeding", "Trauma/Head", "Cardiac", "Fracture"] }
+    { key: "q3", label: "Primary Issue", options: ["Bleeding", "Trauma/Head", "Fracture"] }
   ],
   "Crime": [
     { key: "q1", label: "Incident Type", options: ["Robbery", "Assault", "Intruder", "Suspicious Activity"] },
