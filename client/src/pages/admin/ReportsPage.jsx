@@ -268,7 +268,7 @@ const ReportsPage = () => {
         remarks: updatedRemarks
       };
 
-      console.log("Updating report", reportId, "with payload:", payload);
+      // console.log("Updating report", reportId, "with payload:", payload);
 
       await reportsApi.updateReport(reportId, payload);
       setSelectedReport(null); 

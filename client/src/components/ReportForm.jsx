@@ -127,7 +127,7 @@ const ReportForm = ({ onSuccess }) => {
         };
       }
 
-      console.log("Submitting report", payload);
+      // console.log("Submitting report", payload);
       await reportsApi.createReport(payload);
       
       // Success toast
