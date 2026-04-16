@@ -20,6 +20,7 @@ import { sheltersApi } from "../api/sheltersApi";
 import { teamsApi } from "../api/teamsApi"; 
 import { reportsApi } from "../api/reportsApi";
 import { useToast } from "../providers/useToastContext";
+import nagaBoundary from "../data/nagaBoundary.json";
 
 const DEFAULT_LOCATION = { lat: 13.623432, lng: 123.192907 };
 const ZOOM = 13;
@@ -123,6 +124,24 @@ const Map = () => {
 
     mapRef.current.on("load", () => {
       setMapInstance(mapRef.current);
+
+      // --- ADD NAGA BOUNDARY ---
+      if (!mapRef.current.getSource('naga-boundary')) {
+        mapRef.current.addSource('naga-boundary', {
+          type: 'geojson',
+          data: nagaBoundary 
+        });
+
+        mapRef.current.addLayer({
+          id: 'naga-outline',
+          type: 'line',
+          source: 'naga-boundary',
+          paint: {
+            'line-color': '#1c1c1e', 
+            'line-width': 0.2,
+          }
+        });
+      }
       
       // --- ADD FLOOD HAZARD DATA ---
       mapRef.current.addSource('noah-flood', {
