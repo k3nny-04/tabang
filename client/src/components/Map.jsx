@@ -318,7 +318,7 @@ const Map = () => {
       const popup = new mapboxgl.Popup({
         offset: 25,
         maxWidth: "300px",
-        closeButton: false,
+        closeButton: true,
       }).setDOMContent(popupEl);
 
       const marker = new mapboxgl.Marker(markerEl)
@@ -357,7 +357,7 @@ const Map = () => {
       const popup = new mapboxgl.Popup({
         offset: 25,
         maxWidth: "300px",
-        closeButton: false,
+        closeButton: true,
       }).setDOMContent(popupEl);
 
       const marker = new mapboxgl.Marker(markerEl)
@@ -414,7 +414,7 @@ const Map = () => {
         const popup = new mapboxgl.Popup({
           offset: 25,
           maxWidth: "300px",
-          closeButton: false,
+          closeButton: true,
           closeOnClick: true,
         }).setDOMContent(popupEl);
 
@@ -701,7 +701,7 @@ const Map = () => {
     let lowLabel = "";
 
     if (activeLayers.floodMap) {
-      title = "5-Yr Flood Hazard";
+      title = "Flood Map (100-Year Return)";
       highLabel = "High (>1.5m)";
       medLabel = "Medium (0.5-1.5m)";
       lowLabel = "Low (0-0.5m)";
