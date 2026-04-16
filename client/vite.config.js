@@ -23,13 +23,11 @@ export default defineConfig({
             src: 'logo-black-192x192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any'
           },
           {
             src: 'logo-black-1024x1024.png',
             sizes: '1024x1024',
             type: 'image/png',
-            purpose: 'maskable'
           }
         ]
       },
