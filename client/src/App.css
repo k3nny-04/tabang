@@ -84,3 +84,26 @@ select:focus {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Target the default Mapbox close button */
+.mapboxgl-popup-close-button {
+  top: 8px !important;    /* Matches your p-2 (8px) padding */
+  right: 8px !important;  /* Pushes it away from the right edge */
+  font-size: 18px !important; /* Makes the '×' a bit larger/clearer */
+  color: #9ca3af !important;  /* Tailwind text-gray-400 */
+  border-radius: 4px !important;
+  padding: 2px 6px !important;
+  line-height: 1 !important;
+  transition: all 0.2s ease-in-out !important;
+}
+
+/* Add a nice hover effect */
+.mapboxgl-popup-close-button:hover {
+  background-color: #f3f4f6 !important; /* Tailwind bg-gray-100 */
+  color: #1f2937 !important;            /* Tailwind text-gray-800 */
+}
+
+/* Optional: Remove the default black outline Mapbox adds when clicked */
+.mapboxgl-popup-close-button:focus {
+  outline: none !important;
+}
