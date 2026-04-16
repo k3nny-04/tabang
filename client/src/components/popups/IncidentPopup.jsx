@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getStatusColor } from "../../utils/statusColor";
 import { getAddressFromCoordinates } from "../../utils/geocode";
+import { teamsApi } from "../../api/teamsApi";
 
 const statusLabel = (value) => {
   switch (value) {
@@ -19,17 +20,20 @@ const statusLabel = (value) => {
 
 const IncidentPopup = ({ report }) => {
   const [address, setAddress] = useState(
-    report.location?.lat != null && report.location?.lng != null
+    report?.location?.lat != null && report?.location?.lng != null
       ? "Fetching address..."
       : "Location unavailable"
+  );
+  const [assignedTeamName, setAssignedTeamName] = useState(
+    report?.assignedTeam ? "Fetching team..." : "None assigned"
   );
 
   useEffect(() => {
     let isMounted = true;
 
     const translateLocation = async () => {
-      const lat = report.location?.lat;
-      const lng = report.location?.lng;
+      const lat = report?.location?.lat;
+      const lng = report?.location?.lng;
 
       if (lat == null || lng == null) {
         setAddress("Location unavailable");
@@ -55,7 +59,41 @@ const IncidentPopup = ({ report }) => {
     return () => {
       isMounted = false;
     };
-  }, [report.location?.lat, report.location?.lng]);
+  }, [report?.location?.lat, report?.location?.lng]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchTeamName = async () => {
+      const assignedTeamId = report?.assignedTeam;
+
+      if (!assignedTeamId) {
+        setAssignedTeamName("None assigned");
+        return;
+      }
+
+      setAssignedTeamName("Fetching team...");
+
+      try {
+        const result = await teamsApi.getTeamName(assignedTeamId);
+        if (!isMounted) return;
+
+        if (result.success) {
+          setAssignedTeamName(result.teamName || "Unknown team");
+        } else {
+          setAssignedTeamName("Unknown team");
+        }
+      } catch {
+        if (isMounted) setAssignedTeamName("Unknown team");
+      }
+    };
+
+    fetchTeamName();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [report?.assignedTeam]);
 
   if (!report) return null;
 
@@ -68,7 +106,7 @@ const IncidentPopup = ({ report }) => {
         timeStyle: "short",
       })
     : "Unknown";
-  const assignedTeam = report.assignedTeam || "None assigned";
+  const assignedTeam = assignedTeamName;
 
   return (
     <div className="w-60 p-2 text-sm font-sans text-text-primary">
@@ -88,7 +126,7 @@ const IncidentPopup = ({ report }) => {
             status
           )}`}
         >
-          {status}
+          {status.toUpperCase().replace(/_/g, ' ')}
         </span>
         <span className="inline-flex items-center rounded-md border border-border-light bg-surface px-1.5 py-0.5 text-[11px] font-semibold text-text-secondary">
           {priority}
@@ -117,7 +155,7 @@ const IncidentPopup = ({ report }) => {
               src={report.photo} 
               alt="Incident photo" 
               className="mt-1 max-w-full h-auto rounded border border-border-light" 
-              style={{ maxHeight: '100px' }} // Optional: constrain height for popup
+              style={{ maxHeight: '100px' }} 
             />
           </div>
         ) : null}

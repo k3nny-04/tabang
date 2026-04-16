@@ -91,9 +91,9 @@ const Map = () => {
     };
   }, []);
 
-  // Effect to stream incident reports
+  // Effect to stream non-resolved reports
   useEffect(() => {
-    const unsubscribe = reportsApi.streamIncidentReports((data) => {
+    const unsubscribe = reportsApi.streamNonResolvedReports((data) => {
       setIncidents(data);
     });
 

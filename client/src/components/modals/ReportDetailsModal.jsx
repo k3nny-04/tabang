@@ -288,9 +288,6 @@ const ReportDetailsModal = ({ report, onClose, onUpdateReport }) => {
                   placeholder="Add internal notes, responder assignments, or updates here..."
                   className="w-full h-32 p-3 text-sm border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-text-primary/20 focus:border-text-primary outline-none resize-none transition-all"
                 />
-                <p className="text-[11px] text-gray-400 mt-2">
-                  Remarks are only visible to administrators and responders.
-                </p>
               </div>
             </div>
 

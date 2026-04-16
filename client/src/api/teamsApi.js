@@ -10,6 +10,7 @@ import {
   orderBy,
   where,
   writeBatch,
+  getDoc,
 } from "firebase/firestore";
 
 const COLLECTION_NAME = "teams";
@@ -30,6 +31,29 @@ export const teamsApi = {
       console.error("Error streaming teams:", error);
     });
   },
+
+    /**
+     * Get only a team's name 
+     */
+    getTeamName: async (teamId) => {
+      try {
+        const teamRef = doc(db, COLLECTION_NAME, teamId);
+        const docSnap = await getDoc(teamRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          return { 
+            success: true, 
+            teamName: data.teamName || ""
+          };
+        } else {
+          return { success: false, message: "Team not found" };
+        }
+      } catch (error) {
+        console.error("Error fetching team name:", error);
+        throw error;
+      }
+    },
 
   streamDeployedTeams: (callback) => {
     const q = query(teamsCollection, where("status", "==", "DEPLOYED"));
