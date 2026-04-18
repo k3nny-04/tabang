@@ -255,5 +255,40 @@ export const sheltersApi = {
       console.error("Error bulk updating shelter hotlines:", error);
       throw error;
     }
-  }
+  },
+
+  /**
+   * Stream aggregate occupancy stats for ACTIVE shelters
+   */
+  streamShelterOccupancyStats: (callback) => {
+    const sheltersRef = collection(db, SHELTERS_COLLECTION);
+    
+    // Only fetch ACTIVE shelters
+    const activeQuery = query(sheltersRef, where("status", "==", "ACTIVE"));
+
+    const unsubscribe = onSnapshot(
+      activeQuery,
+      (snapshot) => {
+        let totalCurrent = 0;
+        let totalMax = 0;
+
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          totalCurrent += Number(data.currentCapacity) || 0;
+          totalMax += Number(data.maxCapacity) || 0;
+        });
+
+        callback({
+          currentOccupancy: totalCurrent,
+          maxCapacity: totalMax,
+          activeCount: snapshot.size
+        });
+      },
+      (error) => {
+        console.error("Error streaming shelter occupancy:", error);
+      }
+    );
+
+    return unsubscribe;
+  },
 };

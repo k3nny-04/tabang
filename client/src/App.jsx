@@ -28,6 +28,7 @@ import EmergencyModePage from "./pages/EmergencyModePage";
 import { ToastProvider } from "./providers/ToastProvider";
 import SplashScreen from "./pages/SplashScreen";
 import UsersPage from "./pages/admin/UsersPage";
+import InventoryPage from "./pages/admin/InventoryPage";
 
 const AppContent = () => {
   const { user, userDoc, loading } = useAuthContext();
@@ -96,7 +97,7 @@ const AppContent = () => {
                   <Route path="/admin-shelters" element={<SheltersPage/>} />
                   <Route path="/admin-responders" element={<RespondersPage/>} />
                   <Route path="/admin-users" element={<UsersPage/>} />
-                  <Route path="/admin-inventory" element={<div>Inventory Page Placeholder</div>} />
+                  <Route path="/admin-inventory" element={<InventoryPage />} />
                 </Route>
               </Route>
               
