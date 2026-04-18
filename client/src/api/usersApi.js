@@ -137,5 +137,21 @@ export const usersApi = {
     });
 
     return unsubscribe;
-  }
+  },
+
+  streamCitizensCount: (callback) => {
+    const q = query(
+      collection(db, USERS_COLLECTION), 
+      where("role", "==", "CITIZEN")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const count = snapshot.size; // Get the count of documents in the snapshot
+      callback(count);
+    }, (error) => {
+      console.error("Error streaming citizens count:", error);
+    });
+
+    return unsubscribe;
+  },
 };

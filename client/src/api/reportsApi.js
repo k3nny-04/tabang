@@ -218,4 +218,169 @@ export const reportsApi = {
 
     return unsubscribe;
   },
+
+  /**
+   * Stream the N most recent NON-RESOLVED reports
+   */
+  streamRecentNonResolvedReports: (limitCount = 5, callback) => {
+    const reportsRef = collection(db, REPORTS_COLLECTION);
+    const q = query(
+      reportsRef,
+      where("status", "!=", "RESOLVED")
+    );
+    
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const reports = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        
+        const sortedReports = reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const topReports = sortedReports.slice(0, limitCount);
+        
+        callback(topReports);
+      },
+      (error) => {
+        console.error("Error streaming recent non-resolved reports:", error);
+      },
+    );
+
+    return unsubscribe;
+  },
+
+  /**
+   * Stream the total count of PENDING reports
+   */
+  streamPendingReportsCount: (callback) => {
+    const reportsRef = collection(db, REPORTS_COLLECTION);
+    
+    const q = query(
+      reportsRef,
+      where("status", "==", "PENDING")
+    );
+    
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        callback(snapshot.size);
+      },
+      (error) => {
+        console.error("Error streaming pending reports count:", error);
+      },
+    );
+
+    return unsubscribe;
+  },
+
+  /**
+   * Fetch report analytics formatted for Recharts (One-time fetch)
+   */
+  getChartData: async (timeFrame) => {
+    try {
+      const reportsRef = collection(db, REPORTS_COLLECTION);
+      
+      const now = new Date();
+      let startDate = null;
+      let template = [];
+
+      // Setup buckets and start dates based on timeframe
+      switch (timeFrame) {
+        case "HOUR":
+          startDate = new Date(now.getTime() - 60 * 60 * 1000);
+          template = ["10m", "20m", "30m", "40m", "50m", "60m"].map(l => ({ label: l, rescue: 0, incident: 0, supply: 0 }));
+          break;
+        case "TODAY":
+          startDate = new Date(now.setHours(0, 0, 0, 0));
+          template = ["12 AM", "4 AM", "8 AM", "12 PM", "4 PM", "8 PM"].map(l => ({ label: l, rescue: 0, incident: 0, supply: 0 }));
+          break;
+        case "7D":
+          startDate = new Date(now.setDate(now.getDate() - 7));
+          template = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(l => ({ label: l, rescue: 0, incident: 0, supply: 0 }));
+          break;
+        case "1M":
+          startDate = new Date(now.setDate(now.getDate() - 30));
+          template = ["Week 1", "Week 2", "Week 3", "Week 4"].map(l => ({ label: l, rescue: 0, incident: 0, supply: 0 }));
+          break;
+        case "YTD":
+          startDate = new Date(now.getFullYear(), 0, 1);
+          template = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map(l => ({ label: l, rescue: 0, incident: 0, supply: 0 }));
+          break;
+        case "ALL":
+        default:
+          template = []; 
+          break;
+      }
+
+      let q = query(reportsRef);
+      if (startDate) {
+        q = query(reportsRef, where("createdAt", ">=", startDate.toISOString()));
+      }
+
+      // ONE-TIME FETCH instead of onSnapshot
+      const snapshot = await getDocs(q);
+      
+      let chartData = JSON.parse(JSON.stringify(template));
+      
+      const getCategory = (type) => {
+        if (!type) return "incident";
+        const lower = type.toLowerCase();
+        if (lower.includes("rescue")) return "rescue";
+        if (lower.includes("supply") || lower.includes("request")) return "supply";
+        return "incident";
+      };
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (!data.createdAt) return;
+        
+        const date = new Date(data.createdAt);
+        const category = getCategory(data.reportType);
+        let bucketIndex = -1;
+
+        switch (timeFrame) {
+          case "HOUR":
+            { const minsAgo = Math.floor((new Date() - date) / 60000);
+            bucketIndex = 5 - Math.floor(minsAgo / 10);
+            break; }
+          case "TODAY":
+            bucketIndex = Math.floor(date.getHours() / 4);
+            break;
+          case "7D":
+            bucketIndex = date.getDay() === 0 ? 6 : date.getDay() - 1; 
+            break;
+          case "1M":
+            { const daysAgo = Math.floor((new Date() - date) / (1000 * 60 * 60 * 24));
+            bucketIndex = 3 - Math.floor(daysAgo / 7);
+            break; }
+          case "YTD":
+            bucketIndex = date.getMonth();
+            break;
+          case "ALL":
+            { const year = date.getFullYear().toString();
+            let existing = chartData.find(d => d.label === year);
+            if (!existing) {
+              existing = { label: year, rescue: 0, incident: 0, supply: 0 };
+              chartData.push(existing);
+            }
+            existing[category]++;
+            return; }
+        }
+
+        if (bucketIndex >= 0 && bucketIndex < chartData.length) {
+          chartData[bucketIndex][category]++;
+        }
+      });
+
+      if (timeFrame === "ALL") {
+        chartData.sort((a, b) => parseInt(a.label) - parseInt(b.label));
+      }
+
+      return chartData;
+    } catch (error) {
+      console.error("Error fetching chart data:", error);
+      throw error;
+    }
+  },
 };

@@ -140,7 +140,6 @@ const InventoryPage = () => {
           <span className={`flex items-center gap-1.5 w-max px-2.5 py-1 text-[10px] font-bold rounded-full uppercase tracking-wider border ${
             isFunctional ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'
           }`}>
-            {!isFunctional && <AlertTriangle size={10} />}
             {row.status || "UNKNOWN"}
           </span>
         );

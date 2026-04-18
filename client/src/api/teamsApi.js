@@ -32,28 +32,28 @@ export const teamsApi = {
     });
   },
 
-    /**
-     * Get only a team's name 
-     */
-    getTeamName: async (teamId) => {
-      try {
-        const teamRef = doc(db, COLLECTION_NAME, teamId);
-        const docSnap = await getDoc(teamRef);
-        
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          return { 
-            success: true, 
-            teamName: data.teamName || ""
-          };
-        } else {
-          return { success: false, message: "Team not found" };
-        }
-      } catch (error) {
-        console.error("Error fetching team name:", error);
-        throw error;
+  /**
+   * Get only a team's name 
+   */
+  getTeamName: async (teamId) => {
+    try {
+      const teamRef = doc(db, COLLECTION_NAME, teamId);
+      const docSnap = await getDoc(teamRef);
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        return { 
+          success: true, 
+          teamName: data.teamName || ""
+        };
+      } else {
+        return { success: false, message: "Team not found" };
       }
-    },
+    } catch (error) {
+      console.error("Error fetching team name:", error);
+      throw error;
+    }
+  },
 
   streamDeployedTeams: (callback) => {
     const q = query(teamsCollection, where("status", "==", "DEPLOYED"));
@@ -134,4 +134,23 @@ export const teamsApi = {
       throw error;
     }
   },
+
+  /**
+   * Stream the total count of DEPLOYED teams
+   */
+  streamDeployedTeamsCount: (callback) => {
+    const q = query(teamsCollection, where("status", "==", "DEPLOYED"));
+    
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        callback(snapshot.size);
+      },
+      (error) => {
+        console.error("Error streaming deployed teams count:", error);
+      }
+    );
+
+    return unsubscribe;
+  },  
 };
