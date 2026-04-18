@@ -358,7 +358,7 @@ const AdminDashboardPage = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
           <div>
             <h2 className="font-bold text-gray-800 text-sm uppercase tracking-wider">
-              Report Volume Analytics
+              Report Analytics
             </h2>
             <p className="text-xs text-gray-500 mt-1">
               Track incoming reports over time.
