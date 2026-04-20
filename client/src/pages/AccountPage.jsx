@@ -1,6 +1,6 @@
 import { useAuthContext } from '../providers/useAuthContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { Phone, Mail, FileText, LogOut, Shield, ChevronRight } from 'lucide-react';
+import { Phone, Mail, FileText, LogOut, Shield, ChevronRight, Users } from 'lucide-react';
 
 const AccountPage = () => {
   const { user, userDoc, logout } = useAuthContext();
@@ -15,14 +15,14 @@ const AccountPage = () => {
     }
   };
 
-  // Helper function to extract initials for the profile avatar
   const getInitials = () => {
     if (userDoc?.firstName && userDoc?.lastName) {
       return `${userDoc.firstName[0]}${userDoc.lastName[0]}`;
     }
-    // Fallback to the first letter of their email if userDoc is still loading
     return user?.email ? user.email[0].toUpperCase() : 'U';
   };
+
+  const isResponder = userDoc?.role === "RESPONDER";
 
   return (
     <div className="flex min-h-screen flex-col items-center bg-bg-primary px-6 py-8 overflow-y-auto">
@@ -39,8 +39,14 @@ const AccountPage = () => {
               {userDoc ? `${userDoc.firstName} ${userDoc.lastName}` : 'Loading...'}
             </h1>
             <div className="mt-1 flex items-center justify-center space-x-1 text-sm font-medium text-text-muted">
-              <Shield size={14} className="text-blue-500" />
-              <span className="capitalize">{userDoc?.role || 'Citizen'} Account</span>
+              <Shield size={14} className={isResponder ? "text-indigo-500" : "text-blue-500"} />
+              {isResponder ? (
+                <span className="capitalize font-bold">
+                  Responder | {userDoc?.specialization || 'Unassigned'}
+                </span>
+              ) : (
+                <span className="capitalize">{userDoc?.role || 'Citizen'} Account</span>
+              )}
             </div>
           </div>
         </div>
@@ -68,19 +74,34 @@ const AccountPage = () => {
         {/* Actions Menu */}
         <div className="space-y-4 pt-2">
           
-          {/* Link to My Reports Page */}
-          <Link
-            to="/my-reports"
-            className="flex w-full items-center justify-between rounded-2xl bg-surface p-4 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98]"
-          >
-            <div className="flex items-center space-x-3">
-              <div className="rounded-xl bg-blue-100 p-2 text-blue-600">
-                <FileText size={20} strokeWidth={2.5} />
+          {/* Conditional Routing: My Team (Responder) vs My Reports (Citizen) */}
+          {isResponder ? (
+            <Link
+              to="/my-team"
+              className="flex w-full items-center justify-between rounded-2xl bg-surface p-4 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98]"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="rounded-xl bg-gray-200 p-2 text-text-primary">
+                  <Users size={20} strokeWidth={2.5} />
+                </div>
+                <span className="font-bold text-text-primary text-sm">My Team</span>
               </div>
-              <span className="font-bold text-text-primary text-sm">My Reports</span>
-            </div>
-            <ChevronRight size={20} className="text-text-muted" />
-          </Link>
+              <ChevronRight size={20} className="text-text-muted" />
+            </Link>
+          ) : (
+            <Link
+              to="/my-reports"
+              className="flex w-full items-center justify-between rounded-2xl bg-surface p-4 shadow-sm transition-all hover:bg-gray-50 active:scale-[0.98]"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="rounded-xl bg-gray-200 p-2 text-text-primary">
+                  <FileText size={20} strokeWidth={2.5} />
+                </div>
+                <span className="font-bold text-text-primary text-sm">My Reports</span>
+              </div>
+              <ChevronRight size={20} className="text-text-muted" />
+            </Link>
+          )}
 
           {/* Logout Button */}
           <button

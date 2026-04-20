@@ -1,9 +1,26 @@
-import { doc, setDoc, getDoc, updateDoc, deleteDoc, query, collection, where, onSnapshot } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, query, collection, where, onSnapshot, getDocs } from 'firebase/firestore';
 import { db } from '../firebase-config'; 
 
 const USERS_COLLECTION = 'users';
 
 export const usersApi = {
+  streamUser: (userId, callback) => {
+    const userRef = doc(db, "users", userId);
+    return onSnapshot(
+      userRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          callback({ id: docSnap.id, ...docSnap.data() });
+        } else {
+          callback(null);
+        }
+      },
+      (error) => {
+        console.error("Error streaming user doc:", error);
+      }
+    );
+  },
+
   /**
    * Create a new user document with a specific ID (Auth UID)
    */
@@ -60,6 +77,26 @@ export const usersApi = {
       }
     } catch (error) {
       console.error("Error fetching user name:", error);
+      throw error;
+    }
+  },
+
+  getUserNumber: async (uid) => {
+    try {
+      const userRef = doc(db, USERS_COLLECTION, uid);
+      const docSnap = await getDoc(userRef);
+      
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        return {
+          success: true,
+          contactNo: data.contactNo || ""
+        };
+      } else {
+        return { success: false, message: "User not found" };
+      }
+    } catch (error) {
+      console.error("Error fetching user contact number:", error);
       throw error;
     }
   },
@@ -154,4 +191,33 @@ export const usersApi = {
 
     return unsubscribe;
   },
+
+  /**
+   * Fetch all responders belonging to a specific team
+   */
+  getTeamMembers: async (teamId) => {
+    if (!teamId) {
+      return { success: true, data: [], message: "No team assigned." };
+    }
+
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(
+        usersRef, 
+        where("teamId", "==", teamId),
+        where("role", "==", "RESPONDER")
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const members = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      return { success: true, data: members };
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      throw error;
+    }
+  }
 };

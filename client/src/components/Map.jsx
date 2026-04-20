@@ -720,7 +720,7 @@ const Map = () => {
     let lowLabel = "";
 
     if (activeLayers.floodMap) {
-      title = "Flood Map (100-Year Return)";
+      title = "Flood Map";
       highLabel = "High (>1.5m)";
       medLabel = "Medium (0.5-1.5m)";
       lowLabel = "Low (0-0.5m)";

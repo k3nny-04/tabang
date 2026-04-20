@@ -25,7 +25,6 @@ import { reportsApi } from "../../api/reportsApi";
 import { usersApi } from "../../api/usersApi";
 import AddTeamModal from "../../components/modals/AddTeamModal";
 
-
 // --- DRAGGABLE REPORT COMPONENT ---
 const DraggableReport = ({ report }) => {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
@@ -68,7 +67,6 @@ const DraggableReport = ({ report }) => {
           {report.reportType}
         </h3>
         
-        {/* Description */}
         {report.description && (
           <p className="text-xs text-text-secondary line-clamp-2 mb-2">
             {report.description}
@@ -78,7 +76,6 @@ const DraggableReport = ({ report }) => {
         <div className="flex items-center gap-1.5 text-[11px] text-text-muted mt-2 border-t border-border-light pt-2">
           <MapPin size={12} className="shrink-0" /> 
           <span className="truncate">
-             {/* If location is an object with lat/lng, display coordinates, otherwise string */}
             {typeof report.location === 'object' 
               ? `${report.location.lat?.toFixed(4)}, ${report.location.lng?.toFixed(4)}` 
               : (report.location || "Location not provided")}
@@ -89,7 +86,7 @@ const DraggableReport = ({ report }) => {
   );
 };
 
-// --- DROPPABLE TEAM CARD ---
+// --- DROPPABLE TEAM CARD (For Standby Teams) ---
 const DroppableTeamCard = ({
   team,
   attachedReports,
@@ -104,14 +101,12 @@ const DroppableTeamCard = ({
     data: team,
   });
 
-  // Fetch the user's name when the component mounts or headId changes  
   useEffect(() => {
     const fetchHeadName = async () => {
       if (!team.headId) {
         setHeadName("Not assigned");
         return;
       }
-
       try {
         const result = await usersApi.getUser(team.headId);
         if (result.success && result.data) {
@@ -125,7 +120,6 @@ const DroppableTeamCard = ({
         setHeadName("Error loading name");
       }
     };
-
     fetchHeadName();
   }, [team.headId]);
 
@@ -195,7 +189,7 @@ const DroppableTeamCard = ({
                         {r.id}
                       </span>
                       <span className="text-text-secondary truncate max-w-30">
-                        {r.type}
+                        {r.reportType}
                       </span>
                     </div>
                     <button
@@ -211,15 +205,13 @@ const DroppableTeamCard = ({
             )}
           </div>
 
-          {/* Deploy Button */}
-          {attachedReports.length > 0 && (
-            <button
-              onClick={() => onDeployClick(team)}
-              className="mt-4 w-full flex items-center justify-center gap-2 bg-text-primary hover:opacity-90 text-surface text-xs font-bold py-2.5 rounded-lg transition-opacity z-20 cursor-pointer shadow-sm"
-            >
-              <Send size={14} /> Deploy Team
-            </button>
-          )}
+          {/* Deploy Button - Always Visible to allow empty deployments */}
+          <button
+            onClick={() => onDeployClick(team)}
+            className="mt-4 w-full flex items-center justify-center gap-2 bg-text-primary hover:opacity-90 text-surface text-xs font-bold py-2.5 rounded-lg transition-opacity z-20 cursor-pointer shadow-sm"
+          >
+            <Send size={14} /> Deploy Team {attachedReports.length > 0 ? `(${attachedReports.length})` : ""}
+          </button>
         </div>
 
         {/* --- BACK OF CARD --- */}
@@ -229,7 +221,6 @@ const DroppableTeamCard = ({
           `}
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
-          {/* Header */}
           <div className="flex justify-between items-center pb-3 mb-4 border-b border-border-medium">
             <div className="flex items-center gap-2">
               <div className="bg-bg-tertiary p-1.5 rounded-lg text-text-primary">
@@ -247,7 +238,6 @@ const DroppableTeamCard = ({
             </button>
           </div>
 
-          {/* Detail Cards */}
           <div className="space-y-3">
             <div className="bg-surface p-3 rounded-lg border border-border-light shadow-sm">
               <p className="text-[10px] text-text-muted uppercase font-semibold tracking-wider mb-1.5 flex items-center gap-1.5">
@@ -264,35 +254,14 @@ const DroppableTeamCard = ({
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                 <div className="bg-bg-primary p-2 rounded border border-border-light flex flex-col items-center">
-                  <span className="text-[9px] text-text-muted uppercase mb-0.5">
-                    Latitude
-                  </span>
-                  <span className="font-medium text-text-primary">
-                    {team.location?.lat?.toFixed(5) || "N/A"}
-                  </span>
+                  <span className="text-[9px] text-text-muted uppercase mb-0.5">Latitude</span>
+                  <span className="font-medium text-text-primary">{team.location?.lat?.toFixed(5) || "N/A"}</span>
                 </div>
                 <div className="bg-bg-primary p-2 rounded border border-border-light flex flex-col items-center">
-                  <span className="text-[9px] text-text-muted uppercase mb-0.5">
-                    Longitude
-                  </span>
-                  <span className="font-medium text-text-primary">
-                    {team.location?.lng?.toFixed(5) || "N/A"}
-                  </span>
+                  <span className="text-[9px] text-text-muted uppercase mb-0.5">Longitude</span>
+                  <span className="font-medium text-text-primary">{team.location?.lng?.toFixed(5) || "N/A"}</span>
                 </div>
               </div>
-            </div>
-
-            <div className="flex items-center gap-2 text-xs text-text-muted bg-surface/60 p-2.5 rounded-lg border border-border-light border-dashed mt-1">
-              <Clock size={14} className="text-text-secondary" />
-              <span className="font-medium">
-                Updated:{" "}
-                {team.updatedAt
-                  ? new Date(team.updatedAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })
-                  : "Never"}
-              </span>
             </div>
           </div>
         </div>
@@ -300,6 +269,87 @@ const DroppableTeamCard = ({
     </div>
   );
 };
+
+// --- DROPPABLE DEPLOYED TEAM CARD ---
+const DeployedTeamCard = ({ deployment, teamReports, onResolve, onCancelReport }) => {
+  const { isOver, setNodeRef } = useDroppable({
+    id: deployment.id,
+    data: deployment,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`relative bg-surface p-4 rounded-xl shadow-sm border-l-4 border-l-blue-500 border transition-all ${
+        isOver ? "border-blue-500 ring-2 ring-blue-500/30" : "border-border-light"
+      }`}
+    >
+      {isOver && (
+        <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center backdrop-blur-[1px] z-10 rounded-xl">
+          <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm animate-bounce">
+            Drop to Assign Directly
+          </span>
+        </div>
+      )}
+      
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="font-bold text-text-primary text-sm">
+          {deployment.teamName}
+        </h3>
+        <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase animate-pulse">
+          Deployed
+        </span>
+      </div>
+
+      <div className="space-y-2 mt-3">
+        {teamReports.length === 0 && (
+          <p className="text-xs text-text-muted italic py-1">No active reports attached.</p>
+        )}
+        {teamReports.map((report) => (
+          <div
+            key={report.id}
+            className="bg-bg-secondary p-2.5 rounded-lg border border-border-light flex flex-col gap-2"
+          >
+             <div className="flex justify-between items-center">
+                <p className="text-xs font-bold text-text-primary truncate mr-2">{report.reportType}</p>
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                  report.status === "RESOLVED" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                }`}>
+                  {report.status}
+                </span>
+             </div>
+             <div className="flex justify-between items-center border-t border-border-light pt-2 mt-1">
+                <p className="text-[10px] text-text-muted font-mono bg-surface px-2 py-1 rounded">
+                  {report.id}
+                </p>
+                {report.status !== "RESOLVED" && (
+                    <button 
+                      onClick={() => onCancelReport(report.id, deployment.id)} 
+                      className="text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors"
+                    >
+                        Cancel
+                    </button>
+                )}
+             </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex justify-between items-center mt-4 pt-3 border-t border-border-light">
+        <span className="text-[10px] text-text-muted font-mono">
+          Dispatched: {deployment.deployedAt ? new Date(deployment.deployedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Unknown"}
+        </span>
+        <button
+          onClick={() => onResolve(deployment.id)}
+          className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+        >
+          <CheckCircle2 size={14} /> Resolve
+        </button>
+      </div>
+    </div>
+  );
+};
+
 
 // --- MAIN PAGE COMPONENT ---
 const RespondersPage = () => {
@@ -317,7 +367,8 @@ const RespondersPage = () => {
       setDbTeams(data);
     });
 
-    const unsubscribeReports = reportsApi.streamUnassignedReports((data) => {
+    // Stream ALL non-resolved reports (unassigned + assigned to deployed teams)
+    const unsubscribeReports = reportsApi.streamNonResolvedReports((data) => {
       setLiveReports(data);
     });
 
@@ -328,7 +379,13 @@ const RespondersPage = () => {
   }, []);
 
   const stagedReportIds = Object.values(attachedReportsMap).flat().map(r => r.id);
-  const visibleUnassignedReports = liveReports.filter(r => !stagedReportIds.includes(r.id));
+  
+  // Visible unassigned reports = Has no assigned team AND is not currently staged AND is exactly "VERIFIED"
+  const visibleUnassignedReports = liveReports.filter(r => 
+    !r.assignedTeam && 
+    !stagedReportIds.includes(r.id) && 
+    r.status === "VERIFIED" 
+  );
 
   const availableTeams = dbTeams.filter((t) => t.status === "STANDBY");
   const deployedTeams = dbTeams.filter((t) => t.status === "DEPLOYED");
@@ -340,7 +397,7 @@ const RespondersPage = () => {
     setActiveReport(report);
   };
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = async (event) => {
     const { active, over } = event;
     setActiveReport(null);
     if (!over) return;
@@ -348,8 +405,51 @@ const RespondersPage = () => {
     const reportId = active.id;
     const teamId = over.id;
     const reportToAssign = visibleUnassignedReports.find((r) => r.id === reportId);
+    
+    if (!reportToAssign) return;
 
-    if (reportToAssign) {
+    const targetTeam = dbTeams.find(t => t.id === teamId);
+
+    if (targetTeam?.status === "DEPLOYED") {
+      // RULE 4: Directly attach to already deployed team
+      try {
+        const timeDeployed = new Date().toISOString();
+        const readableDispatchTime = new Date().toLocaleTimeString([], { 
+          hour: "2-digit", 
+          minute: "2-digit" 
+        });
+
+        let headName = "Assigned Responder";
+        if (targetTeam.headId) {
+          const userResult = await usersApi.getUser(targetTeam.headId);
+          if (userResult.success && userResult.data) {
+            const { firstName, lastName } = userResult.data;
+            headName = `${firstName || ""} ${lastName || ""}`.trim() || headName;
+          }
+        }
+
+        const newRemark = {
+          comment: `Response team **${targetTeam.teamName || "Unnamed Team"}** has been dispatched to your location.\n\n**Team Head:** **${headName}**\n**Dispatch Time:** **${readableDispatchTime}**\n\nResponders are on the way. Please stay safe and keep your lines open.`,
+          dateRemarked: timeDeployed,
+          status: "IN_PROGRESS"
+        };
+
+        await Promise.all([
+          reportsApi.updateReport(reportId, {
+            assignedTeam: targetTeam.id,
+            status: "IN_PROGRESS",
+            remarks: [...(reportToAssign.remarks || []), newRemark]
+          }),
+          teamsApi.updateTeam(targetTeam.id, {
+            assignedReports: [...(targetTeam.assignedReports || []), reportId]
+          })
+        ]);
+      } catch (error) {
+        console.error("Failed to assign directly to deployed team:", error);
+        alert("Failed to assign report.");
+      }
+    } else {
+      // Stage for Standby Team
       setAttachedReportsMap((prev) => ({
         ...prev,
         [teamId]: [...(prev[teamId] || []), reportToAssign],
@@ -360,9 +460,7 @@ const RespondersPage = () => {
   const handleRemoveAttachedReport = (teamId, reportToRemove) => {
     setAttachedReportsMap((prev) => {
       const currentReports = prev[teamId] || [];
-      const updatedReports = currentReports.filter(
-        (r) => r.id !== reportToRemove.id,
-      );
+      const updatedReports = currentReports.filter((r) => r.id !== reportToRemove.id);
       return { ...prev, [teamId]: updatedReports };
     });
   };
@@ -370,8 +468,6 @@ const RespondersPage = () => {
   const handleConfirmDeploy = async () => {
     const team = deployModal.team;
     const reportsToDeploy = attachedReportsMap[team.id] || [];
-    
-    if (reportsToDeploy.length === 0) return;
     
     setIsDeploying(true);
 
@@ -383,43 +479,44 @@ const RespondersPage = () => {
         minute: "2-digit" 
       });
 
-      let headName = "Assigned Responder";
-      if (team.headId) {
-        try {
-          const userResult = await usersApi.getUser(team.headId);
-          if (userResult.success && userResult.data) {
-            const { firstName, lastName } = userResult.data;
-            headName = `${firstName || ""} ${lastName || ""}`.trim() || headName;
-          }
-        } catch (error) {
-          console.error("Could not fetch team head details for remarks:", error);
-        }
-      }
-
-      // Update the Team in Firestore: Set to DEPLOYED, add report IDs
+      // Update the Team in Firestore: Set to DEPLOYED (even if assignedReportIds is empty)
       await teamsApi.updateTeam(team.id, {
         status: "DEPLOYED",
         assignedReports: assignedReportIds,
         deployedAt: timeDeployed
       });
 
-      // Update each Report in Firestore: Set assignedTeam and append to remarks
-      await Promise.all(
-        reportsToDeploy.map(report => {
-          
-          const newRemark = {
-            comment: `Response team **${team.teamName || "Unnamed Team"}** has been dispatched to your location.\n\n**Team Head:** **${headName}**\n**Dispatch Time:** **${readableDispatchTime}**\n\nResponders are on the way. Please stay safe and keep your lines open.`,
-            dateRemarked: timeDeployed,
-            status: "IN_PROGRESS"
-          };
+      // Only update reports if there are any attached
+      if (reportsToDeploy.length > 0) {
+        let headName = "Assigned Responder";
+        if (team.headId) {
+          try {
+            const userResult = await usersApi.getUser(team.headId);
+            if (userResult.success && userResult.data) {
+              const { firstName, lastName } = userResult.data;
+              headName = `${firstName || ""} ${lastName || ""}`.trim() || headName;
+            }
+          } catch (error) {
+            console.error("Could not fetch team head details for remarks:", error);
+          }
+        }
 
-          return reportsApi.updateReport(report.id, { 
-            assignedTeam: team.id, 
-            status: "IN_PROGRESS",
-            remarks: [...(report.remarks || []), newRemark] 
-          });
-        })
-      );
+        await Promise.all(
+          reportsToDeploy.map(report => {
+            const newRemark = {
+              comment: `Response team **${team.teamName || "Unnamed Team"}** has been dispatched to your location.\n\n**Team Head:** **${headName}**\n**Dispatch Time:** **${readableDispatchTime}**\n\nResponders are on the way. Please stay safe and keep your lines open.`,
+              dateRemarked: timeDeployed,
+              status: "IN_PROGRESS"
+            };
+
+            return reportsApi.updateReport(report.id, { 
+              assignedTeam: team.id, 
+              status: "IN_PROGRESS",
+              remarks: [...(report.remarks || []), newRemark] 
+            });
+          })
+        );
+      }
 
       // Clear staged map 
       setAttachedReportsMap((prev) => {
@@ -438,53 +535,44 @@ const RespondersPage = () => {
     }
   };
 
-const handleResolveDeployment = async (deployedTeamId) => {
+  const handleResolveDeployment = async (deployedTeamId) => {
     try {
-      const teamToResolve = dbTeams.find(t => t.id === deployedTeamId);
-      if (!teamToResolve) return;
-
-      // 1. Update Team back to STANDBY and clear the report IDs
+      // RULE 2: Only update the team to STANDBY, clear assignedReports. Responders handle report resolutions.
       await teamsApi.updateTeam(deployedTeamId, {
         status: "STANDBY",
         assignedReports: []
       });
-
-      // 2. Update all those reports to "RESOLVED" and append the closing remark
-      if (teamToResolve.assignedReports && teamToResolve.assignedReports.length > 0) {
-        const isoTimestamp = new Date().toISOString();
-        
-        // Generic comment applicable to RESCUE, INCIDENT, and SUPPLY
-        const closingRemark = {
-          comment: `This report has been addressed and marked as resolved by the responding team.\n\nThank you for your cooperation. Please stay safe, and do not hesitate to submit a new request if further assistance is needed.`,
-          dateRemarked: isoTimestamp,
-          status: "RESOLVED"
-        };
-
-        await Promise.all(
-          teamToResolve.assignedReports.map(async (reportId) => {
-            try {
-              // Fetch the current report to get its existing remarks array
-              const reportRes = await reportsApi.getReport(reportId);
-              
-              if (reportRes.success && reportRes.data) {
-                const existingRemarks = reportRes.data.remarks || [];
-                
-                // Update the report with the new status and appended remarks
-                await reportsApi.updateReport(reportId, { 
-                  status: "RESOLVED",
-                  remarks: [...existingRemarks, closingRemark]
-                });
-              }
-            } catch (err) {
-              console.error(`Failed to update resolution for report ${reportId}:`, err);
-            }
-          })
-        );
-      }
-
     } catch (error) {
       console.error("Failed to resolve team:", error);
       alert("Failed to resolve deployment.");
+    }
+  };
+
+  const handleCancelReportAssignment = async (reportId, teamId) => {
+    try {
+      // RULE 5: Fetch report, pop last remark, revert to VERIFIED
+      const reportToCancel = liveReports.find(r => r.id === reportId);
+      if (!reportToCancel) return;
+
+      const remarks = reportToCancel.remarks || [];
+      const updatedRemarks = remarks.slice(0, -1); // Remove the dispatch remark
+
+      await reportsApi.updateReport(reportId, {
+        assignedTeam: null,
+        status: "VERIFIED",
+        remarks: updatedRemarks
+      });
+
+      // Remove reportId from team's assignedReports array
+      const team = dbTeams.find(t => t.id === teamId);
+      if (team) {
+        const newAssigned = (team.assignedReports || []).filter(id => id !== reportId);
+        await teamsApi.updateTeam(teamId, { assignedReports: newAssigned });
+      }
+
+    } catch (error) {
+      console.error("Failed to cancel report assignment:", error);
+      alert("Failed to cancel report assignment.");
     }
   };
 
@@ -507,7 +595,6 @@ const handleResolveDeployment = async (deployedTeamId) => {
               </p>
             </div>
             
-            {/* ADD TEAM BUTTON */}
             <button 
               onClick={() => setIsAddTeamModalOpen(true)}
               className="flex items-center gap-2 bg-text-primary text-surface px-4 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity shadow-sm"
@@ -546,7 +633,7 @@ const handleResolveDeployment = async (deployedTeamId) => {
               <div className="flex items-center justify-between mb-4 shrink-0 border-b border-border-light pb-3">
                 <h2 className="font-bold text-text-primary flex items-center gap-2">
                   <Users size={18} className="text-emerald-500" />
-                  Available Teams
+                  Standby Teams
                 </h2>
                 <span className="bg-emerald-100 text-emerald-800 text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full">
                   {availableTeams.length}
@@ -589,49 +676,20 @@ const handleResolveDeployment = async (deployedTeamId) => {
                     No active deployments.
                   </p>
                 )}
-                {deployedTeams.map((deployment) => (
-                  <div
-                    key={deployment.id}
-                    className="bg-surface p-4 rounded-xl shadow-sm border-l-4 border-l-blue-500 border border-border-light"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-text-primary text-sm">
-                        {deployment.teamName}
-                      </h3>
-                      <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase animate-pulse">
-                        Deployed
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 mt-3">
-                      {deployment.assignedReports && deployment.assignedReports.map((reportId) => (
-                        <div
-                          key={reportId}
-                          className="bg-bg-secondary p-2 rounded-lg border border-border-light flex justify-between items-center"
-                        >
-                           <p className="text-xs font-bold text-text-primary">
-                            Report ID:
-                          </p>
-                          <p className="text-[10px] text-text-muted font-mono bg-surface px-2 py-1 rounded">
-                            {reportId}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex justify-between items-center mt-4 pt-3 border-t border-border-light">
-                      <span className="text-[10px] text-text-muted font-mono">
-                        Dispatched: {deployment.deployedAt || "Unknown"}
-                      </span>
-                      <button
-                        onClick={() => handleResolveDeployment(deployment.id)}
-                        className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-                      >
-                        <CheckCircle2 size={14} /> Resolve
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                {deployedTeams.map((deployment) => {
+                  // Get actual streamed reports attached to this deployment
+                  const teamReports = liveReports.filter(r => r.assignedTeam === deployment.id);
+                  
+                  return (
+                    <DeployedTeamCard 
+                      key={deployment.id} 
+                      deployment={deployment}
+                      teamReports={teamReports}
+                      onResolve={handleResolveDeployment}
+                      onCancelReport={handleCancelReportAssignment}
+                    />
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -694,33 +752,35 @@ const handleResolveDeployment = async (deployedTeamId) => {
                 with
                 <strong className="text-blue-600">
                   {" "}
-                  {attachedReportsMap[deployModal.team?.id]?.length}{" "}
+                  {attachedReportsMap[deployModal.team?.id]?.length || 0}{" "}
                 </strong>{" "}
                 attached report(s). This action will alert the responders.
               </p>
 
-              <div className="mt-4 bg-bg-secondary border border-border-light rounded-lg p-3 flex flex-col gap-1 max-h-40 overflow-y-auto custom-scrollbar">
-                <span className="text-xs text-text-secondary font-mono mb-1">
-                  <span className="font-bold text-text-muted uppercase mr-2">
-                    Team ID:
-                  </span>
-                  {deployModal.team?.id}
-                </span>
-
-                <div className="border-t border-border-light my-1 pt-1"></div>
-
-                {attachedReportsMap[deployModal.team?.id]?.map((r) => (
-                  <span
-                    key={r.id}
-                    className="text-xs text-text-secondary flex justify-between"
-                  >
-                    <span className="font-medium pr-2 truncate">{r.reportType}</span>
-                    <span className="font-bold text-text-muted font-mono">
-                      {r.id}
+              {(attachedReportsMap[deployModal.team?.id]?.length || 0) > 0 && (
+                <div className="mt-4 bg-bg-secondary border border-border-light rounded-lg p-3 flex flex-col gap-1 max-h-40 overflow-y-auto custom-scrollbar">
+                  <span className="text-xs text-text-secondary font-mono mb-1">
+                    <span className="font-bold text-text-muted uppercase mr-2">
+                      Team ID:
                     </span>
+                    {deployModal.team?.id}
                   </span>
-                ))}
-              </div>
+
+                  <div className="border-t border-border-light my-1 pt-1"></div>
+
+                  {attachedReportsMap[deployModal.team?.id]?.map((r) => (
+                    <span
+                      key={r.id}
+                      className="text-xs text-text-secondary flex justify-between"
+                    >
+                      <span className="font-medium pr-2 truncate">{r.reportType}</span>
+                      <span className="font-bold text-text-muted font-mono">
+                        {r.id}
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="p-4 border-t border-border-light bg-surface-elevated flex items-center gap-3 justify-end">

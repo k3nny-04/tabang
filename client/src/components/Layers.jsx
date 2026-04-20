@@ -1,7 +1,7 @@
 import { FaHouse, FaTriangleExclamation } from "react-icons/fa6";
 import { FaShieldAlt } from "react-icons/fa";
 import { useLayers } from "../providers/useLayersContext";
-import { Waves, CloudLightning } from "lucide-react";
+import { Waves, CloudLightning, ClipboardList } from "lucide-react";
 
 // eslint-disable-next-line no-unused-vars
 const LayerCard = ({ label, icon: Icon, isActive, onClick }) => (
@@ -37,7 +37,7 @@ const LayerCard = ({ label, icon: Icon, isActive, onClick }) => (
   </div>
 );
 
-const Layers = () => {
+const Layers = ({ isResponder = false }) => {
   const { activeLayers, toggleLayer } = useLayers();
 
   return (
@@ -62,12 +62,21 @@ const Layers = () => {
             isActive={activeLayers.incidentReports}
             onClick={() => toggleLayer("incidentReports")}
           />
-          <LayerCard
-            label="Response Teams"
-            icon={FaShieldAlt}
-            isActive={activeLayers.responseTeams}
-            onClick={() => toggleLayer("responseTeams")}
-          />
+          {!isResponder ? (
+            <LayerCard
+              label="Response Teams"
+              icon={FaShieldAlt}
+              isActive={activeLayers.responseTeams}
+              onClick={() => toggleLayer("responseTeams")}
+            />
+          ) : (
+            <LayerCard
+              label="Assigned Reports"
+              icon={ClipboardList}
+              isActive={activeLayers.assignedReports}
+              onClick={() => toggleLayer("assignedReports")}
+            />
+          )}
         </div>
       </div>
 

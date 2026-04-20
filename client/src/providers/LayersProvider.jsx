@@ -8,6 +8,7 @@ export const LayersProvider = ({ children }) => {
     evacShelters: true,
     incidentReports: true,
     responseTeams: true,
+    assignedReports: false,
     // Hazards (Mutually exclusive)
     floodMap: false,
     landslide: false,
@@ -29,6 +30,13 @@ export const LayersProvider = ({ children }) => {
             stormSurge: layer === "stormSurge",
           };
         }
+      }
+
+      if (layer === "assignedReports" && !prev.assignedReports) {
+        return { ...prev, assignedReports: true, incidentReports: false };
+      }
+      if (layer === "incidentReports" && !prev.incidentReports) {
+        return { ...prev, incidentReports: true, assignedReports: false };
       }
 
       return {

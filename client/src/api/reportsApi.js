@@ -383,4 +383,39 @@ export const reportsApi = {
       throw error;
     }
   },
+
+  /**
+   * Stream reports assigned to a specific team
+   */
+  streamAssignedReports: (teamId, callback) => {
+    if (!teamId) {
+      console.warn("streamAssignedReports called without a teamId");
+      callback([]);
+      return () => {}; 
+    }
+
+    const reportsRef = collection(db, REPORTS_COLLECTION);
+
+    const q = query(
+      reportsRef,
+      where("assignedTeam", "==", teamId),
+    );
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const reports = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })).filter(report => report.status !== "RESOLVED");
+        const sortedReports = reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        callback(sortedReports);
+      },
+      (error) => {
+        console.error("Error streaming assigned reports:", error);
+      }
+    );
+
+    return unsubscribe;
+  }
 };
