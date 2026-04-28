@@ -17,6 +17,8 @@ import {
   MessageSquare,
   Phone
 } from "lucide-react";
+import { useLocationContext } from "../providers/useLocationContext";
+import { getDistance } from "geolib";
 
 const HOLD_DURATION = 1500;
 
@@ -324,6 +326,7 @@ const AssignedReports = ({ teamId, onViewOnMap }) => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
+  const { currentLocation } = useLocationContext();
 
   useEffect(() => {
     if (!teamId) {
@@ -377,6 +380,18 @@ const AssignedReports = ({ teamId, onViewOnMap }) => {
         const isExpanded = expandedId === report.id;
         const dateString = report.createdAt ? new Date(report.createdAt).toLocaleString() : "Unknown date";
         
+        // --- Calculate Distance ---
+        let distanceStr = null;
+        if (currentLocation && report.location?.lat && report.location?.lng) {
+          const distMeters = getDistance(
+            { latitude: currentLocation.lat, longitude: currentLocation.lng },
+            { latitude: report.location.lat, longitude: report.location.lng }
+          );
+          distanceStr = distMeters >= 1000 
+            ? `${(distMeters / 1000).toFixed(1)} km` 
+            : `${Math.round(distMeters)} m`;
+        }
+
         return (
           <div 
             key={report.id} 
@@ -388,15 +403,27 @@ const AssignedReports = ({ teamId, onViewOnMap }) => {
               className="p-4 flex items-start justify-between cursor-pointer select-none active:bg-surface-hover/50"
             >
               <div className="flex-1 min-w-0 pr-4">
-                <div className="flex items-center  mb-1.5">
+                <div className="flex items-center mb-1.5">
                   {renderPriority(report.prioLevel)}
                 </div>
                 <h3 className="font-bold text-text-primary truncate text-base uppercase tracking-wide">
                   {report.reportType || "INCIDENT"}
                 </h3>
-                <div className="flex items-center gap-1.5 text-text-muted text-xs mt-1.5 font-mono">
-                  <Clock size={12} />
-                  <span className="truncate">{dateString}</span>
+                
+                {/* DATE & DISTANCE ROW */}
+                <div className="flex items-center justify-between mt-1.5">
+                  <div className="flex items-center gap-1.5 text-text-muted text-xs font-mono min-w-0">
+                    <Clock size={12} className="shrink-0" />
+                    <span className="truncate">{dateString}</span>
+                  </div>
+                  
+                  {/* Distance Indicator */}
+                  {distanceStr && (
+                    <div className="flex items-center gap-1 text-primary text-xs font-bold shrink-0 pl-2">
+                      <MapPin size={12} className="shrink-0" />
+                      <span>{distanceStr} away</span>
+                    </div>
+                  )}
                 </div>
               </div>
               

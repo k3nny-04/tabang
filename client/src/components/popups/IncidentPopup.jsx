@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getStatusColor } from "../../utils/statusColor";
 import { getAddressFromCoordinates } from "../../utils/geocode";
 import { teamsApi } from "../../api/teamsApi";
+import { MdDirections } from "react-icons/md";
 
 const statusLabel = (value) => {
   switch (value) {
@@ -18,7 +19,7 @@ const statusLabel = (value) => {
   }
 };
 
-const IncidentPopup = ({ report }) => {
+const IncidentPopup = ({ report, showGoButton = false, onGoClick }) => {
   const [address, setAddress] = useState(
     report?.location?.lat != null && report?.location?.lng != null
       ? "Fetching address..."
@@ -160,6 +161,18 @@ const IncidentPopup = ({ report }) => {
           </div>
         ) : null}
       </div>
+
+      {showGoButton && onGoClick ? (
+        <div className="mt-3 flex justify-start">
+          <button
+            onClick={onGoClick}
+            className="inline-flex items-center gap-1 rounded-md border border-border-light bg-surface px-3 py-2 text-xs font-semibold text-text-primary transition hover:bg-bg-secondary active:scale-95"
+          >
+            <MdDirections size={14} />
+            Go
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 };
