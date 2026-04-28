@@ -4,7 +4,7 @@ import { FaCrosshairs } from "react-icons/fa";
 import { MdLayers } from "react-icons/md";
 import { FaHouse, FaTriangleExclamation } from "react-icons/fa6";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Shield, Truck, AlertCircle } from "lucide-react"; 
+import { Shield, Truck, AlertCircle } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { getDistance } from "geolib";
@@ -14,11 +14,11 @@ import BottomSheet from "./BottomSheet";
 import Layers from "./Layers";
 import ShelterPopup from "./popups/ShelterPopup";
 import IncidentPopup from "./popups/IncidentPopup";
-import NearestShelterCard from "./NearestShelterCard"; 
-import IncidentCard from "./IncidentCard";             
+import NearestShelterCard from "./NearestShelterCard";
+import IncidentCard from "./IncidentCard";
 
-import { sheltersApi } from "../api/sheltersApi"; 
-import { teamsApi } from "../api/teamsApi"; 
+import { sheltersApi } from "../api/sheltersApi";
+import { teamsApi } from "../api/teamsApi";
 import { reportsApi } from "../api/reportsApi";
 import nagaBoundary from "../data/nagaBoundary.json";
 
@@ -34,14 +34,11 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
   const { userDoc } = useAuthContext();
-  const {
-    currentLocation,
-    startLiveTracking,
-    stopLiveTracking,
-  } = useLocationContext();
+  const { currentLocation, startLiveTracking, stopLiveTracking } =
+    useLocationContext();
 
   const currentMarkerRef = useRef(null);
-  const lastRenderedLocRef = useRef(null); 
+  const lastRenderedLocRef = useRef(null);
   const { showToast } = useToast();
 
   // Map States
@@ -55,7 +52,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
   const incidentMarkersRef = useRef([]);
   const { activeLayers } = useLayers();
   const [layersOpen, setLayersOpen] = useState(false);
-  
+
   // Streams State
   const [myTeam, setMyTeam] = useState(null);
   const [shelters, setShelters] = useState([]);
@@ -68,7 +65,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
   // --- ROUTING STATES ---
   const [targetShelter, setTargetShelter] = useState(null);
   const [targetIncident, setTargetIncident] = useState(null);
-  
+
   // --- LIVE ROUTING STATES (ADDED) ---
   const [liveDistanceStr, setLiveDistanceStr] = useState(null);
   const [liveDistanceMeters, setLiveDistanceMeters] = useState(null);
@@ -119,40 +116,103 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
     mapRef.current.on("load", () => {
       setMapInstance(mapRef.current);
 
-      if (!mapRef.current.getSource('naga-boundary')) {
-        mapRef.current.addSource('naga-boundary', { type: 'geojson', data: nagaBoundary });
+      if (!mapRef.current.getSource("naga-boundary")) {
+        mapRef.current.addSource("naga-boundary", {
+          type: "geojson",
+          data: nagaBoundary,
+        });
         mapRef.current.addLayer({
-          id: 'naga-outline', type: 'line', source: 'naga-boundary',
-          paint: { 'line-color': '#1c1c1e', 'line-width': 0.2 }
+          id: "naga-outline",
+          type: "line",
+          source: "naga-boundary",
+          paint: { "line-color": "#1c1c1e", "line-width": 0.2 },
         });
       }
-      
-      mapRef.current.addSource('noah-flood', { type: 'vector', url: 'mapbox://kenny04.3ap67c3z' });
+
+      mapRef.current.addSource("noah-flood", {
+        type: "vector",
+        url: "mapbox://kenny04.3ap67c3z",
+      });
       mapRef.current.addLayer({
-        id: 'camarines-sur-flood-5yr', type: 'fill', source: 'noah-flood', 'source-layer': 'CamarinesSur-2bt53o', 
-        layout: { 'visibility': activeLayers.floodMap ? 'visible' : 'none' },
-        paint: { 'fill-color': ['match', ['get', 'Var'], 1, '#fde047', 2, '#f97316', 3, '#dc2626', 'transparent'], 'fill-opacity': 0.4 }
+        id: "camarines-sur-flood-5yr",
+        type: "fill",
+        source: "noah-flood",
+        "source-layer": "CamarinesSur-2bt53o",
+        layout: { visibility: activeLayers.floodMap ? "visible" : "none" },
+        paint: {
+          "fill-color": [
+            "match",
+            ["get", "Var"],
+            1,
+            "#fde047",
+            2,
+            "#f97316",
+            3,
+            "#dc2626",
+            "transparent",
+          ],
+          "fill-opacity": 0.4,
+        },
       });
 
-      mapRef.current.addSource('noah-landslide', { type: 'vector', url: 'mapbox://kenny04.c16t211p' });
+      mapRef.current.addSource("noah-landslide", {
+        type: "vector",
+        url: "mapbox://kenny04.c16t211p",
+      });
       mapRef.current.addLayer({
-        id: 'camarines-sur-landslide', type: 'fill', source: 'noah-landslide', 'source-layer': 'CamarinesSur_Landslides-2agkdp', 
-        layout: { 'visibility': activeLayers.landslide ? 'visible' : 'none' },
-        paint: { 'fill-color': ['match', ['get', 'HAZ'], 1, '#fde047', 2, '#f97316', 3, '#dc2626', 'transparent'], 'fill-opacity': 0.4 }
+        id: "camarines-sur-landslide",
+        type: "fill",
+        source: "noah-landslide",
+        "source-layer": "CamarinesSur_Landslides-2agkdp",
+        layout: { visibility: activeLayers.landslide ? "visible" : "none" },
+        paint: {
+          "fill-color": [
+            "match",
+            ["get", "HAZ"],
+            1,
+            "#fde047",
+            2,
+            "#f97316",
+            3,
+            "#dc2626",
+            "transparent",
+          ],
+          "fill-opacity": 0.4,
+        },
       });
 
-      mapRef.current.addSource('noah-storm-surge', { type: 'vector', url: 'mapbox://kenny04.cbaxvf7y' });
+      mapRef.current.addSource("noah-storm-surge", {
+        type: "vector",
+        url: "mapbox://kenny04.cbaxvf7y",
+      });
       mapRef.current.addLayer({
-        id: 'camarines-sur-storm-surge', type: 'fill', source: 'noah-storm-surge', 'source-layer': 'CamarinesSur_StormSurge-10zspw', 
-        layout: { 'visibility': activeLayers.stormSurge ? 'visible' : 'none' },
-        paint: { 'fill-color': ['match', ['get', 'HAZ'], 1, '#fde047', 2, '#f97316', 3, '#dc2626', 'transparent'], 'fill-opacity': 0.4 }
+        id: "camarines-sur-storm-surge",
+        type: "fill",
+        source: "noah-storm-surge",
+        "source-layer": "CamarinesSur_StormSurge-10zspw",
+        layout: { visibility: activeLayers.stormSurge ? "visible" : "none" },
+        paint: {
+          "fill-color": [
+            "match",
+            ["get", "HAZ"],
+            1,
+            "#fde047",
+            2,
+            "#f97316",
+            3,
+            "#dc2626",
+            "transparent",
+          ],
+          "fill-opacity": 0.4,
+        },
       });
     });
 
     const resizeObserver = new ResizeObserver(() => {
       if (mapRef.current) mapRef.current.resize();
     });
-    if (mapContainerRef.current) resizeObserver.observe(mapContainerRef.current);
+    if (mapContainerRef.current)
+      resizeObserver.observe(mapContainerRef.current);
 
     return () => {
       resizeObserver.disconnect();
@@ -162,8 +222,14 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
       }
       initialized.current = false;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Refs to hold latest handler callbacks — lets marker effects call the
+  // current handler without listing it as a dependency (which would cause
+  // markers to be torn down and re-created on every GPS tick).
+  const handleIncidentRouteRef = useRef(null);
+  const handleShelterRouteRef = useRef(null);
 
   const broadcastTeamLocation = useCallback(
     async (coords) => {
@@ -187,7 +253,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
         broadcastInProgressRef.current = false;
       }
     },
-    [myTeam?.id, showToast]
+    [myTeam?.id, showToast],
   );
 
   const handleStartBroadcast = () => {
@@ -227,12 +293,15 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
         const start = { lat: currentLocation.lat, lng: currentLocation.lng };
         const end = { lat: target.lat, lng: target.lng };
         const route = await getDirections(start, end);
-        
+
         if (route) {
           setRouteData(route);
           setTargetShelter(null);
           setTargetIncident(report);
-          lastRouteFetchLocation.current = { latitude: currentLocation.lat, longitude: currentLocation.lng };
+          lastRouteFetchLocation.current = {
+            latitude: currentLocation.lat,
+            longitude: currentLocation.lng,
+          };
           setLayersOpen(false);
         }
       } catch (error) {
@@ -240,7 +309,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
         showToast("Could not generate a route to the incident", "error");
       }
     },
-    [currentLocation, showToast]
+    [currentLocation, showToast],
   );
 
   const handleShelterRoute = useCallback(
@@ -258,12 +327,15 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
         const start = { lat: currentLocation.lat, lng: currentLocation.lng };
         const end = { lat: target.lat, lng: target.lng };
         const route = await getDirections(start, end);
-        
+
         if (route) {
           setRouteData(route);
           setTargetIncident(null);
           setTargetShelter(shelter);
-          lastRouteFetchLocation.current = { latitude: currentLocation.lat, longitude: currentLocation.lng };
+          lastRouteFetchLocation.current = {
+            latitude: currentLocation.lat,
+            longitude: currentLocation.lng,
+          };
           setLayersOpen(false);
         }
       } catch (error) {
@@ -271,8 +343,13 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
         showToast("Could not generate a route to the shelter", "error");
       }
     },
-    [currentLocation, showToast]
+    [currentLocation, showToast],
   );
+
+  // Keep refs current after every render so marker callbacks always call
+  // the latest version of these handlers.
+  handleIncidentRouteRef.current = handleIncidentRoute;
+  handleShelterRouteRef.current = handleShelterRoute;
 
   const closeRouting = () => {
     setTargetShelter(null);
@@ -303,17 +380,21 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
 
     // 1. Update distance continuously using free local math
     const distanceInMeters = getDistance(currentCoords, targetCoords);
-    const formattedDistance = distanceInMeters >= 1000
-      ? `${(distanceInMeters / 1000).toFixed(1)} km`
-      : `${Math.round(distanceInMeters)} meters`;
+    const formattedDistance =
+      distanceInMeters >= 1000
+        ? `${(distanceInMeters / 1000).toFixed(1)} km`
+        : `${Math.round(distanceInMeters)} meters`;
 
     setLiveDistanceStr(formattedDistance);
     setLiveDistanceMeters(distanceInMeters);
 
     // 2. Mapbox API Throttle (Only redraw the blue line if moved 25+ meters)
     if (lastRouteFetchLocation.current) {
-      const distanceFromLastFetch = getDistance(currentCoords, lastRouteFetchLocation.current);
-      if (distanceFromLastFetch < 25) return; 
+      const distanceFromLastFetch = getDistance(
+        currentCoords,
+        lastRouteFetchLocation.current,
+      );
+      if (distanceFromLastFetch < 25) return;
     }
 
     lastRouteFetchLocation.current = currentCoords;
@@ -321,22 +402,24 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
     // 3. Refetch Route
     getDirections(
       { lat: currentCoords.latitude, lng: currentCoords.longitude },
-      { lat: targetCoords.latitude, lng: targetCoords.longitude }
+      { lat: targetCoords.latitude, lng: targetCoords.longitude },
     )
       .then((route) => {
         if (route) setRouteData(route);
       })
       .catch((err) => console.error("Live route update failed", err));
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentLocation, targetShelter, targetIncident]);
 
-
   useEffect(() => {
-    if (!isBroadcasting || !currentLocation || myTeam?.status !== "DEPLOYED") return;
+    if (!isBroadcasting || !currentLocation || myTeam?.status !== "DEPLOYED")
+      return;
 
     const lastLocation = lastBroadcastLocationRef.current;
-    const moved = lastLocation ? getDistance(lastLocation, currentLocation) : Infinity;
+    const moved = lastLocation
+      ? getDistance(lastLocation, currentLocation)
+      : Infinity;
     if (lastLocation && moved < 25) return;
 
     broadcastTeamLocation(currentLocation);
@@ -348,29 +431,33 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
 
     if (lastRenderedLocRef.current) {
       const distance = getDistance(lastRenderedLocRef.current, currentLocation);
-      if (distance < 4) return; 
+      if (distance < 4) return;
     }
-    
+
     lastRenderedLocRef.current = currentLocation;
 
     if (!currentMarkerRef.current) {
       const el = document.createElement("div");
-      el.className = "relative flex h-8 w-8 items-center justify-center transition-all duration-700 ease-linear"; 
-      
+      el.className =
+        "relative flex h-8 w-8 items-center justify-center transition-all duration-700 ease-linear";
+
       el.innerHTML = `
         <div class="absolute top-0 left-1/2 -translate-x-1/2 h-0 w-0 border-l-[6px] border-r-[6px] border-b-8 border-l-transparent border-r-transparent border-b-blue-500 z-10"></div>
         <div class="absolute h-4 w-4 rounded-full bg-blue-500 border-2 border-white shadow-[0_0_8px_rgba(0,0,0,0.3)] z-20"></div>
         <div class="absolute h-4 w-4 rounded-full bg-blue-400 animate-ping opacity-75 z-0"></div>
       `;
 
-      currentMarkerRef.current = new mapboxgl.Marker({ 
+      currentMarkerRef.current = new mapboxgl.Marker({
         element: el,
-        rotationAlignment: "map"
+        rotationAlignment: "map",
       })
         .setLngLat([currentLocation.lng, currentLocation.lat])
         .addTo(mapInstance);
     } else {
-      currentMarkerRef.current.setLngLat([currentLocation.lng, currentLocation.lat]);
+      currentMarkerRef.current.setLngLat([
+        currentLocation.lng,
+        currentLocation.lat,
+      ]);
     }
 
     const heading = currentLocation.heading;
@@ -440,7 +527,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
     if (coordinates?.length) {
       const bounds = coordinates.reduce(
         (b, coord) => b.extend(coord),
-        new mapboxgl.LngLatBounds(coordinates[0], coordinates[0])
+        new mapboxgl.LngLatBounds(coordinates[0], coordinates[0]),
       );
       mapInstance.fitBounds(bounds, { padding: 60, duration: 1000 });
     }
@@ -449,14 +536,26 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
   // --- HAZARD LAYERS VISIBILITY TOGGLE ---
   useEffect(() => {
     if (!mapInstance) return;
-    if (mapInstance.getLayer('camarines-sur-flood-5yr')) {
-      mapInstance.setLayoutProperty('camarines-sur-flood-5yr', 'visibility', activeLayers.floodMap ? 'visible' : 'none');
+    if (mapInstance.getLayer("camarines-sur-flood-5yr")) {
+      mapInstance.setLayoutProperty(
+        "camarines-sur-flood-5yr",
+        "visibility",
+        activeLayers.floodMap ? "visible" : "none",
+      );
     }
-    if (mapInstance.getLayer('camarines-sur-landslide')) {
-      mapInstance.setLayoutProperty('camarines-sur-landslide', 'visibility', activeLayers.landslide ? 'visible' : 'none');
+    if (mapInstance.getLayer("camarines-sur-landslide")) {
+      mapInstance.setLayoutProperty(
+        "camarines-sur-landslide",
+        "visibility",
+        activeLayers.landslide ? "visible" : "none",
+      );
     }
-    if (mapInstance.getLayer('camarines-sur-storm-surge')) {
-      mapInstance.setLayoutProperty('camarines-sur-storm-surge', 'visibility', activeLayers.stormSurge ? 'visible' : 'none');
+    if (mapInstance.getLayer("camarines-sur-storm-surge")) {
+      mapInstance.setLayoutProperty(
+        "camarines-sur-storm-surge",
+        "visibility",
+        activeLayers.stormSurge ? "visible" : "none",
+      );
     }
   }, [mapInstance, activeLayers]);
 
@@ -469,31 +568,46 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
 
     shelters.forEach((item) => {
       const { lat, lng } = item.location || {};
-      if (!lng || !lat) return; 
+      if (!lng || !lat) return;
       const markerEl = document.createElement("div");
-      markerEl.className = "flex h-9 w-9 items-center justify-center rounded-full bg-green-600 border-2 border-white shadow-lg cursor-pointer";
+      markerEl.className =
+        "flex h-9 w-9 items-center justify-center rounded-full bg-green-600 border-2 border-white shadow-lg cursor-pointer";
       createRoot(markerEl).render(<FaHouse className="text-white text-sm" />);
       const popupEl = document.createElement("div");
-      createRoot(popupEl).render(<ShelterPopup item={item} onGoClick={() => handleShelterRoute(item)} showGoButton={true} />); 
-      const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" }).setDOMContent(popupEl);
-      const marker = new mapboxgl.Marker(markerEl).setLngLat([lng, lat]).setPopup(popup).addTo(mapRef.current);
+      const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" });
+      createRoot(popupEl).render(
+        <ShelterPopup
+          item={item}
+          onGoClick={() => {
+            handleShelterRouteRef.current(item);
+            popup.remove();
+          }}
+          showGoButton={true}
+        />,
+      );
+      popup.setDOMContent(popupEl);
+      const marker = new mapboxgl.Marker(markerEl)
+        .setLngLat([lng, lat])
+        .setPopup(popup)
+        .addTo(mapRef.current);
       evacMarkersRef.current.push(marker);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLayers.evacShelters, shelters]); 
+  }, [activeLayers.evacShelters, shelters]);
 
   // --- MARKERS: INCIDENT REPORTS ---
   useEffect(() => {
     if (!mapRef.current) return;
     incidentMarkersRef.current.forEach((marker) => marker.remove());
     incidentMarkersRef.current = [];
-    
+
     if (!activeLayers.incidentReports && !activeLayers.assignedReports) return;
 
     let reportsToRender = incidents;
     if (activeLayers.assignedReports) {
-      reportsToRender = incidents.filter(report => 
-        myTeam?.assignedReports?.includes(report.id) || report.assignedTeam === myTeam?.id
+      reportsToRender = incidents.filter(
+        (report) =>
+          myTeam?.assignedReports?.includes(report.id) ||
+          report.assignedTeam === myTeam?.id,
       );
     }
 
@@ -507,18 +621,25 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
       }`;
       createRoot(markerEl).render(<FaTriangleExclamation className="text-white text-[15px]" />);
       const popupEl = document.createElement("div");
+      const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" });
       createRoot(popupEl).render(
         <IncidentPopup
           report={report}
           showGoButton={userDoc?.role === "RESPONDER"}
-          onGoClick={() => handleIncidentRoute(report)} 
+          onGoClick={() => { handleIncidentRouteRef.current(report); popup.remove(); }}
         />
       );
-      const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" }).setDOMContent(popupEl);
+      popup.setDOMContent(popupEl);
       const marker = new mapboxgl.Marker(markerEl).setLngLat([lng, lat]).setPopup(popup).addTo(mapRef.current);
       incidentMarkersRef.current.push(marker);
     });
-  }, [activeLayers.incidentReports, activeLayers.assignedReports, incidents, myTeam, handleIncidentRoute, userDoc?.role]);
+  }, [
+    activeLayers.incidentReports,
+    activeLayers.assignedReports,
+    incidents,
+    myTeam,
+    userDoc?.role,
+  ]);
 
   // --- ACTIONS ---
   const handleRecenter = () => {
@@ -536,45 +657,73 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
         duration: 1200,
       });
     } else {
-      showToast("Waiting for live tracking data...", "info"); 
+      showToast("Waiting for live tracking data...", "info");
     }
   };
 
   const renderHazardLegend = () => {
-    if (!activeLayers.floodMap && !activeLayers.landslide && !activeLayers.stormSurge) return null;
+    if (
+      !activeLayers.floodMap &&
+      !activeLayers.landslide &&
+      !activeLayers.stormSurge
+    )
+      return null;
     let title, highLabel, medLabel, lowLabel;
     if (activeLayers.floodMap) {
-      title = "Flood Map"; highLabel = "High (>1.5m)"; medLabel = "Medium (0.5-1.5m)"; lowLabel = "Low (0-0.5m)";
+      title = "Flood Map";
+      highLabel = "High (>1.5m)";
+      medLabel = "Medium (0.5-1.5m)";
+      lowLabel = "Low (0-0.5m)";
     } else if (activeLayers.stormSurge) {
-      title = "Storm Surge Hazard"; highLabel = "High (>1.5m depth/vel)"; medLabel = "Medium (0.5-1.5m depth/vel)"; lowLabel = "Low (0.2-0.5m depth)";
+      title = "Storm Surge Hazard";
+      highLabel = "High (>1.5m depth/vel)";
+      medLabel = "Medium (0.5-1.5m depth/vel)";
+      lowLabel = "Low (0.2-0.5m depth)";
     } else if (activeLayers.landslide) {
-      title = "Landslide Hazard"; highLabel = "High (No Dwelling)"; medLabel = "Medium (Intervention Req)"; lowLabel = "Low (Continuous Monitor)";
+      title = "Landslide Hazard";
+      highLabel = "High (No Dwelling)";
+      medLabel = "Medium (Intervention Req)";
+      lowLabel = "Low (Continuous Monitor)";
     }
     return (
       <div className="absolute bottom-25 md:bottom-6 left-4 z-10 rounded-xl bg-surface px-3 py-2 text-xs text-text-primary shadow-xl border border-border-light pointer-events-none min-w-36">
         <h4 className="mb-2 font-bold">{title}</h4>
-        <div className="mb-1 flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-[#dc2626] opacity-75 shrink-0"></span><span>{highLabel}</span></div>
-        <div className="mb-1 flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-[#f97316] opacity-75 shrink-0"></span><span>{medLabel}</span></div>
-        <div className="flex items-center gap-2"><span className="h-3 w-3 rounded-sm bg-[#fde047] opacity-75 shrink-0"></span><span>{lowLabel}</span></div>
-        <div className="mt-2 pt-2 border-t border-border-light text-[10px] text-text-muted italic font-medium">Source: PROJECT NOAH</div>
+        <div className="mb-1 flex items-center gap-2">
+          <span className="h-3 w-3 rounded-sm bg-[#dc2626] opacity-75 shrink-0"></span>
+          <span>{highLabel}</span>
+        </div>
+        <div className="mb-1 flex items-center gap-2">
+          <span className="h-3 w-3 rounded-sm bg-[#f97316] opacity-75 shrink-0"></span>
+          <span>{medLabel}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-sm bg-[#fde047] opacity-75 shrink-0"></span>
+          <span>{lowLabel}</span>
+        </div>
+        <div className="mt-2 pt-2 border-t border-border-light text-[10px] text-text-muted italic font-medium">
+          Source: PROJECT NOAH
+        </div>
       </div>
     );
   };
 
   return (
     <div className="relative h-full w-full rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-      
-{/* STYLISH TEAM HEADER */}
+      {/* STYLISH TEAM HEADER */}
       {myTeam && (
         <div className="absolute top-4 left-4 right-4 z-20 md:left-1/2 md:-translate-x-1/2 md:w-[320px]">
           <div className="bg-text-primary rounded-2xl p-4 shadow-md text-surface relative overflow-hidden transition-all duration-300">
             <div className="absolute -right-4 -top-4 text-surface/5 pointer-events-none">
-              {myTeam.status === "DEPLOYED" ? <Truck size={80} /> : <Shield size={80} />}
+              {myTeam.status === "DEPLOYED" ? (
+                <Truck size={80} />
+              ) : (
+                <Shield size={80} />
+              )}
             </div>
-            
+
             <div className="relative z-10">
               {/* COMPACT TOP ROW (Clickable to Expand/Collapse) */}
-              <div 
+              <div
                 className="flex justify-between items-center cursor-pointer group"
                 onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
               >
@@ -586,13 +735,17 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
                     {myTeam.teamName || "Unnamed Team"}
                   </h2>
                 </div>
-                
+
                 <div className="flex items-center gap-3">
                   <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-surface-elevated text-text-primary shrink-0 shadow-sm">
                     {myTeam.status || "STANDBY"}
                   </span>
                   <div className="flex items-center justify-center h-6 w-6 rounded-full bg-surface/10 text-surface/70 transition-colors group-hover:bg-surface/20 group-hover:text-surface">
-                    {isHeaderExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    {isHeaderExpanded ? (
+                      <ChevronUp size={14} />
+                    ) : (
+                      <ChevronDown size={14} />
+                    )}
                   </div>
                 </div>
               </div>
@@ -606,10 +759,14 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
                         Assigned Reports
                       </span>
                       <span className="text-base font-bold flex items-center gap-1.5 text-surface mt-0.5">
-                        <AlertCircle 
-                          size={14} 
-                          className={myTeam.assignedReports?.length > 0 ? "text-yellow-400" : "text-surface/40"} 
-                        /> 
+                        <AlertCircle
+                          size={14}
+                          className={
+                            myTeam.assignedReports?.length > 0
+                              ? "text-yellow-400"
+                              : "text-surface/40"
+                          }
+                        />
                         {myTeam.assignedReports?.length || 0}
                       </span>
                     </div>
@@ -623,15 +780,23 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
                           <p className="text-[10px] uppercase tracking-wider text-surface/60">
                             Location broadcast
                           </p>
-                          <p className={`text-xs font-bold mt-0.5 ${isBroadcasting ? "text-emerald-400" : "text-surface/70"}`}>
-                            {isBroadcasting ? "Active (25m interval)" : "Broadcast paused"}
+                          <p
+                            className={`text-xs font-bold mt-0.5 ${isBroadcasting ? "text-emerald-400" : "text-surface/70"}`}
+                          >
+                            {isBroadcasting
+                              ? "Active (25m interval)"
+                              : "Broadcast paused"}
                           </p>
                         </div>
                         <button
-                          onClick={isBroadcasting ? handleStopBroadcast : handleStartBroadcast}
+                          onClick={
+                            isBroadcasting
+                              ? handleStopBroadcast
+                              : handleStartBroadcast
+                          }
                           className={`rounded-full px-3 py-1.5 text-xs font-bold transition shadow-sm ${
-                            isBroadcasting 
-                              ? "bg-red-500/90 text-white hover:bg-red-500" 
+                            isBroadcasting
+                              ? "bg-red-500/90 text-white hover:bg-red-500"
                               : "bg-emerald-500/90 text-white hover:bg-emerald-500"
                           }`}
                         >
@@ -646,7 +811,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
           </div>
         </div>
       )}
-      
+
       {/* MAP CONTAINER */}
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
 
@@ -655,28 +820,32 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
 
       {/* RENDER TARGET CARDS ON BOTTOM */}
       {targetShelter && routeData && (
-        <NearestShelterCard 
-          shelter={targetShelter} 
+        <NearestShelterCard
+          shelter={targetShelter}
           // Inject the actively updating distance string OR fallback to static mapbox data
-          distanceInfo={liveDistanceStr || `${(routeData.distance / 1000).toFixed(1)} km`} 
-          onClose={closeRouting} 
+          distanceInfo={
+            liveDistanceStr || `${(routeData.distance / 1000).toFixed(1)} km`
+          }
+          onClose={closeRouting}
         />
       )}
-      
+
       {targetIncident && routeData && (
-        <IncidentCard 
-          incident={targetIncident} 
+        <IncidentCard
+          incident={targetIncident}
           // Inject dynamically calculated meters into the routeData object so the card can recalculate km automatically
           distanceInfo={{
             ...routeData,
-            distance: liveDistanceMeters || routeData.distance
-          }} 
-          onClose={closeRouting} 
+            distance: liveDistanceMeters || routeData.distance,
+          }}
+          onClose={closeRouting}
         />
       )}
 
       {/* FLOATING CONTROLS */}
-      <div className={`absolute right-2 z-10 flex flex-col items-end gap-3 transition-all duration-300 ${targetShelter || targetIncident ? "bottom-64" : "bottom-20 md:bottom-6"}`}>
+      <div
+        className={`absolute right-2 z-10 flex flex-col items-end gap-3 transition-all duration-300 ${targetShelter || targetIncident ? "bottom-64" : "bottom-20 md:bottom-6"}`}
+      >
         <button
           onClick={handleRecenter}
           className="flex h-12 w-12 items-center justify-center rounded-full bg-surface shadow-lg transition hover:opacity-90 active:scale-95"
@@ -698,7 +867,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
         open={layersOpen}
         onClose={() => setLayersOpen(false)}
         title="Map Layers"
-        height={65} 
+        height={65}
       >
         <Layers isResponder={true} />
       </BottomSheet>
