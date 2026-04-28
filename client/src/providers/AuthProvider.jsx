@@ -79,32 +79,45 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // --- Listen for Auth State ---
+// --- Listen for Auth State ---
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      
+    let unsubscribeDoc = null; // Store the Firestore listener
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        try {
-          const res = await usersApi.getUser(currentUser.uid);
-          if (res.success) {
-            setUserDoc(res.data);
+        setUser(currentUser);
+        
+        // Start streaming the user document
+        unsubscribeDoc = usersApi.streamUser(currentUser.uid, (data) => {
+          if (data) {
+            setUserDoc(data);
           } else {
             console.warn("User document not found in Firestore.");
             setUserDoc(null);
           }
-        } catch (error) {
-          console.error("Error fetching user document:", error);
-          setUserDoc(null);
-        }
-        setUser(currentUser);
+          // Set loading to false only after the doc is fetched
+          setLoading(false);
+        });
+
       } else {
-        setUser(null)
+        // User logged out
+        setUser(null);
         setUserDoc(null);
+        setLoading(false);
+        
+        // Stop streaming the user document
+        if (unsubscribeDoc) {
+          unsubscribeDoc();
+          unsubscribeDoc = null;
+        }
       }
-      setLoading(false); 
     });
 
-    return unsubscribe;
+    // Cleanup both listeners when the provider unmounts
+    return () => {
+      unsubscribeAuth();
+      if (unsubscribeDoc) unsubscribeDoc();
+    };
   }, []);
 
   const value = {

@@ -11,6 +11,7 @@ import {
   where,
   writeBatch,
   getDoc,
+  arrayRemove,
 } from "firebase/firestore";
 
 const COLLECTION_NAME = "teams";
@@ -97,6 +98,19 @@ export const teamsApi = {
     }
   },
 
+  removeAssignedReport: async (teamId, reportId) => {
+    try {
+      const teamRef = doc(db, COLLECTION_NAME, teamId);
+      await updateDoc(teamRef, {
+        assignedReports: arrayRemove(reportId)
+      });
+      return { success: true };
+    } catch (error) {
+      console.error("Error removing assigned report from team:", error);
+      return { success: false, error };
+    }
+  },
+
   deleteTeam: async (teamId) => {
     try {
       const teamRef = doc(db, COLLECTION_NAME, teamId);
@@ -152,5 +166,36 @@ export const teamsApi = {
     );
 
     return unsubscribe;
-  },  
+  },
+  
+  /**
+   * Stream a single team's data in real-time
+   */
+  streamTeam: (teamId, callback) => {
+    if (!teamId) {
+      console.warn("streamTeam called without a teamId");
+      return () => {}; 
+    }
+
+    const teamRef = doc(db, COLLECTION_NAME, teamId);
+    
+    const unsubscribe = onSnapshot(
+      teamRef, 
+      (docSnap) => {
+        if (docSnap.exists()) {
+          callback({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        } else {
+          callback(null);
+        }
+      }, 
+      (error) => {
+        console.error(`Error streaming team with ID ${teamId}:`, error);
+      }
+    );
+
+    return unsubscribe;
+  },
 };

@@ -13,6 +13,7 @@ import EmailLoginPage from "./pages/EmailLoginPage";
 import { useAuthContext } from "./providers/useAuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
+import ResponderRoute from "./components/ResponderRoute";
 import SignupPage from "./pages/SignUpPage";
 import UserReportsPage from "./pages/UserReportsPage";
 import LocationOnboarding from "./components/modals/LocationOnBoardingModal";
@@ -29,15 +30,26 @@ import { ToastProvider } from "./providers/ToastProvider";
 import SplashScreen from "./pages/SplashScreen";
 import UsersPage from "./pages/admin/UsersPage";
 import InventoryPage from "./pages/admin/InventoryPage";
+import TeamPage from "./pages/TeamPage";
+import AssignedReports from "./components/AssignedReports";
 
 const AppContent = () => {
   const { user, userDoc, loading } = useAuthContext();
   const [reportOpen, setReportOpen] = useState(false);
+  const [targetCoords, setTargetCoords] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   const showNavbarPaths = ['/map', '/account'];
   const shouldShowNavbar = user && userDoc?.role !== "ADMIN" && showNavbarPaths.includes(location.pathname);
+
+  const handleViewOnMap = (coords) => {
+    setTargetCoords({ 
+      ...coords, 
+      _timestamp: Date.now() 
+    }); 
+    setReportOpen(false);          
+  };
 
   if (loading) {
     return (
@@ -84,9 +96,14 @@ const AppContent = () => {
 
               {/* PROTECTED ROUTES */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/map" element={<MapPage />} />
+                <Route path="/map" element={<MapPage targetCoords={targetCoords}/>} />
                 <Route path="/account" element={<AccountPage />} />
                 <Route path="/my-reports" element={<UserReportsPage />} />
+              </Route>
+
+              {/* RESPONDER ROUTES */}
+              <Route element={<ResponderRoute />}>
+                <Route path="/my-team" element={<TeamPage />} />
               </Route>
 
               {/* ADMIN ROUTES */}
@@ -114,10 +131,17 @@ const AppContent = () => {
             <BottomSheet
               open={reportOpen}
               onClose={() => setReportOpen(false)}
-              title="Create a Report"
+              title={userDoc?.role === "RESPONDER" ? "Assigned Reports" : "Create a Report"}
               height={85}
             >
-              <ReportForm onSuccess={() => setReportOpen(false)} />
+              {userDoc?.role === "RESPONDER" ? (
+                <AssignedReports 
+                  teamId={userDoc?.teamId}
+                  onViewOnMap={handleViewOnMap} 
+                />
+              ) : (
+                <ReportForm onSuccess={() => setReportOpen(false)} />
+              )}
             </BottomSheet>
           )}
         </div>
