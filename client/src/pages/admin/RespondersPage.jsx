@@ -24,6 +24,7 @@ import { teamsApi } from "../../api/teamsApi";
 import { reportsApi } from "../../api/reportsApi";
 import { usersApi } from "../../api/usersApi";
 import AddTeamModal from "../../components/modals/AddTeamModal";
+import TeamManagementPage from "./TeamManagementPage";
 
 // --- DRAGGABLE REPORT COMPONENT ---
 const DraggableReport = ({ report }) => {
@@ -364,6 +365,7 @@ const RespondersPage = () => {
   const [activeReport, setActiveReport] = useState(null);
   const [deployModal, setDeployModal] = useState({ isOpen: false, team: null });
   const [isDeploying, setIsDeploying] = useState(false);
+  const [activeTab, setActiveTab] = useState("DISPATCH");
 
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
 
@@ -583,33 +585,65 @@ const RespondersPage = () => {
 
   return (
     <>
-      <DndContext
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        collisionDetection={pointerWithin}
-      >
-        <div className="flex flex-col h-[calc(100vh-4rem)] min-h-150 space-y-6 w-full">
-          {/* HEADER */}
-          <div className="bg-surface p-6 rounded-2xl shadow-sm border border-border-light shrink-0 flex justify-between items-center">
+      <div className="flex flex-col h-[calc(100vh-4rem)] min-h-150 space-y-6 w-full">
+        <div className="bg-surface p-6 rounded-2xl shadow-sm border border-border-light shrink-0">
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-black text-text-primary tracking-wide">
-                Responders Page
+                {activeTab === "DISPATCH" ? "Dispatch" : "Teams"}
               </h1>
               <p className="text-text-muted text-sm mt-1">
-                Assign reports and deploy teams.
+                {activeTab === "DISPATCH"
+                  ? "Assign reports and deploy teams."
+                  : "Browse and manage team records."}
               </p>
             </div>
-            
-            <button 
-              onClick={() => setIsAddTeamModalOpen(true)}
-              className="flex items-center gap-2 bg-text-primary text-surface px-4 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity shadow-sm"
-            >
-              <Plus size={18} />
-              Create Team
-            </button>
+
+            {activeTab === "DISPATCH" && (
+              <button
+                onClick={() => setIsAddTeamModalOpen(true)}
+                className="flex items-center gap-2 rounded-xl bg-text-primary text-white px-5 py-2.5 text-sm font-semibold hover:bg-neutral-800 transition-all shadow-md"
+              >
+                <Plus size={18} />
+                <span>Create Team</span>
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+          <div className="flex items-center gap-6 border-b border-gray-100">
+            <button
+              onClick={() => setActiveTab("DISPATCH")}
+              className={`pb-3 text-sm font-bold flex items-center gap-2 transition-all relative ${
+                activeTab === "DISPATCH" ? "text-text-primary" : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              Dispatch
+              {activeTab === "DISPATCH" && (
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-text-primary rounded-t-full"></span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("TEAMS")}
+              className={`pb-3 text-sm font-bold flex items-center gap-2 transition-all relative ${
+                activeTab === "TEAMS" ? "text-text-primary" : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              Teams
+              {activeTab === "TEAMS" && (
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-text-primary rounded-t-full"></span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {activeTab === "DISPATCH" ? (
+          <DndContext
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            collisionDetection={pointerWithin}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
             {/* COLUMN 1: Unassigned Reports */}
             <div className="flex flex-col bg-surface border border-border-light rounded-2xl p-4 overflow-hidden h-full shadow-sm">
               <div className="flex items-center justify-between mb-4 shrink-0 border-b border-border-light pb-3">
@@ -698,7 +732,6 @@ const RespondersPage = () => {
               </div>
             </div>
           </div>
-        </div>
 
         {/* DRAG OVERLAY */}
         <DragOverlay
@@ -727,6 +760,12 @@ const RespondersPage = () => {
         </DragOverlay>
         
       </DndContext>
+        ) : (
+          <div className="flex-1 min-h-0">
+            <TeamManagementPage />
+          </div>
+        )}
+      </div>
 
       {/* CONFIRMATION MODAL */}
       {deployModal.isOpen && (

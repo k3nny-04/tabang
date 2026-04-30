@@ -347,20 +347,21 @@ const AssignedReports = ({ teamId, onViewOnMap }) => {
     setExpandedId(expandedId === id ? null : id);
   };
 
-
-  if (loading) {
-    return (
-      <div className="flex h-40 items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-4 border-bg-tertiary border-t-text-primary"></div>
-      </div>
-    );
-  }
-
   if (!teamId) {
     return (
-      <div className="flex flex-col items-center justify-center h-40 text-text-muted text-sm text-center px-4">
-        <AlertTriangle size={24} className="mb-2 opacity-50" />
-        <p>You must be assigned to a team to view mission reports.</p>
+      <div className="flex flex-col items-center justify-center min-h-75 px-6 text-center animate-in fade-in duration-500">
+        {/* Icon Badge */}
+        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-surface-elevated ring-1 ring-border-light shadow-sm mb-5">
+          <AlertTriangle size={36} className="text-text-muted opacity-70" strokeWidth={1.5} />
+        </div>
+        
+        {/* Text content */}
+        <h3 className="text-base font-bold text-text-primary mb-1.5 tracking-wide">
+          No Team Yet
+        </h3>
+        <p className="text-sm text-text-muted max-w-65 leading-relaxed">
+          You must be assigned to a team to view mission reports.
+        </p>
       </div>
     );
   }
@@ -370,6 +371,14 @@ const AssignedReports = ({ teamId, onViewOnMap }) => {
       <div className="flex flex-col items-center justify-center h-40 text-text-muted text-sm text-center px-4">
         <Activity size={24} className="mb-2 opacity-50" />
         <p>No active reports assigned to your team.</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-40 items-center justify-center">
+        <div className="h-6 w-6 animate-spin rounded-full border-4 border-bg-tertiary border-t-text-primary"></div>
       </div>
     );
   }

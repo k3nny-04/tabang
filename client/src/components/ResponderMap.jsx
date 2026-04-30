@@ -5,6 +5,7 @@ import { MdLayers } from "react-icons/md";
 import { FaHouse, FaTriangleExclamation } from "react-icons/fa6";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Shield, Truck, AlertCircle } from "lucide-react";
+import {  ShieldAlert, Radio } from "lucide-react";
 import { createRoot } from "react-dom/client";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { getDistance } from "geolib";
@@ -709,6 +710,48 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
 
   return (
     <div className="relative h-full w-full rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+      {/* STYLISH NO-TEAM HEADER (Alternative) */}
+      {!myTeam && (
+        <div className="absolute top-4 left-4 right-4 z-20 md:left-1/2 md:-translate-x-1/2 md:w-[320px] animate-in fade-in duration-500">
+          <div className="bg-text-primary rounded-2xl p-4 shadow-md text-surface relative overflow-hidden transition-all duration-300">
+            {/* Background Icon */}
+            <div className="absolute -right-4 -top-4 text-surface/5 pointer-events-none">
+              <ShieldAlert size={80} />
+            </div>
+
+            <div className="relative z-10">
+              {/* TOP ROW */}
+              <div className="flex justify-between items-center">
+                <div className="pr-2">
+                  <span className="text-surface/60 text-[9px] font-bold uppercase tracking-wider mb-0.5 block">
+                    System Status
+                  </span>
+                  <h2 className="text-lg font-black tracking-wide text-surface leading-tight truncate">
+                    Unassigned
+                  </h2>
+                </div>
+
+                <div className="flex items-center">
+                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-yellow-500/20 text-yellow-300 ring-1 ring-yellow-500/30 shrink-0 shadow-sm">
+                    AWAITING DISPATCH
+                  </span>
+                </div>
+              </div>
+
+              {/* MESSAGE CONTENT */}
+              <div className="mt-3 pt-3 border-t border-surface/20 flex items-start gap-2.5">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-surface/10 mt-0.5">
+                  <Radio size={14} className="text-surface/70 animate-pulse" />
+                </div>
+                <p className="text-xs text-surface/70 leading-relaxed font-medium pr-2">
+                  You are currently on standby. Please wait for command to assign you to an active responder unit.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* STYLISH TEAM HEADER */}
       {myTeam && (
         <div className="absolute top-4 left-4 right-4 z-20 md:left-1/2 md:-translate-x-1/2 md:w-[320px]">

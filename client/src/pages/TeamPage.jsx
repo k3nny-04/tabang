@@ -64,22 +64,13 @@ const TeamPage = () => {
     return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || 'R';
   };
 
-  // --- RENDER: Loading ---
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-bg-primary">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-bg-tertiary border-t-text-primary"></div>
-      </div>
-    );
-  }
-
   // --- RENDER: No Team Assigned / Not Part of a Team ---
-  if (!team && !loading) {
+  if (!teamId || (!team && !loading)) {
     return (
       <div className="flex flex-col min-h-screen bg-bg-primary px-6 py-8 relative">
         <button 
           onClick={() => navigate(-1)} 
-          className="absolute top-8 left-6 p-2 bg-surface rounded-full shadow-sm text-text-secondary hover:bg-surface-hover transition-colors"
+          className="absolute top-8 left-6 p-2 rounded-full  text-text-secondary hover:bg-surface-hover transition-colors"
         >
           <ArrowLeft size={20} />
         </button>
@@ -92,6 +83,15 @@ const TeamPage = () => {
             You are not part of a team yet. Please wait for dispatch or contact command.
           </p>
         </div>
+      </div>
+    );
+  }
+
+  // --- RENDER: Loading ---
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-bg-primary">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-bg-tertiary border-t-text-primary"></div>
       </div>
     );
   }
