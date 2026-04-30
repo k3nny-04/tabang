@@ -1,13 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import DataTable from "../../components/DataTable";
 import { useLocationContext } from "../../providers/useLocationContext";
-import { MapPin, Eye, History, X, Trash2 } from "lucide-react";
+import { MapPin, Eye, History, X, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { getDistance } from "geolib";
 import { reportsApi } from "../../api/reportsApi";
 import { getStatusColor } from "../../utils/statusColor"; 
 import ReportDetailsModal from "../../components/modals/ReportDetailsModal";
+import ExpandedMapModal from "../../components/modals/ExpandedMapModal";
 import ReportTimeline from "../../components/ReportTimeline";
 import DeleteModal from "../../components/modals/DeleteModal";
+
+const ITEMS_PER_PAGE = 10;
 
 const ReportsPage = () => {
   const {currentLocation, setCurrentLocation} = useLocationContext();
@@ -20,12 +23,14 @@ const ReportsPage = () => {
   
   // Deletion State
   const [reportToDelete, setReportToDelete] = useState(null);
+  const [expandedMapCoords, setExpandedMapCoords] = useState(null);
 
   // Filters & Sorting
   const [filterType, setFilterType] = useState("ALL");
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [sortBy, setSortBy] = useState("recency");
   const [showResolved, setShowResolved] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Reports Stream
   useEffect(() => {
@@ -95,6 +100,19 @@ const ReportsPage = () => {
 
     return filtered;
   }, [reports, filterType, filterStatus, sortBy, currentLocation, showResolved]);
+
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(processedReports.length / ITEMS_PER_PAGE));
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [processedReports, currentPage]);
+
+  const totalPages = Math.max(1, Math.ceil(processedReports.length / ITEMS_PER_PAGE));
+  const paginatedReports = processedReports.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   // Action Handlers for Deletion
   const handleDelete = (report) => {
@@ -209,7 +227,7 @@ const ReportsPage = () => {
               </span>
               <button 
                 onClick={() => {
-                  console.log("View on map:", row.location);
+                  setExpandedMapCoords(row.location);
                 }}
                 title="Pinpoint on Map"
                 className="p-1 bg-gray-100 hover:text-text-primary hover:bg-gray-100 text-gray-500 rounded-md transition-colors"
@@ -333,7 +351,35 @@ const ReportsPage = () => {
         </div>
       </div>
 
-      <DataTable columns={columns} data={processedReports} loading={loading} emptyMessage="No reports match your current filters." />
+      <DataTable columns={columns} data={paginatedReports} loading={loading} emptyMessage="No reports match your current filters." />
+
+      {!loading && processedReports.length > 0 && (
+        <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+          <p className="text-sm text-gray-500 font-medium">
+            Showing <span className="font-bold text-gray-800">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span> to <span className="font-bold text-gray-800">{Math.min(currentPage * ITEMS_PER_PAGE, processedReports.length)}</span> of <span className="font-bold text-gray-800">{processedReports.length}</span> reports
+          </p>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <div className="px-4 text-sm font-semibold text-gray-700">
+              Page {currentPage} of {totalPages}
+            </div>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Report Details Modal */}
       {selectedReport && (
@@ -370,6 +416,13 @@ const ReportsPage = () => {
           </div>
         </div>
       )}
+
+      {/* Expanded Map Modal */}
+      <ExpandedMapModal
+        isOpen={Boolean(expandedMapCoords)}
+        targetCoords={expandedMapCoords}
+        onClose={() => setExpandedMapCoords(null)}
+      />
 
       {/* Dynamic Delete Modal */}
       {reportToDelete && (

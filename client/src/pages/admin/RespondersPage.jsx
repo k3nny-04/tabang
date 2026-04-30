@@ -24,6 +24,7 @@ import { teamsApi } from "../../api/teamsApi";
 import { reportsApi } from "../../api/reportsApi";
 import { usersApi } from "../../api/usersApi";
 import AddTeamModal from "../../components/modals/AddTeamModal";
+import TeamManagementPage from "./TeamManagementPage";
 
 // --- DRAGGABLE REPORT COMPONENT ---
 const DraggableReport = ({ report }) => {
@@ -155,9 +156,9 @@ const DroppableTeamCard = ({
                 {team.teamName || "Unnamed Team"}
               </h3>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                {/* <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
                   {team.status || "STANDBY"}
-                </span>
+                </span> */}
                 <button
                   onClick={() => setIsFlipped(true)}
                   className="text-text-muted hover:text-text-primary transition-colors cursor-pointer p-1 rounded hover:bg-surface-hover"
@@ -277,16 +278,18 @@ const DeployedTeamCard = ({ deployment, teamReports, onResolve, onCancelReport }
     data: deployment,
   });
 
+  const hasInProgressReports = teamReports.some(r => r.status === "IN_PROGRESS");
+
   return (
     <div
       ref={setNodeRef}
-      className={`relative bg-surface p-4 rounded-xl shadow-sm border-l-4 border-l-blue-500 border transition-all ${
-        isOver ? "border-blue-500 ring-2 ring-blue-500/30" : "border-border-light"
+      className={`relative bg-surface p-4 rounded-xl shadow-sm border-l-4 border-l-text-primary border transition-all ${
+        isOver ? "border-text-primary ring-2 ring-text-primary/30" : "border-border-light"
       }`}
     >
       {isOver && (
-        <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center backdrop-blur-[1px] z-10 rounded-xl">
-          <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm animate-bounce">
+        <div className="absolute inset-0 bg-text-primary/10 flex items-center justify-center backdrop-blur-[1px] z-10 rounded-xl">
+          <span className="bg-text-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm animate-bounce">
             Drop to Assign Directly
           </span>
         </div>
@@ -296,9 +299,6 @@ const DeployedTeamCard = ({ deployment, teamReports, onResolve, onCancelReport }
         <h3 className="font-bold text-text-primary text-sm">
           {deployment.teamName}
         </h3>
-        <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase animate-pulse">
-          Deployed
-        </span>
       </div>
 
       <div className="space-y-2 mt-3">
@@ -312,20 +312,20 @@ const DeployedTeamCard = ({ deployment, teamReports, onResolve, onCancelReport }
           >
              <div className="flex justify-between items-center">
                 <p className="text-xs font-bold text-text-primary truncate mr-2">{report.reportType}</p>
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                  report.status === "RESOLVED" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border ${
+                  report.status === "RESOLVED" ? "bg-surface border-border-light text-text-muted" : "bg-surface-elevated border-border-medium text-text-primary"
                 }`}>
                   {report.status}
                 </span>
              </div>
              <div className="flex justify-between items-center border-t border-border-light pt-2 mt-1">
-                <p className="text-[10px] text-text-muted font-mono bg-surface px-2 py-1 rounded">
+                <p className="text-[10px] text-text-muted font-mono bg-bg-primary px-2 py-1 rounded border border-border-light">
                   {report.id}
                 </p>
                 {report.status !== "RESOLVED" && (
                     <button 
                       onClick={() => onCancelReport(report.id, deployment.id)} 
-                      className="text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors"
+                      className="text-[10px] font-bold text-text-muted hover:text-text-primary bg-surface border border-border-light hover:bg-surface-hover px-2 py-1 rounded transition-colors"
                     >
                         Cancel
                     </button>
@@ -341,7 +341,13 @@ const DeployedTeamCard = ({ deployment, teamReports, onResolve, onCancelReport }
         </span>
         <button
           onClick={() => onResolve(deployment.id)}
-          className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+          disabled={hasInProgressReports}
+          className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+            hasInProgressReports 
+              ? "text-text-muted bg-surface border border-border-light cursor-not-allowed opacity-50" 
+              : "text-text-primary bg-surface-elevated border border-border-medium hover:bg-text-primary/5 cursor-pointer"
+          }`}
+          title={hasInProgressReports ? "Resolve all reports before closing deployment" : ""}
         >
           <CheckCircle2 size={14} /> Resolve
         </button>
@@ -359,6 +365,7 @@ const RespondersPage = () => {
   const [activeReport, setActiveReport] = useState(null);
   const [deployModal, setDeployModal] = useState({ isOpen: false, team: null });
   const [isDeploying, setIsDeploying] = useState(false);
+  const [activeTab, setActiveTab] = useState("DISPATCH");
 
   const [isAddTeamModalOpen, setIsAddTeamModalOpen] = useState(false);
 
@@ -578,33 +585,65 @@ const RespondersPage = () => {
 
   return (
     <>
-      <DndContext
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
-        collisionDetection={pointerWithin}
-      >
-        <div className="flex flex-col h-[calc(100vh-4rem)] min-h-150 space-y-6 w-full">
-          {/* HEADER */}
-          <div className="bg-surface p-6 rounded-2xl shadow-sm border border-border-light shrink-0 flex justify-between items-center">
+      <div className="flex flex-col h-[calc(100vh-4rem)] min-h-150 space-y-6 w-full">
+        <div className="bg-surface p-6 rounded-2xl shadow-sm border border-border-light shrink-0">
+          <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-black text-text-primary tracking-wide">
-                Responders Page
+                {activeTab === "DISPATCH" ? "Dispatch" : "Teams"}
               </h1>
               <p className="text-text-muted text-sm mt-1">
-                Assign reports and deploy teams.
+                {activeTab === "DISPATCH"
+                  ? "Assign reports and deploy teams."
+                  : "Browse and manage team records."}
               </p>
             </div>
-            
-            <button 
-              onClick={() => setIsAddTeamModalOpen(true)}
-              className="flex items-center gap-2 bg-text-primary text-surface px-4 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-opacity shadow-sm"
-            >
-              <Plus size={18} />
-              Create Team
-            </button>
+
+            {activeTab === "DISPATCH" && (
+              <button
+                onClick={() => setIsAddTeamModalOpen(true)}
+                className="flex items-center gap-2 rounded-xl bg-text-primary text-white px-5 py-2.5 text-sm font-semibold hover:bg-neutral-800 transition-all shadow-md"
+              >
+                <Plus size={18} />
+                <span>Create Team</span>
+              </button>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+          <div className="flex items-center gap-6 border-b border-gray-100">
+            <button
+              onClick={() => setActiveTab("DISPATCH")}
+              className={`pb-3 text-sm font-bold flex items-center gap-2 transition-all relative ${
+                activeTab === "DISPATCH" ? "text-text-primary" : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              Dispatch
+              {activeTab === "DISPATCH" && (
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-text-primary rounded-t-full"></span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setActiveTab("TEAMS")}
+              className={`pb-3 text-sm font-bold flex items-center gap-2 transition-all relative ${
+                activeTab === "TEAMS" ? "text-text-primary" : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              Teams
+              {activeTab === "TEAMS" && (
+                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-text-primary rounded-t-full"></span>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {activeTab === "DISPATCH" ? (
+          <DndContext
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            collisionDetection={pointerWithin}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
             {/* COLUMN 1: Unassigned Reports */}
             <div className="flex flex-col bg-surface border border-border-light rounded-2xl p-4 overflow-hidden h-full shadow-sm">
               <div className="flex items-center justify-between mb-4 shrink-0 border-b border-border-light pb-3">
@@ -693,7 +732,6 @@ const RespondersPage = () => {
               </div>
             </div>
           </div>
-        </div>
 
         {/* DRAG OVERLAY */}
         <DragOverlay
@@ -722,6 +760,12 @@ const RespondersPage = () => {
         </DragOverlay>
         
       </DndContext>
+        ) : (
+          <div className="flex-1 min-h-0">
+            <TeamManagementPage />
+          </div>
+        )}
+      </div>
 
       {/* CONFIRMATION MODAL */}
       {deployModal.isOpen && (
