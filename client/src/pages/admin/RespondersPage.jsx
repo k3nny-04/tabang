@@ -155,9 +155,9 @@ const DroppableTeamCard = ({
                 {team.teamName || "Unnamed Team"}
               </h3>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                {/* <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
                   {team.status || "STANDBY"}
-                </span>
+                </span> */}
                 <button
                   onClick={() => setIsFlipped(true)}
                   className="text-text-muted hover:text-text-primary transition-colors cursor-pointer p-1 rounded hover:bg-surface-hover"
@@ -277,16 +277,18 @@ const DeployedTeamCard = ({ deployment, teamReports, onResolve, onCancelReport }
     data: deployment,
   });
 
+  const hasInProgressReports = teamReports.some(r => r.status === "IN_PROGRESS");
+
   return (
     <div
       ref={setNodeRef}
-      className={`relative bg-surface p-4 rounded-xl shadow-sm border-l-4 border-l-blue-500 border transition-all ${
-        isOver ? "border-blue-500 ring-2 ring-blue-500/30" : "border-border-light"
+      className={`relative bg-surface p-4 rounded-xl shadow-sm border-l-4 border-l-text-primary border transition-all ${
+        isOver ? "border-text-primary ring-2 ring-text-primary/30" : "border-border-light"
       }`}
     >
       {isOver && (
-        <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center backdrop-blur-[1px] z-10 rounded-xl">
-          <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm animate-bounce">
+        <div className="absolute inset-0 bg-text-primary/10 flex items-center justify-center backdrop-blur-[1px] z-10 rounded-xl">
+          <span className="bg-text-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm animate-bounce">
             Drop to Assign Directly
           </span>
         </div>
@@ -296,9 +298,6 @@ const DeployedTeamCard = ({ deployment, teamReports, onResolve, onCancelReport }
         <h3 className="font-bold text-text-primary text-sm">
           {deployment.teamName}
         </h3>
-        <span className="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase animate-pulse">
-          Deployed
-        </span>
       </div>
 
       <div className="space-y-2 mt-3">
@@ -312,20 +311,20 @@ const DeployedTeamCard = ({ deployment, teamReports, onResolve, onCancelReport }
           >
              <div className="flex justify-between items-center">
                 <p className="text-xs font-bold text-text-primary truncate mr-2">{report.reportType}</p>
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                  report.status === "RESOLVED" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border ${
+                  report.status === "RESOLVED" ? "bg-surface border-border-light text-text-muted" : "bg-surface-elevated border-border-medium text-text-primary"
                 }`}>
                   {report.status}
                 </span>
              </div>
              <div className="flex justify-between items-center border-t border-border-light pt-2 mt-1">
-                <p className="text-[10px] text-text-muted font-mono bg-surface px-2 py-1 rounded">
+                <p className="text-[10px] text-text-muted font-mono bg-bg-primary px-2 py-1 rounded border border-border-light">
                   {report.id}
                 </p>
                 {report.status !== "RESOLVED" && (
                     <button 
                       onClick={() => onCancelReport(report.id, deployment.id)} 
-                      className="text-[10px] font-bold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded transition-colors"
+                      className="text-[10px] font-bold text-text-muted hover:text-text-primary bg-surface border border-border-light hover:bg-surface-hover px-2 py-1 rounded transition-colors"
                     >
                         Cancel
                     </button>
@@ -341,7 +340,13 @@ const DeployedTeamCard = ({ deployment, teamReports, onResolve, onCancelReport }
         </span>
         <button
           onClick={() => onResolve(deployment.id)}
-          className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+          disabled={hasInProgressReports}
+          className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+            hasInProgressReports 
+              ? "text-text-muted bg-surface border border-border-light cursor-not-allowed opacity-50" 
+              : "text-text-primary bg-surface-elevated border border-border-medium hover:bg-text-primary/5 cursor-pointer"
+          }`}
+          title={hasInProgressReports ? "Resolve all reports before closing deployment" : ""}
         >
           <CheckCircle2 size={14} /> Resolve
         </button>
