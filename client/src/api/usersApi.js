@@ -4,6 +4,11 @@ import { db } from '../firebase-config';
 const USERS_COLLECTION = 'users';
 
 export const usersApi = {
+  /**
+   * Stream a single user's data in real-time 
+   * @param {*} userId 
+   * @param {*} callback 
+   */
   streamUser: (userId, callback) => {
     const userRef = doc(db, "users", userId);
     return onSnapshot(
@@ -23,6 +28,8 @@ export const usersApi = {
 
   /**
    * Create a new user document with a specific ID (Auth UID)
+   * @param {*} uid
+   * @param {*} userData
    */
   createUser: async (uid, userData) => {
     try {
@@ -40,6 +47,7 @@ export const usersApi = {
 
   /**
    * Get a user document by UID
+   * @param {*} uid
    */
   getUser: async (uid) => {
     try {
@@ -58,6 +66,7 @@ export const usersApi = {
 
   /**
    * Get only a user's name (firstName, lastName, fullName) by UID
+   * @param {*} uid
    */
   getUserName: async (uid) => {
     try {
@@ -81,6 +90,10 @@ export const usersApi = {
     }
   },
 
+  /**
+   * Get a user's contact number
+   * @param {*} uid 
+   */
   getUserNumber: async (uid) => {
     try {
       const userRef = doc(db, USERS_COLLECTION, uid);
@@ -103,6 +116,8 @@ export const usersApi = {
 
   /**
    * Update an existing user's data
+   * @param {*} uid
+   * @param {*} updateData
    */
   updateUser: async (uid, updateData) => {
     try {
@@ -120,6 +135,7 @@ export const usersApi = {
 
   /**
    * Delete a user document
+   * @param {*} uid
    */
   deleteUser: async (uid) => {
     try {
@@ -134,6 +150,7 @@ export const usersApi = {
 
   /**
    * Stream all users with the role 'RESPONDER' 
+   * @param {*} callback
    */
   streamResponders: (callback) => {
     const q = query(
@@ -156,6 +173,7 @@ export const usersApi = {
 
   /**
    * Stream all users with the role 'CITIZEN' 
+   * @param {*} callback
    */
   streamCitizens: (callback) => {
     const q = query(
@@ -176,6 +194,10 @@ export const usersApi = {
     return unsubscribe;
   },
 
+  /**
+   * Stream the total count of CITIZEN users
+   * @param {*} callback
+   */
   streamCitizensCount: (callback) => {
     const q = query(
       collection(db, USERS_COLLECTION), 
@@ -183,7 +205,7 @@ export const usersApi = {
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const count = snapshot.size; // Get the count of documents in the snapshot
+      const count = snapshot.size;
       callback(count);
     }, (error) => {
       console.error("Error streaming citizens count:", error);
@@ -194,6 +216,7 @@ export const usersApi = {
 
   /**
    * Fetch all responders belonging to a specific team
+   * @param {*} teamId
    */
   getTeamMembers: async (teamId) => {
     if (!teamId) {

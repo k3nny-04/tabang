@@ -19,6 +19,10 @@ const USERS_COLLECTION = "users";
 const teamsCollection = collection(db, COLLECTION_NAME);
 
 export const teamsApi = {
+  /**
+   * Stream all teams in real-time
+   * @param {*} callback
+   */
   streamAllTeams: (callback) => {
     const q = query(teamsCollection, orderBy("teamName", "asc"));
     
@@ -35,6 +39,7 @@ export const teamsApi = {
 
   /**
    * Get only a team's name 
+   * @param {*} teamId
    */
   getTeamName: async (teamId) => {
     try {
@@ -56,6 +61,11 @@ export const teamsApi = {
     }
   },
 
+
+  /**
+   * Stream only teams with status "DEPLOYED" in real-time
+   * @param {*} callback
+   */
   streamDeployedTeams: (callback) => {
     const q = query(teamsCollection, where("status", "==", "DEPLOYED"));
     
@@ -70,6 +80,11 @@ export const teamsApi = {
     });
   },
 
+
+  /**
+   * Add a team
+   * @param {*} teamData 
+   */
   addTeam: async (teamData) => {
     try {
       const payload = {
@@ -85,6 +100,12 @@ export const teamsApi = {
     }
   },
 
+  
+  /**
+   * Update a team's data
+   * @param {*} teamId
+   * @param {*} updatedData
+   */
   updateTeam: async (teamId, updatedData) => {
     try {
       const teamRef = doc(db, COLLECTION_NAME, teamId);
@@ -98,6 +119,12 @@ export const teamsApi = {
     }
   },
 
+
+  /**
+   * Remove an assigned report from a team's assignedReports array
+   * @param {*} teamId
+   * @param {*} reportId
+   */
   removeAssignedReport: async (teamId, reportId) => {
     try {
       const teamRef = doc(db, COLLECTION_NAME, teamId);
@@ -111,6 +138,11 @@ export const teamsApi = {
     }
   },
 
+
+  /**
+   * Delete a team by its ID
+   * @param {*} teamId
+   */
   deleteTeam: async (teamId) => {
     try {
       const teamRef = doc(db, COLLECTION_NAME, teamId);
@@ -121,6 +153,13 @@ export const teamsApi = {
     }
   },
 
+  
+  /**
+   * Create a new team and assign multiple responders to it in a single batch operation
+   * @param {*} teamName
+   * @param {*} headId
+   * @param {*} memberIds
+   */
   createTeamWithMembers: async (teamName, headId, memberIds) => {
     try {
       const batch = writeBatch(db);
@@ -151,6 +190,7 @@ export const teamsApi = {
 
   /**
    * Stream the total count of DEPLOYED teams
+   * @param {*} callback
    */
   streamDeployedTeamsCount: (callback) => {
     const q = query(teamsCollection, where("status", "==", "DEPLOYED"));
@@ -170,6 +210,8 @@ export const teamsApi = {
   
   /**
    * Stream a single team's data in real-time
+   * @param {*} teamId
+   * @param {*} callback
    */
   streamTeam: (teamId, callback) => {
     if (!teamId) {

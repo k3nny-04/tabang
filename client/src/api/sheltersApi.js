@@ -18,6 +18,7 @@ const SHELTERS_COLLECTION = "shelters";
 export const sheltersApi = {
   /**
    * Create a single new shelter
+   * @param {*} shelterData
    */
   createShelter: async (shelterData) => {
     try {
@@ -38,6 +39,7 @@ export const sheltersApi = {
 
   /**
    * Get a single shelter by its ID
+   * @param {*} shelterId
    */
   getShelter: async (shelterId) => {
     try {
@@ -56,7 +58,7 @@ export const sheltersApi = {
   },
 
   /**
-   * Get all shelters (One-time fetch)
+   * Get all shelters 
    */
   getAllShelters: async () => {
     try {
@@ -77,6 +79,8 @@ export const sheltersApi = {
 
   /**
    * Update an existing shelter
+   * @param {*} shelterId
+   * @param {*} updateData
    */
   updateShelter: async (shelterId, updateData) => {
     try {
@@ -94,6 +98,7 @@ export const sheltersApi = {
 
   /**
    * Delete a shelter
+   * @param {*} shelterId
    */
   deleteShelter: async (shelterId) => {
     try {
@@ -108,6 +113,7 @@ export const sheltersApi = {
 
   /**
    * Stream ALL shelters in real-time
+   * @param {*} callback
    */
   streamAllShelters: (callback) => {
     const sheltersRef = collection(db, SHELTERS_COLLECTION);
@@ -131,6 +137,7 @@ export const sheltersApi = {
 
   /**
    * Stream ONLY ACTIVE shelters in real-time
+   * @param {*} callback
    */
   streamActiveShelters: (callback) => {
     const sheltersRef = collection(db, SHELTERS_COLLECTION);
@@ -157,7 +164,6 @@ export const sheltersApi = {
 
   /**
    * SPECIAL: Bulk add an array of shelters
-   * Uses writeBatch for efficiency. Note: Firestore batches have a limit of 500 operations.
    */
   bulkAddShelters: async (sheltersArray) => {
     if (!Array.isArray(sheltersArray) || sheltersArray.length === 0) {
@@ -170,7 +176,6 @@ export const sheltersApi = {
       const timestamp = new Date().toISOString();
 
       sheltersArray.forEach((shelter) => {
-        // Create a new document reference with an auto-generated ID
         const newShelterRef = doc(sheltersRef); 
         batch.set(newShelterRef, {
           ...shelter,
@@ -179,7 +184,6 @@ export const sheltersApi = {
         });
       });
 
-      // Commit the batch to Firestore
       await batch.commit();
       
       return { 
@@ -193,8 +197,7 @@ export const sheltersApi = {
   },
 
   /**
-   * SPECIAL: Bulk update existing shelters to append hotlines based on barangay mapping.
-   * Handles Firestore's 500 operation limit per batch automatically.
+   * SPECIAL: Bulk update existing shelters to append hotlines based on barangay mapping
    */
   bulkUpdateShelterHotlines: async (barangayHotlines) => {
     if (!Array.isArray(barangayHotlines) || barangayHotlines.length === 0) {
@@ -216,7 +219,6 @@ export const sheltersApi = {
         const shelterBarangay = shelterData.barangay;
 
         if (shelterBarangay) {
-          // Find matching hotline object, using case-insensitive check
           const match = barangayHotlines.find(
             (b) => b.barangay.toLowerCase() === shelterBarangay.toLowerCase()
           );
@@ -230,7 +232,6 @@ export const sheltersApi = {
             operationCount++;
             totalUpdated++;
 
-            // Commit and reset batch if nearing the 500 limit
             if (operationCount === 490) {
               batchArray.push(currentBatch.commit());
               currentBatch = writeBatch(db);
@@ -240,7 +241,6 @@ export const sheltersApi = {
         }
       });
 
-      // Commit any remaining operations
       if (operationCount > 0) {
         batchArray.push(currentBatch.commit());
       }
@@ -259,11 +259,11 @@ export const sheltersApi = {
 
   /**
    * Stream aggregate occupancy stats for ACTIVE shelters
+   * @param {*} callback
    */
   streamShelterOccupancyStats: (callback) => {
     const sheltersRef = collection(db, SHELTERS_COLLECTION);
     
-    // Only fetch ACTIVE shelters
     const activeQuery = query(sheltersRef, where("status", "==", "ACTIVE"));
 
     const unsubscribe = onSnapshot(

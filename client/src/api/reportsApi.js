@@ -17,6 +17,7 @@ const REPORTS_COLLECTION = "reports";
 export const reportsApi = {
   /**
    * Create a new report
+   * @param {*} reportData
    */
   createReport: async (reportData) => {
       try {
@@ -45,6 +46,7 @@ export const reportsApi = {
 
   /**
    * Get a single report by its ID
+   * @param {*} reportId
    */
   getReport: async (reportId) => {
     try {
@@ -64,6 +66,7 @@ export const reportsApi = {
 
   /**
    * Get all reports created by a specific user
+   * @param {*} userId
    */
   getReportsByUser: async (userId) => {
     try {
@@ -86,6 +89,8 @@ export const reportsApi = {
 
   /**
    * Update an existing report
+   * @param {*} reportId
+   * @param {*} updateData
    */
   updateReport: async (reportId, updateData) => {
     try {
@@ -103,6 +108,7 @@ export const reportsApi = {
 
   /**
    * Delete a report
+   * @param {*} reportId
    */
   deleteReport: async (reportId) => {
     try {
@@ -117,6 +123,7 @@ export const reportsApi = {
 
   /**
    * Stream ALL reports
+   * @param {*} callback
    */
   streamAllReports: (callback) => {
     const reportsRef = collection(db, REPORTS_COLLECTION);
@@ -140,6 +147,8 @@ export const reportsApi = {
 
   /**
    * Stream a SINGLE report
+   * @param {*} reportId
+   * @param {*} callback
    */
   streamReport: (reportId, callback) => {
     const reportRef = doc(db, REPORTS_COLLECTION, reportId);
@@ -150,7 +159,6 @@ export const reportsApi = {
         if (docSnap.exists()) {
           callback({ id: docSnap.id, ...docSnap.data() });
         } else {
-          // Document was deleted or doesn't exist
           callback(null);
         }
       },
@@ -164,6 +172,7 @@ export const reportsApi = {
 
   /**
    * Stream UNASSIGNED reports
+   * @param {*} callback
    */
   streamUnassignedReports: (callback) => {
     const reportsRef = collection(db, REPORTS_COLLECTION);
@@ -193,6 +202,7 @@ export const reportsApi = {
 
   /**
    * Stream NON RESOLVED reports
+   * @param {*} callback
    */
   streamNonResolvedReports: (callback) => {
     const reportsRef = collection(db, REPORTS_COLLECTION);
@@ -221,6 +231,8 @@ export const reportsApi = {
 
   /**
    * Stream the N most recent NON-RESOLVED reports
+   * @param {*} limitCount 
+   * @param {*} callback
    */
   streamRecentNonResolvedReports: (limitCount = 5, callback) => {
     const reportsRef = collection(db, REPORTS_COLLECTION);
@@ -252,6 +264,7 @@ export const reportsApi = {
 
   /**
    * Stream the total count of PENDING reports
+   * @param {*} callback
    */
   streamPendingReportsCount: (callback) => {
     const reportsRef = collection(db, REPORTS_COLLECTION);
@@ -276,6 +289,7 @@ export const reportsApi = {
 
   /**
    * Fetch report analytics formatted for Recharts (One-time fetch)
+   * @param {*} timeFrame - "HOUR", "TODAY", "7D", "1M", "YTD", "ALL"
    */
   getChartData: async (timeFrame) => {
     try {
@@ -318,7 +332,7 @@ export const reportsApi = {
         q = query(reportsRef, where("createdAt", ">=", startDate.toISOString()));
       }
 
-      // ONE-TIME FETCH instead of onSnapshot
+      // fetch
       const snapshot = await getDocs(q);
       
       let chartData = JSON.parse(JSON.stringify(template));
@@ -331,6 +345,7 @@ export const reportsApi = {
         return "incident";
       };
 
+      // Process each report and increment the appropriate bucket
       snapshot.forEach((doc) => {
         const data = doc.data();
         if (!data.createdAt) return;
@@ -386,6 +401,8 @@ export const reportsApi = {
 
   /**
    * Stream reports assigned to a specific team
+   * @param {*} teamId
+   * @param {*} callback
    */
   streamAssignedReports: (teamId, callback) => {
     if (!teamId) {

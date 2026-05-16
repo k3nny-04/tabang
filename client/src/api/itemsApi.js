@@ -12,6 +12,10 @@ import { db } from "../firebase-config";
 const ITEMS_COLLECTION = "items";
 
 export const itemsApi = {
+    /**
+     * Create a single new item
+     * @param {*} itemData 
+     */
     createItem: async (itemData) => {
         try {
             const itemsRef = collection(db, ITEMS_COLLECTION);
@@ -28,7 +32,11 @@ export const itemsApi = {
             throw error;
         }
     },
-    
+   
+    /**
+     * Get a single item 
+     * @param {*} itemId 
+     */
     getItem: async (itemId) => {
         try {
             const itemRef = doc(db, ITEMS_COLLECTION, itemId);
@@ -45,7 +53,12 @@ export const itemsApi = {
             throw error;
         }
     },
-
+    
+    /**
+     * Update an item 
+     * @param {*} itemId 
+     * @param {*} updatedData 
+     */
     updateItem: async (itemId, updatedData) => {
         try {
             const itemRef = doc(db, ITEMS_COLLECTION, itemId);
@@ -62,6 +75,10 @@ export const itemsApi = {
         }
     },
     
+    /**
+     * Delete an item
+     * @param {*} itemId 
+     */
     deleteItem: async (itemId) => {
         try {
             const itemRef = doc(db, ITEMS_COLLECTION, itemId);
@@ -73,6 +90,10 @@ export const itemsApi = {
         }
     },
     
+    /**
+     * Stream all items in real-time
+     * @param {*} callback 
+     */
     streamAllItems: (callback) => {
         const itemsRef = collection(db, ITEMS_COLLECTION);
 
