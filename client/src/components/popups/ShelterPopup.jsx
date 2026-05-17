@@ -8,8 +8,6 @@ const ShelterPopup = ({ item, onGoClick }) => {
 
   const name = item.name || "Unnamed Shelter";
   const barangay = item.barangay || "Location not specified";
-  // const manager = item.manager || "No manager listed";
-
   const currentCapacity = item.currentCapacity || 0;
   const maxCapacity = item.maxCapacity || parseInt(item.capacity) || 0;
   

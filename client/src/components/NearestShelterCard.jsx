@@ -9,7 +9,6 @@ const NearestShelterCard = ({ shelter, distanceInfo, onClose }) => {
 
   const name = shelter.name || "Unnamed Evacuation Center";
   const barangay = shelter.barangay || "Location not specified";
-  // const manager = shelter.manager || "No manager listed";
 
   const currentCapacity = shelter.currentCapacity || 0;
   const maxCapacity = shelter.maxCapacity || parseInt(shelter.capacity) || 0;
@@ -62,7 +61,6 @@ const NearestShelterCard = ({ shelter, distanceInfo, onClose }) => {
             <p className="text-sm text-text-secondary">
               Brgy. {barangay}
             </p>
-            {/* --- NEW CAPACITY BADGE --- */}
             <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-bold ring-1 ring-inset ${badgeColor}`}>
               {capacityText}
             </span>

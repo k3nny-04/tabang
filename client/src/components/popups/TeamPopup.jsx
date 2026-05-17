@@ -4,7 +4,7 @@ import { usersApi } from "../../api/usersApi";
 const TeamPopup = ({ team }) => {
   const [headName, setHeadName] = useState("Loading...");
 
-  // Fetch the Team Head's name using the new API
+  // Fetch team head name
   useEffect(() => {
     let isMounted = true;
     
@@ -18,7 +18,6 @@ const TeamPopup = ({ team }) => {
         const res = await usersApi.getUserName(team.headId);
         if (isMounted) {
           if (res.success) {
-            // Using the formatted fields returned from our new API
             const name = res.fullName || `${res.firstName} ${res.lastName}`.trim();
             setHeadName(name || "Unknown User");
           } else {
@@ -43,7 +42,6 @@ const TeamPopup = ({ team }) => {
     ? new Date(team.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
     : 'Unknown';
 
-  // Determine badge styling based on status
   const status = team.status || "UNKNOWN";
   let badgeColor = "bg-bg-secondary text-text-secondary ring-border-light";
   

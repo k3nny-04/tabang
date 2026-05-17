@@ -29,6 +29,7 @@ const IncidentPopup = ({ report, showGoButton = false, onGoClick }) => {
     report?.assignedTeam ? "Fetching team..." : "None assigned"
   );
 
+  // Geocode location to address
   useEffect(() => {
     let isMounted = true;
 
@@ -62,6 +63,7 @@ const IncidentPopup = ({ report, showGoButton = false, onGoClick }) => {
     };
   }, [report?.location?.lat, report?.location?.lng]);
 
+  // Fetch assigned team name
   useEffect(() => {
     let isMounted = true;
 

@@ -14,6 +14,7 @@ import DataTable from "../../components/DataTable";
 import { Edit2, Check, X, Loader2 } from "lucide-react";
 import ShelterDetailsModal from "../../components/modals/ShelterDetailsModal";
 import DeleteModal from "../../components/modals/DeleteModal";
+import ExpandedMapModal from "../../components/modals/ExpandedMapModal";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -25,6 +26,8 @@ const SheltersPage = () => {
   const [selectedShelter, setSelectedShelter] = useState(null);
   const [shelterToDelete, setShelterToDelete] = useState(null);
   const [isAddingShelter, setIsAddingShelter] = useState(false);
+
+  const [expandedMapCoords, setExpandedMapCoords] = useState(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -43,7 +46,7 @@ const SheltersPage = () => {
   const processedShelters = useMemo(() => {
     let result = [...shelters];
 
-    // 1. Filter by search query (name or barangay)
+    // Filter by search query (name or barangay)
     if (searchQuery.trim() !== "") {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(
@@ -53,7 +56,7 @@ const SheltersPage = () => {
       );
     }
 
-    // 2. Sort alphabetically by barangay
+    // Sort alphabetically by barangay
     result.sort((a, b) => {
       const brgyA = a.barangay || "";
       const brgyB = b.barangay || "";
@@ -166,7 +169,7 @@ const SheltersPage = () => {
           </span>
           <button
             onClick={() => {
-              console.log("View on map:", row.location);
+              setExpandedMapCoords(row.location);
             }}
             title="Pinpoint on Map"
             className="p-1 bg-gray-100 hover:text-text-primary hover:bg-gray-100 text-gray-500 rounded-md transition-colors"
@@ -226,7 +229,7 @@ const SheltersPage = () => {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setCurrentPage(1); // Trigger pagination reset here instead!
+                setCurrentPage(1); 
               }}
               className="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-text-primary/20 transition-all"
             />
@@ -329,6 +332,13 @@ const SheltersPage = () => {
           onConfirm={handleConfirmDelete}
         />
       )}
+
+      {/* Expanded Map Modal */}
+      <ExpandedMapModal
+        isOpen={Boolean(expandedMapCoords)}
+        targetCoords={expandedMapCoords}
+        onClose={() => setExpandedMapCoords(null)}
+      />
     </div>
   );
 };
@@ -350,7 +360,6 @@ const CapacityCell = ({ shelter, onUpdateCapacity }) => {
 
     setIsSaving(true);
     try {
-      // Calls the function passed down from the parent page
       await onUpdateCapacity(shelter.id, newValue);
       setIsEditing(false);
     } catch (error) {
@@ -408,7 +417,6 @@ const CapacityCell = ({ shelter, onUpdateCapacity }) => {
     );
   }
 
-  // Normal View (with hover effect to show edit button)
   return (
     <div className="group flex items-center gap-2 text-sm font-mono text-gray-600 whitespace-nowrap">
       <div className="flex items-center">

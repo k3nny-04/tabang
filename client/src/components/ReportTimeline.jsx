@@ -9,14 +9,14 @@ import { getStatusColor } from '../utils/statusColor';
 import { formatBoldText } from '../utils/formatText';
 
 const ReportTimeline = ({ remarks = [] }) => {
-  // Sort remarks to ensure the latest is always on top
+  // Sort remarks
   const sortedRemarks = [...remarks].sort((a, b) => {
     const timeA = a.dateRemarked ? new Date(a.dateRemarked).getTime() : 0;
     const timeB = b.dateRemarked ? new Date(b.dateRemarked).getTime() : 0;
     return timeB - timeA;
   });
 
-  // Safe Date Formatter
+  // Date Formatter
   const formatRemarkDate = (dateVal) => {
     if (!dateVal) return 'Just now';
     const date = dateVal.toDate ? dateVal.toDate() : new Date(dateVal);
@@ -55,7 +55,6 @@ const ReportTimeline = ({ remarks = [] }) => {
           const isLatest = index === 0; 
           const dotColor = isLatest ? latestDotColor : oldDotColor;
 
-          // Determine badge coloring: vibrant if latest, neutral if old
           const badgeColorClass = isLatest 
             ? getStatusColor(remark.status)
             : "bg-[var(--color-surface-elevated)] text-[var(--color-text-muted)] border-[var(--color-border-light)]";
@@ -64,7 +63,6 @@ const ReportTimeline = ({ remarks = [] }) => {
             <TimelineItem key={index}>
               
               <TimelineSeparator>
-                {/* Margin adjusted to align perfectly with the top status badge */}
                 <TimelineDot 
                     sx={{ 
                       backgroundColor: dotColor,

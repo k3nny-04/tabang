@@ -56,10 +56,8 @@ const EmailLoginPage = () => {
   };
 
   return (
-    // h-dvh ensures it fits exactly within the mobile browser viewport
     <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-surface md:items-center md:justify-center md:bg-bg-primary">
       
-      {/* Mobile Container limits width on larger screens to simulate app view */}
       <div className="relative flex h-full w-full flex-col bg-surface md:h-auto md:min-h-150 md:w-100 md:rounded-[2.5rem] md:shadow-2xl">
         
         {/* Top Header / Back & Offline SOS Button */}

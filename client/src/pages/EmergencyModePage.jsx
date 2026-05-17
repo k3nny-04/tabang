@@ -159,10 +159,8 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
   };
 
   return (
-    // Updated outer container to match the new splash/auth layouts
     <div className="relative flex h-dvh w-full flex-col overflow-hidden bg-surface md:items-center md:justify-center md:bg-bg-primary">
       
-      {/* Mobile Container limits width on larger screens to simulate app view */}
       <div className="relative flex h-full w-full flex-col bg-surface md:h-200 md:w-100 md:rounded-[2.5rem] md:shadow-2xl">
         
         {/* Scrollable Form Content */}
@@ -354,7 +352,7 @@ const EmergencyModePage = ({ onSuccess, handleReset: parentReset, onBack }) => {
           )}
         </div>
 
-        {/* Bottom Sticky Action Bar inside the card container */}
+        {/* Bottom Sticky Action Bar */}
         <div className="absolute bottom-0 left-0 z-10 w-full rounded-b-[2.5rem] bg-surface px-6 py-5 shadow-[0_-10px_30px_rgba(0,0,0,0.05)] border-t border-border-light md:rounded-b-[2.5rem]">
           <div className="mx-auto flex w-full gap-3">
             

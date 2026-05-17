@@ -55,7 +55,6 @@ const UserReportsPage = () => {
   // Helper to format Firestore timestamp
   const formatDate = (timestamp) => {
     if (!timestamp) return "Just now";
-    // Handle both Firestore Timestamp objects and standard dates
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     return date.toLocaleDateString("en-US", {
       month: "short",
@@ -100,10 +99,10 @@ const UserReportsPage = () => {
           <ChevronLeft className="text-text-primary" size={24} />
         </Link>
         <h1 className="text-lg font-bold text-text-primary">My Reports</h1>
-        <div className="w-10" /> {/* Spacer for centering */}
+        <div className="w-10" />
       </div>
 
-      {/* Tabs (Scrollable horizontally) */}
+      {/* Tabs */}
       <div className="flex overflow-x-auto hide-scrollbar px-4 py-3 space-x-2 bg-surface border-b border-gray-100 shrink-0">
         {STATUS_TABS.map((tab) => (
           <button
@@ -179,7 +178,6 @@ const UserReportsPage = () => {
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-start space-x-3 overflow-hidden">
                   
-                  {/* Changed to FileText, removed red background/text, made it neutral */}
                   <div className="bg-gray-100 p-2 rounded-xl text-text-primary shrink-0 mt-0.5">
                     <FileText size={18} strokeWidth={2.5} />
                   </div>
@@ -189,7 +187,6 @@ const UserReportsPage = () => {
                       {report.reportType || 'Unknown Incident'}
                     </h4>
                     
-                    {/* Increased to line-clamp-2 so it safely displays longer descriptions */}
                     <p className="text-xs text-text-muted font-medium line-clamp-2 mt-0.5">
                       {report.description || 'No description provided'}
                     </p>
@@ -215,7 +212,6 @@ const UserReportsPage = () => {
                 {/* Bottom Row: Priority & Time */}
                 <div className="flex items-center justify-between pt-3 border-t border-gray-50">
                   
-                  {/* Removed orange color, using the getPriorityLabel helper */}
                   <div className="flex items-center space-x-1.5 text-text-primary">
                     <AlertTriangle size={14} className="shrink-0 text-text-muted" />
                     <span className="text-xs font-bold">

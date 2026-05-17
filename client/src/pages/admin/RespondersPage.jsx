@@ -156,9 +156,6 @@ const DroppableTeamCard = ({
                 {team.teamName || "Unnamed Team"}
               </h3>
               <div className="flex items-center gap-2">
-                {/* <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-                  {team.status || "STANDBY"}
-                </span> */}
                 <button
                   onClick={() => setIsFlipped(true)}
                   className="text-text-muted hover:text-text-primary transition-colors cursor-pointer p-1 rounded hover:bg-surface-hover"
@@ -206,7 +203,7 @@ const DroppableTeamCard = ({
             )}
           </div>
 
-          {/* Deploy Button - Always Visible to allow empty deployments */}
+          {/* Deploy Button */}
           <button
             onClick={() => onDeployClick(team)}
             className="mt-4 w-full flex items-center justify-center gap-2 bg-text-primary hover:opacity-90 text-surface text-xs font-bold py-2.5 rounded-lg transition-opacity z-20 cursor-pointer shadow-sm"
@@ -374,7 +371,7 @@ const RespondersPage = () => {
       setDbTeams(data);
     });
 
-    // Stream ALL non-resolved reports (unassigned + assigned to deployed teams)
+    // Stream ALL non-resolved reports 
     const unsubscribeReports = reportsApi.streamNonResolvedReports((data) => {
       setLiveReports(data);
     });
@@ -418,7 +415,7 @@ const RespondersPage = () => {
     const targetTeam = dbTeams.find(t => t.id === teamId);
 
     if (targetTeam?.status === "DEPLOYED") {
-      // RULE 4: Directly attach to already deployed team
+      // Directly attach to already deployed team
       try {
         const timeDeployed = new Date().toISOString();
         const readableDispatchTime = new Date().toLocaleTimeString([], { 
@@ -486,7 +483,7 @@ const RespondersPage = () => {
         minute: "2-digit" 
       });
 
-      // Update the Team in Firestore: Set to DEPLOYED (even if assignedReportIds is empty)
+      // Update the Team in Firestore: Set to DEPLOYED 
       await teamsApi.updateTeam(team.id, {
         status: "DEPLOYED",
         assignedReports: assignedReportIds,
@@ -544,7 +541,7 @@ const RespondersPage = () => {
 
   const handleResolveDeployment = async (deployedTeamId) => {
     try {
-      // RULE 2: Only update the team to STANDBY, clear assignedReports. Responders handle report resolutions.
+      //Only update the team to STANDBY, clear assignedReports. Responders handle report resolutions.
       await teamsApi.updateTeam(deployedTeamId, {
         status: "STANDBY",
         assignedReports: []
@@ -557,7 +554,7 @@ const RespondersPage = () => {
 
   const handleCancelReportAssignment = async (reportId, teamId) => {
     try {
-      // RULE 5: Fetch report, pop last remark, revert to VERIFIED
+      //Fetch report, pop last remark, revert to VERIFIED
       const reportToCancel = liveReports.find(r => r.id === reportId);
       if (!reportToCancel) return;
 
@@ -716,7 +713,6 @@ const RespondersPage = () => {
                   </p>
                 )}
                 {deployedTeams.map((deployment) => {
-                  // Get actual streamed reports attached to this deployment
                   const teamReports = liveReports.filter(r => r.assignedTeam === deployment.id);
                   
                   return (
@@ -847,7 +843,7 @@ const RespondersPage = () => {
         </div>
       )}
 
-      {/* ADD TEAM MODAL INJECTION */}
+      {/* ADD TEAM MODAL */}
       {isAddTeamModalOpen && (
         <AddTeamModal onClose={() => setIsAddTeamModalOpen(false)} />
       )}

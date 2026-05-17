@@ -428,7 +428,6 @@ const MuiThemedSelect = ({ icon: Icon, value, onChange, options }) => {
         value={value}
         onChange={onChange}
         displayEmpty
-        // 1. Replaced hardcoded 'white' with your Tailwind surface class
         className="bg-surface text-text-primary" 
         IconComponent={() => (
           <ChevronDown 
@@ -449,32 +448,29 @@ const MuiThemedSelect = ({ icon: Icon, value, onChange, options }) => {
           );
         }}
         sx={{
-          borderRadius: '0.5rem', // matches rounded-lg
-          boxShadow: 'none', // removes MUI's default floating look to match your flat design
+          borderRadius: '0.5rem', 
+          boxShadow: 'none', 
           '.MuiSelect-select': {
-            paddingTop: '12px',    // matches py-3
-            paddingBottom: '12px', // matches py-3
-            paddingLeft: '12px',   // matches px-3
-            paddingRight: '40px !important', // matches pr-10
+            paddingTop: '12px',    
+            paddingBottom: '12px', 
+            paddingLeft: '12px',   
+            paddingRight: '40px !important', 
             display: 'flex',
             alignItems: 'center', 
           },
-          // 2. The Border Fix
           '.MuiOutlinedInput-notchedOutline': {
-            // Uses your Tailwind variable, falling back to a solid gray/blackish if needed
             borderColor: 'var(--border-light, #9ca3af)', 
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: 'var(--text-secondary, #4b5563)',
           },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-            borderColor: 'var(--text-secondary, #111827)', // Dark focus ring
-            borderWidth: '1px', // Keeps it 1px so it doesn't jump in size when clicked
+            borderColor: 'var(--text-secondary, #111827)', 
+            borderWidth: '1px', 
           },
         }}
         MenuProps={{
           PaperProps: {
-            // Ensure the dropdown menu background also matches your theme
             className: "bg-surface", 
             sx: {
               borderRadius: '0.5rem',

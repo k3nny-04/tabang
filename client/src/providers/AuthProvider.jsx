@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
 
 // --- Listen for Auth State ---
   useEffect(() => {
-    let unsubscribeDoc = null; // Store the Firestore listener
+    let unsubscribeDoc = null; 
 
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -113,7 +113,6 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    // Cleanup both listeners when the provider unmounts
     return () => {
       unsubscribeAuth();
       if (unsubscribeDoc) unsubscribeDoc();

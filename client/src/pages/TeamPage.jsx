@@ -107,14 +107,13 @@ const TeamPage = () => {
           <ArrowLeft size={24} />
         </button>
         <h1 className="text-lg font-black text-text-primary tracking-wide">Team Details</h1>
-        <div className="w-10"></div> {/* Spacer for centering */}
+        <div className="w-10"></div> 
       </div>
 
       <div className="px-6 space-y-6">
         
         {/* TEAM INFO CARD */}
         <div className="bg-text-primary rounded-3xl p-6 shadow-md text-surface relative overflow-hidden">
-          {/* Decorative background element */}
           <div className="absolute -right-6 -top-6 text-surface/5">
             <Users size={120} />
           </div>

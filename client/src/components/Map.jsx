@@ -53,14 +53,14 @@ const Map = () => {
   // Layer & Data States
   const evacMarkersRef = useRef([]);
   const incidentMarkersRef = useRef([]);
-  const teamMarkersRef = useRef({}); // Use an object map to track moving team markers by ID
+  const teamMarkersRef = useRef({}); 
   const { activeLayers } = useLayers();
   const [layersOpen, setLayersOpen] = useState(false);
   
   // Live Streams State
   const [shelters, setShelters] = useState([]);
   const [incidents, setIncidents] = useState([]);
-  const [teams, setTeams] = useState([]); // Added teams state
+  const [teams, setTeams] = useState([]); 
 
   // Shelter State
   const [nearestShelter, setNearestShelter] = useState(null);
@@ -158,9 +158,9 @@ const Map = () => {
         paint: {
           'fill-color': [
             'match', ['get', 'Var'], 
-            1, '#fde047',   // Low
-            2, '#f97316',   // Medium
-            3, '#dc2626',   // High
+            1, '#fde047',   
+            2, '#f97316',   
+            3, '#dc2626',  
             'transparent'
           ],
           'fill-opacity': 0.4
@@ -182,9 +182,9 @@ const Map = () => {
         paint: {
           'fill-color': [
             'match', ['get', 'HAZ'], 
-            1, '#fde047',   // Low
-            2, '#f97316',   // Medium
-            3, '#dc2626',   // High
+            1, '#fde047',   
+            2, '#f97316',   
+            3, '#dc2626',  
             'transparent'
           ],
           'fill-opacity': 0.4
@@ -206,9 +206,9 @@ const Map = () => {
         paint: {
           'fill-color': [
             'match', ['get', 'HAZ'], 
-            1, '#fde047',   // Low
-            2, '#f97316',   // Medium
-            3, '#dc2626',   // High
+            1, '#fde047',   
+            2, '#f97316',   
+            3, '#dc2626', 
             'transparent'
           ],
           'fill-opacity': 0.4
@@ -388,7 +388,7 @@ const Map = () => {
     });
   }, [activeLayers.incidentReports, incidents]);
 
-  // --- NEW: Effect for Response Team moving markers ---
+  // --- Effect for Response Team moving markers ---
   useEffect(() => {
     if (!mapInstance) return;
 
@@ -417,7 +417,6 @@ const Map = () => {
       if (!lng || !lat) return;
 
       if (teamMarkersRef.current[team.id]) {
-        // Smoothly move the existing marker without recreating it
         teamMarkersRef.current[team.id].setLngLat([lng, lat]);
       } else {
         // Create a new marker for newly deployed teams
@@ -540,8 +539,6 @@ const Map = () => {
       return;
     }
 
-    // If we already have a location, fly there immediately 
-    // so the UI feels snappy while we wait for the GPS hardware to fetch the new, exact coords.
     if (currentLocation) {
       mapRef.current.flyTo({
         center: [currentLocation.lng, currentLocation.lat],
@@ -710,7 +707,7 @@ const Map = () => {
     }
   }
 
-  // --- DYNAMIC HAZARD LEGEND COMPONENT ---
+  // --- HAZARD LEGEND COMPONENT ---
   const renderHazardLegend = () => {
     if (!activeLayers.floodMap && !activeLayers.landslide && !activeLayers.stormSurge) return null;
 

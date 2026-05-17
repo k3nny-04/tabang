@@ -81,7 +81,7 @@ const handleSaveResponder = async (responderData) => {
       console.error("Error creating responder:", error);
       throw error; 
     } finally {
-      // 5. Clean up the secondary app to prevent memory leaks and duplicate app errors
+      // Clean up the secondary app to prevent memory leaks and duplicate app errors
       if (secondaryApp) {
         await deleteApp(secondaryApp);
       }
