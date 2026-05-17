@@ -14,6 +14,7 @@ import DataTable from "../../components/DataTable";
 import { Edit2, Check, X, Loader2 } from "lucide-react";
 import ShelterDetailsModal from "../../components/modals/ShelterDetailsModal";
 import DeleteModal from "../../components/modals/DeleteModal";
+import ExpandedMapModal from "../../components/modals/ExpandedMapModal";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -25,6 +26,8 @@ const SheltersPage = () => {
   const [selectedShelter, setSelectedShelter] = useState(null);
   const [shelterToDelete, setShelterToDelete] = useState(null);
   const [isAddingShelter, setIsAddingShelter] = useState(false);
+
+  const [expandedMapCoords, setExpandedMapCoords] = useState(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -166,7 +169,7 @@ const SheltersPage = () => {
           </span>
           <button
             onClick={() => {
-              console.log("View on map:", row.location);
+              setExpandedMapCoords(row.location);
             }}
             title="Pinpoint on Map"
             className="p-1 bg-gray-100 hover:text-text-primary hover:bg-gray-100 text-gray-500 rounded-md transition-colors"
@@ -329,6 +332,13 @@ const SheltersPage = () => {
           onConfirm={handleConfirmDelete}
         />
       )}
+
+      {/* Expanded Map Modal */}
+      <ExpandedMapModal
+        isOpen={Boolean(expandedMapCoords)}
+        targetCoords={expandedMapCoords}
+        onClose={() => setExpandedMapCoords(null)}
+      />
     </div>
   );
 };
