@@ -2,13 +2,12 @@ import { useState, useEffect } from "react";
 import { X, MapPin, Calendar, User } from "lucide-react";
 import { getAddressFromCoordinates } from "../../utils/geocode";
 import { getStatusColor } from "../../utils/statusColor";
-import { usersApi } from "../../api/usersApi"; // Added API import
+import { usersApi } from "../../api/usersApi"; 
 
 const ReportDetailsModal = ({ report, onClose, onUpdateReport }) => {
   const [address, setAddress] = useState("Fetching address...");
   const [isFetchingAddress, setIsFetchingAddress] = useState(true);
   
-  // New state for creator name
   const [creatorName, setCreatorName] = useState("Loading...");
   
   const [remarks, setRemarks] = useState("");

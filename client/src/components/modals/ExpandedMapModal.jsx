@@ -3,6 +3,7 @@ import AdminMap from "../AdminMap";
 import { X, Map } from "lucide-react";
 
 const ExpandedMapModal = ({ isOpen, onClose, targetCoords }) => {
+  // Prevent background scrolling when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';

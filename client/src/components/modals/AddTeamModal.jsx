@@ -13,7 +13,7 @@ const AddTeamModal = ({ onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // Fetch unassigned responders via stream
+  // Fetch unassigned responders 
   useEffect(() => {
     const unsubscribe = usersApi.streamResponders((responders) => {
       // Filter out responders that already belong to a team
@@ -22,27 +22,24 @@ const AddTeamModal = ({ onClose }) => {
       setIsLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => {
       if (unsubscribe) unsubscribe();
     };
   }, []);
 
   const toggleResponder = (id) => {
-    // 1. Determine if the user is currently selected or not
+    // Determine if the user is currently selected or not
     const isSelected = selectedResponderIds.includes(id);
 
-    // 2. Calculate the new array of selected IDs
+    // Add or remove the responder ID from the selection 
     const newSelection = isSelected 
       ? selectedResponderIds.filter(rId => rId !== id) 
       : [...selectedResponderIds, id];
 
-    // 3. Handle Head ID logic based on the toggle action
+    // Toggle logic for Team Head
     if (isSelected && headId === id) {
-      // If we are unchecking the person who is currently the head, clear the head
       setHeadId("");
     } else if (!isSelected && selectedResponderIds.length === 0) {
-      // If we are checking the very first person, make them the head by default
       setHeadId(id);
     }
 
@@ -69,14 +66,13 @@ const AddTeamModal = ({ onClose }) => {
     }
   };
 
-  // Get full objects of selected responders for the Team Head dropdown
   const selectedResponders = unassignedResponders.filter(r => selectedResponderIds.includes(r.id));
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-surface rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
         
-        {/* HEADER */}
+        {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b border-border-light bg-surface-elevated">
           <h2 className="text-lg font-bold text-text-primary">
             Create New Team
@@ -86,7 +82,7 @@ const AddTeamModal = ({ onClose }) => {
           </button>
         </div>
 
-        {/* BODY */}
+        {/* Body */}
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm font-medium border border-red-100">
@@ -161,7 +157,7 @@ const AddTeamModal = ({ onClose }) => {
           </div>
         </div>
 
-        {/* FOOTER */}
+        {/* Footer */}
         <div className="p-4 border-t border-border-light bg-surface-elevated flex justify-end gap-3">
           <button
             onClick={onClose}

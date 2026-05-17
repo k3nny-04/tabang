@@ -4,10 +4,9 @@ import { X, Package, Tag, Hash, Building2, Phone } from "lucide-react";
 const ItemDetailsModal = ({ item = {}, onClose, onSave }) => {
   const [isSaving, setIsSaving] = useState(false);
   
-  // Determine if we are in edit mode or add mode based on the presence of an ID
+  // Determine if in edit mode or add mode
   const isEditMode = Boolean(item?.id);
   
-  // Initialize form state
   const [formData, setFormData] = useState({
     name: item?.name || "",
     category: item?.category || "",

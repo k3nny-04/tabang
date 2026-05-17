@@ -18,7 +18,7 @@ const AddResponderModal = ({ onClose, onSave }) => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (error) setError(""); // Clear error when typing
+    if (error) setError(""); 
   };
 
   const handleSubmit = async (e) => {
@@ -41,10 +41,8 @@ const AddResponderModal = ({ onClose, onSave }) => {
         ...formData,
         role: "RESPONDER"
       });
-      // The parent component handles closing the modal on success
     } catch (err) {
       console.error("Failed to create responder:", err);
-      // Display Firebase error message (or fallback)
       setError(err.message || "Failed to create responder. Please try again.");
     } finally {
       setIsSubmitting(false);

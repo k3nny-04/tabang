@@ -3,7 +3,6 @@ import { Navigation, Phone, X, Copy, Check, AlertTriangle, MapPin, Clock, User }
 import { getAddressFromCoordinates } from "../utils/geocode";
 import { usersApi } from "../api/usersApi"; 
 
-// Priority Badge Renderer
 const renderPriority = (level) => {
   const config = {
     1: { label: "URGENT", style: "bg-red-100 text-red-700" },
@@ -33,7 +32,7 @@ const IncidentCard = ({ incident, distanceInfo, onClose }) => {
   const [contactNumber, setContactNumber] = useState(null);
   const [isLoadingContact, setIsLoadingContact] = useState(true);
 
-  // 1. Fetch the human-readable address based on coordinates
+  // Geocode location to address
   useEffect(() => {
     const fetchAddress = async () => {
       if (incident?.location?.lat && incident?.location?.lng) {
@@ -54,7 +53,7 @@ const IncidentCard = ({ incident, distanceInfo, onClose }) => {
     fetchAddress();
   }, [incident]);
 
-  // 2. Fetch Reporter Name & Number conditionally
+  // Fetch Reporter Name & Number 
   useEffect(() => {
     const fetchReporterInfo = async () => {
       setIsLoadingContact(true);
@@ -67,7 +66,6 @@ const IncidentCard = ({ incident, distanceInfo, onClose }) => {
         return;
       }
 
-      // If it starts with '+', it's an SMS report (direct phone number)
       if (createdBy.startsWith("+")) {
         setReporterName("SMS Reporter");
         setContactNumber(createdBy);

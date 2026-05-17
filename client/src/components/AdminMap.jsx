@@ -92,7 +92,7 @@ const AdminMap = ({ targetCoords = null, zoom = DEFAULT_ZOOM }) => {
         });
       }
       
-      // --- ADD HAZARDS (Flood, Landslide, Storm Surge) ---
+      // --- ADD HAZARDS ---
       // Flood
       mapRef.current.addSource('noah-flood', { type: 'vector', url: 'mapbox://kenny04.3ap67c3z' });
       mapRef.current.addLayer({
@@ -136,7 +136,6 @@ const AdminMap = ({ targetCoords = null, zoom = DEFAULT_ZOOM }) => {
       });
     });
 
-    // --- RESIZE OBSERVER TO FIX BLANK SPACES ON SIDEBAR TOGGLE ---
     const resizeObserver = new ResizeObserver(() => {
       if (mapRef.current) {
         mapRef.current.resize();
@@ -147,9 +146,9 @@ const AdminMap = ({ targetCoords = null, zoom = DEFAULT_ZOOM }) => {
       resizeObserver.observe(mapContainerRef.current);
     }
 
-    // Cleanup: Extremely important for Mapbox billing
+    // Cleanup
     return () => {
-      resizeObserver.disconnect(); // Clean up observer
+      resizeObserver.disconnect(); 
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
@@ -159,8 +158,8 @@ const AdminMap = ({ targetCoords = null, zoom = DEFAULT_ZOOM }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- DYNAMIC ZOOMING EFFECT ---
-  // If targetCoords changes (e.g. Admin clicks a table row), fly to the new coordinates
+
+  // fly to the new coordinates
   useEffect(() => {
     if (mapInstance && targetCoords) {
       mapInstance.flyTo({
@@ -203,7 +202,7 @@ const AdminMap = ({ targetCoords = null, zoom = DEFAULT_ZOOM }) => {
       createRoot(markerEl).render(<FaHouse className="text-white text-sm" />);
 
       const popupEl = document.createElement("div");
-      createRoot(popupEl).render(<ShelterPopup item={item} />); // Removed routing logic
+      createRoot(popupEl).render(<ShelterPopup item={item} />); 
 
       const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" }).setDOMContent(popupEl);
       const marker = new mapboxgl.Marker(markerEl).setLngLat([lng, lat]).setPopup(popup).addTo(mapRef.current);
@@ -285,7 +284,7 @@ const AdminMap = ({ targetCoords = null, zoom = DEFAULT_ZOOM }) => {
     });
   };
 
-  // --- DYNAMIC HAZARD LEGEND COMPONENT ---
+  // --- HAZARD LEGEND COMPONENT ---
   const renderHazardLegend = () => {
     if (!activeLayers.floodMap && !activeLayers.landslide && !activeLayers.stormSurge) return null;
 
@@ -322,7 +321,7 @@ const AdminMap = ({ targetCoords = null, zoom = DEFAULT_ZOOM }) => {
   return (
     <div className="relative h-full w-full rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
       
-      {/* SEARCH BAR (Kept in case Admins need to search up an address) */}
+      {/* SEARCH BAR */}
       {mapInstance && (
         <div className="absolute top-4 left-4 z-20 w-80 max-w-[calc(100vw-2rem)]">
           <SearchBox 
@@ -346,7 +345,7 @@ const AdminMap = ({ targetCoords = null, zoom = DEFAULT_ZOOM }) => {
         </div>
       )}
       
-      {/* MAP CONTAINER - Changed to absolute inset-0 to prevent blank spaces */}
+      {/* MAP CONTAINER */}
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full" />
 
       {/* RENDER HAZARD LEGEND */}

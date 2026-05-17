@@ -10,6 +10,7 @@ const TeamDetailsModal = ({ team, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Fetch all teams and responders
   useEffect(() => {
     const unsubscribeTeams = teamsApi.streamAllTeams((teams) => {
       setTeams(teams);
@@ -28,16 +29,23 @@ const TeamDetailsModal = ({ team, onClose }) => {
   const isDeployed = currentTeam?.status?.toLowerCase() === "deployed";
 
   const currentMembers = allResponders.filter(r => r.teamId === currentTeam.id);
+
+  /**
+   * Available responders are those who are not on the current team, 
+   * and either have no team or are on a team that is not deployed. 
+   * Exclude the leader of any other team to prevent transfer issues.
+   */
   const availableResponders = allResponders.filter(r => {
     if (r.teamId === currentTeam.id) return false;
     if (!r.teamId) return true;
     const theirTeam = teams.find(t => t.id === r.teamId);
     if (!theirTeam) return false;
     if (theirTeam.status.toLowerCase() === "deployed") return false;
-    if (r.id === theirTeam.headId) return false; // Can't transfer leader
+    if (r.id === theirTeam.headId) return false; 
     return true;
   });
 
+  // Update team member count and user's team assignment when adding a member
   const handleAddMember = async (responderId) => {
     if (isDeployed) return;
     setIsSubmitting(true);
@@ -55,6 +63,7 @@ const TeamDetailsModal = ({ team, onClose }) => {
     }
   };
 
+  // Update team member count and user's team assignment when removing a member
   const handleRemoveMember = async (responderId) => {
     if (isDeployed || responderId === currentTeam.headId) return;
     setIsSubmitting(true);
@@ -72,6 +81,7 @@ const TeamDetailsModal = ({ team, onClose }) => {
     }
   };
 
+  
   const handleChangeLeader = async (newHeadId) => {
     if (isDeployed) return;
     setIsSubmitting(true);

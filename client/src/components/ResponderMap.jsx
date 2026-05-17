@@ -67,7 +67,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
   const [targetShelter, setTargetShelter] = useState(null);
   const [targetIncident, setTargetIncident] = useState(null);
 
-  // --- LIVE ROUTING STATES (ADDED) ---
+  // --- LIVE ROUTING STATES ---
   const [liveDistanceStr, setLiveDistanceStr] = useState(null);
   const [liveDistanceMeters, setLiveDistanceMeters] = useState(null);
   const lastRouteFetchLocation = useRef(null);
@@ -226,9 +226,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Refs to hold latest handler callbacks — lets marker effects call the
-  // current handler without listing it as a dependency (which would cause
-  // markers to be torn down and re-created on every GPS tick).
+
   const handleIncidentRouteRef = useRef(null);
   const handleShelterRouteRef = useRef(null);
 
@@ -290,7 +288,6 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
       if (!target?.lat || !target?.lng) return;
 
       try {
-        // FIX: Pass objects instead of arrays
         const start = { lat: currentLocation.lat, lng: currentLocation.lng };
         const end = { lat: target.lat, lng: target.lng };
         const route = await getDirections(start, end);
@@ -324,7 +321,6 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
       if (!target?.lat || !target?.lng) return;
 
       try {
-        // FIX: Pass objects instead of arrays
         const start = { lat: currentLocation.lat, lng: currentLocation.lng };
         const end = { lat: target.lat, lng: target.lng };
         const route = await getDirections(start, end);
@@ -347,8 +343,6 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
     [currentLocation, showToast],
   );
 
-  // Keep refs current after every render so marker callbacks always call
-  // the latest version of these handlers.
   handleIncidentRouteRef.current = handleIncidentRoute;
   handleShelterRouteRef.current = handleShelterRoute;
 
@@ -361,7 +355,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
     lastRouteFetchLocation.current = null;
   };
 
-  // --- LIVE ROUTING UPDATES (ADDED) ---
+  // --- LIVE ROUTING UPDATES ---
   useEffect(() => {
     const target = targetShelter || targetIncident;
     if (!target || !currentLocation || !routeData) return;
@@ -379,7 +373,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
       longitude: targetLoc.lng,
     };
 
-    // 1. Update distance continuously using free local math
+    // Update distance continuously
     const distanceInMeters = getDistance(currentCoords, targetCoords);
     const formattedDistance =
       distanceInMeters >= 1000
@@ -389,7 +383,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
     setLiveDistanceStr(formattedDistance);
     setLiveDistanceMeters(distanceInMeters);
 
-    // 2. Mapbox API Throttle (Only redraw the blue line if moved 25+ meters)
+    // Only redraw the blue line if moved 25+ meters
     if (lastRouteFetchLocation.current) {
       const distanceFromLastFetch = getDistance(
         currentCoords,
@@ -400,7 +394,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
 
     lastRouteFetchLocation.current = currentCoords;
 
-    // 3. Refetch Route
+    // Refetch Route
     getDirections(
       { lat: currentCoords.latitude, lng: currentCoords.longitude },
       { lat: targetCoords.latitude, lng: targetCoords.longitude },
@@ -426,7 +420,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
     broadcastTeamLocation(currentLocation);
   }, [broadcastTeamLocation, currentLocation, isBroadcasting, myTeam?.status]);
 
-  // --- ANTI-JITTER LIVE LOCATION MARKER ---
+  // --- LIVE LOCATION MARKER ---
   useEffect(() => {
     if (!mapInstance || !currentLocation) return;
 
@@ -467,7 +461,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
     }
   }, [currentLocation, mapInstance]);
 
-  // --- DYNAMIC ZOOMING EFFECT ---
+  // --- ZOOMING EFFECT ---
   useEffect(() => {
     if (mapInstance && targetCoords) {
       mapInstance.flyTo({
@@ -710,7 +704,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
 
   return (
     <div className="relative h-full w-full rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
-      {/* STYLISH NO-TEAM HEADER (Alternative) */}
+      {/* STYLISH NO-TEAM HEADER */}
       {!myTeam && (
         <div className="absolute top-4 left-4 right-4 z-20 md:left-1/2 md:-translate-x-1/2 md:w-[320px] animate-in fade-in duration-500">
           <div className="bg-text-primary rounded-2xl p-4 shadow-md text-surface relative overflow-hidden transition-all duration-300">
@@ -765,7 +759,7 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
             </div>
 
             <div className="relative z-10">
-              {/* COMPACT TOP ROW (Clickable to Expand/Collapse) */}
+              {/* COMPACT TOP ROW */}
               <div
                 className="flex justify-between items-center cursor-pointer group"
                 onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
@@ -815,7 +809,6 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
                     </div>
                   </div>
 
-                  {/* CONTRAST FIXED: Changed bg-surface/80 to bg-black/20 */}
                   {myTeam.status === "DEPLOYED" && (
                     <div className="mt-3 flex flex-col gap-2 rounded-xl border border-surface/10 bg-black/20 p-3 shadow-inner">
                       <div className="flex items-center justify-between gap-3">
@@ -865,7 +858,6 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
       {targetShelter && routeData && (
         <NearestShelterCard
           shelter={targetShelter}
-          // Inject the actively updating distance string OR fallback to static mapbox data
           distanceInfo={
             liveDistanceStr || `${(routeData.distance / 1000).toFixed(1)} km`
           }
@@ -876,7 +868,6 @@ const ResponderMap = ({ targetCoords = null, zoom = ZOOM }) => {
       {targetIncident && routeData && (
         <IncidentCard
           incident={targetIncident}
-          // Inject dynamically calculated meters into the routeData object so the card can recalculate km automatically
           distanceInfo={{
             ...routeData,
             distance: liveDistanceMeters || routeData.distance,

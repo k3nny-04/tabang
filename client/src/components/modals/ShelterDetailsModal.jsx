@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { X, Home, Users, MapPin, Phone, User, Activity } from "lucide-react";
 
-// Default shelter to an empty object to prevent undefined errors when adding
 const ShelterDetailsModal = ({ shelter = {}, onClose, onSave }) => {
   const [isSaving, setIsSaving] = useState(false);
   
-  // Determine if we are in edit mode or add mode based on the presence of an ID
+  // Determine if in edit mode or add mode
   const isEditMode = Boolean(shelter?.id);
   
-  // Initialize form state with shelter data OR blank defaults for a new shelter
   const [formData, setFormData] = useState({
     name: shelter?.name || "",
     barangay: shelter?.barangay || "",
