@@ -104,23 +104,20 @@ const AdminDashboardPage = () => {
 
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
+  // Check if online
   useEffect(() => {
-    // Handlers to update state
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    // Add event listeners
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
-    // Cleanup listeners on unmount
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
-  // Create a reusable fetch function
   const fetchChartData = async () => {
     setIsChartLoading(true);
     try {
@@ -133,7 +130,7 @@ const AdminDashboardPage = () => {
     }
   };
 
-  // Run fetch when the component mounts or timeFrame changes
+  // Fetch when the component mounts or timeFrame changes
   useEffect(() => {
     fetchChartData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -352,7 +349,7 @@ const AdminDashboardPage = () => {
         </div>
       </div>
 
-{/* BOTTOM SECTION (Interactive Chart) */}
+      {/* BOTTOM SECTION (Interactive Chart) */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
         {/* Chart Header & Controls */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
@@ -366,7 +363,7 @@ const AdminDashboardPage = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-100">
-            {/* NEW: Refresh Button */}
+            {/* Refresh Button */}
             <button
               onClick={fetchChartData}
               disabled={isChartLoading}
@@ -437,9 +434,8 @@ const AdminDashboardPage = () => {
           </div>
         </div>
 
-        {/* The Chart */}
+        {/* Chart */}
         <div className="h-70 w-full relative">
-          {/* Optional: Add a loading overlay over the chart */}
           {isChartLoading && (
             <div className="absolute inset-0 z-10 bg-white/60 flex items-center justify-center rounded-lg">
               <div className="flex items-center gap-2 text-gray-500 font-semibold text-sm">

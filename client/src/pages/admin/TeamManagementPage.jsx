@@ -167,13 +167,6 @@ const TeamManagementPage = () => {
     }
   };
 
-  //   useEffect(() => {
-  //     const totalPages = Math.max(1, Math.ceil(teams.length / ITEMS_PER_PAGE));
-  //     if (currentPage > totalPages) {
-  //       setCurrentPage(totalPages);
-  //     }
-  //   }, [teams, currentPage]);
-
   const totalPages = Math.max(1, Math.ceil(teams.length / ITEMS_PER_PAGE));
   const paginatedTeams = teams.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,

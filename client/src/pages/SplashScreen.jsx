@@ -70,9 +70,7 @@ const SplashScreen = () => {
   };
 
   return (
-    // h-dvh ensures it fits exactly within the mobile browser viewport without scrolling
     <div className="relative flex h-dvh w-full flex-col bg-white overflow-hidden md:justify-center md:items-center md:bg-bg-primary">
-      {/* Mobile Container limits width on larger screens to simulate app view */}
       <div className="flex h-full w-full flex-col justify-between bg-white md:h-212.5 md:w-100 md:rounded-[2.5rem] md:shadow-2xl md:relative overflow-hidden">
         
         {/* Top Header / Subtle Offline SOS Button */}
@@ -96,7 +94,7 @@ const SplashScreen = () => {
           </Link>
         </div>
 
-        {/* Carousel Section (Grows to take available space) */}
+        {/* Carousel Section */}
         <div
           className="flex flex-1 flex-col items-center justify-center px-8 w-full"
           onTouchStart={handleTouchStart}
@@ -116,7 +114,7 @@ const SplashScreen = () => {
             ))}
           </div>
 
-          {/* Text Content - FIXED HEIGHT (h-36) prevents layout shifting */}
+          {/* Text Content */}
           <div className="mt-8 h-36 w-full text-center flex flex-col justify-start">
             <h1 className="text-2xl font-black text-text-primary transition-all duration-500">
               {slides[currentSlide].title}

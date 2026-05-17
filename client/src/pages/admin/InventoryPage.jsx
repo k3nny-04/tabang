@@ -25,7 +25,6 @@ const InventoryPage = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [isAddingItem, setIsAddingItem] = useState(false);
 
-  // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
 
   // Stream shelters in real-time
@@ -42,7 +41,7 @@ const InventoryPage = () => {
   const processedItems = useMemo(() => {
     let result = [...items];
 
-    // 1. Filter by search query (name or category)
+    // Filter by search query (name or category)
     if (searchQuery.trim() !== "") {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(
@@ -52,7 +51,7 @@ const InventoryPage = () => {
       );
     }
 
-    // 2. Sort alphabetically by category, then by name
+    // Sort alphabetically by category, then by name
     result.sort((a, b) => {
       const catA = a.category || "";
       const catB = b.category || "";

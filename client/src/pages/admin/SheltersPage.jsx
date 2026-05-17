@@ -43,7 +43,7 @@ const SheltersPage = () => {
   const processedShelters = useMemo(() => {
     let result = [...shelters];
 
-    // 1. Filter by search query (name or barangay)
+    // Filter by search query (name or barangay)
     if (searchQuery.trim() !== "") {
       const lowerQuery = searchQuery.toLowerCase();
       result = result.filter(
@@ -53,7 +53,7 @@ const SheltersPage = () => {
       );
     }
 
-    // 2. Sort alphabetically by barangay
+    // Sort alphabetically by barangay
     result.sort((a, b) => {
       const brgyA = a.barangay || "";
       const brgyB = b.barangay || "";
@@ -226,7 +226,7 @@ const SheltersPage = () => {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                setCurrentPage(1); // Trigger pagination reset here instead!
+                setCurrentPage(1); 
               }}
               className="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl pl-10 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-text-primary/20 transition-all"
             />
@@ -350,7 +350,6 @@ const CapacityCell = ({ shelter, onUpdateCapacity }) => {
 
     setIsSaving(true);
     try {
-      // Calls the function passed down from the parent page
       await onUpdateCapacity(shelter.id, newValue);
       setIsEditing(false);
     } catch (error) {
@@ -408,7 +407,6 @@ const CapacityCell = ({ shelter, onUpdateCapacity }) => {
     );
   }
 
-  // Normal View (with hover effect to show edit button)
   return (
     <div className="group flex items-center gap-2 text-sm font-mono text-gray-600 whitespace-nowrap">
       <div className="flex items-center">

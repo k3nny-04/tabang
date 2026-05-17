@@ -108,10 +108,7 @@ const SignupPage = () => {
   };
 
   return (
-    // min-h-dvh ensures it takes full viewport height, md:py-8 adds breathing room on desktop
     <div className="relative flex min-h-dvh w-full flex-col bg-surface md:items-center md:justify-center md:py-8 md:bg-bg-primary">
-      
-      {/* Mobile Container limits width on larger screens */}
       <div className="relative flex h-full w-full flex-col bg-surface md:h-auto md:w-100 md:rounded-[2.5rem] md:shadow-2xl">
         
         {/* Top Header / Back Button Only */}
@@ -127,7 +124,7 @@ const SignupPage = () => {
           </Link>          
         </div>
 
-        {/* Form Section (Scrollable to accommodate smaller mobile screens) */}
+        {/* Form Section */}
         <div className="flex flex-1 flex-col px-8 pb-12 pt-0 overflow-y-auto">
           
           <div className="mb-6 text-center md:mb-8">
