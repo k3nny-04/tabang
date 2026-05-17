@@ -17,7 +17,7 @@ exports.httpSmsWebhook = onRequest(async (req, res) => {
     return res.status(200).send("Event ignored: not an incoming phone message");
   }
 
-  // Verify Authorization Header (JWT)
+  // Verify Authorization Header
   const authHeader = req.headers["authorization"];
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     console.warn("Unauthorized webhook attempt: Missing/Invalid format");
@@ -64,35 +64,30 @@ exports.httpSmsWebhook = onRequest(async (req, res) => {
       return res.status(400).send("Malformed message format");
     }
 
-    // 1. Parse Name & Incident Type
+    // Parse Name & Incident Type
     const typeAndName = parts[1];
     const splitIndex = typeAndName.indexOf("-");
     const incidentType = splitIndex !== -1 ? typeAndName.substring(0, splitIndex) : "UNKNOWN";
     const contactName = splitIndex !== -1 ? typeAndName.substring(splitIndex + 1) : typeAndName;
 
-    // 2. Parse People Range to a Number
+    // Parse People Range to a Number
     const peopleRange = parts[2]; 
     let parsedPeopleNumber = 1;
 
     if (peopleRange.includes("-")) {
-      // Takes the max value in the range (e.g., '7' from '4-7')
       parsedPeopleNumber = parseInt(peopleRange.split("-")[1], 10);
     } else if (peopleRange.includes("+")) {
-      // Strips the plus and converts to integer (e.g., '16' from '16+')
       parsedPeopleNumber = parseInt(peopleRange.replace("+", ""), 10);
     } else {
-      // Fallback if it's already a clean number string or unknown
       parsedPeopleNumber = parseInt(peopleRange, 10) || 1;
     }
 
-    // 3. Parse and Format Details
+    // Parse and Format Details
     const detailsArray = parts[3].split(",");
     const formattedDetails = detailsArray.map(detail => `• ${detail}`).join("\n");
-
-    // 4. Construct Clean Multi-line Description (including exact range)
     const description = `Incident: ${incidentType}\nContact Person: ${contactName}\nReported People: ${peopleRange}\n\nSpecific Details:\n${formattedDetails}`;
 
-    // 5. Parse Coordinates
+    // Parse Coordinates
     const coords = parts[4].split(",");
     const latitude = parseFloat(coords[0]);
     const longitude = parseFloat(coords[1]);
@@ -127,13 +122,11 @@ exports.httpSmsWebhook = onRequest(async (req, res) => {
 
     console.log(`Successfully processed offline report from ${senderNumber}. Doc ID: ${reportRef.id}`);
     
-    // ==========================================
-    // 7. SCHEDULE AUTO-REPLY VIA HTTPSMS API
-    // ==========================================
+    // Schedule Auto-Reply via HttpSms
     const httpsmsApiKey = "uk_r393DYZ2veupx6jwBK_IKSv131n5HTvRTL9i7MFl9JyLI8QZ7IbZS279yKvOcqyx"; 
     const systemPhoneNumber = "+639608029319"; 
     
-    // Schedule the message for 1 minute (60000 ms) in the future
+    // 1 min
     const scheduleTime = new Date(Date.now() + 30000); 
 
     try {
