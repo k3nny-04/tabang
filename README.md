@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌊 TABANG
+# TABANG
 
 **Disaster Response Coordination & Hazard Incident Reporting Platform**
 
