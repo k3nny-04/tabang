@@ -123,8 +123,8 @@ exports.httpSmsWebhook = onRequest(async (req, res) => {
     console.log(`Successfully processed offline report from ${senderNumber}. Doc ID: ${reportRef.id}`);
     
     // Schedule Auto-Reply via HttpSms
-    const httpsmsApiKey = "uk_r393DYZ2veupx6jwBK_IKSv131n5HTvRTL9i7MFl9JyLI8QZ7IbZS279yKvOcqyx"; 
-    const systemPhoneNumber = "+639608029319"; 
+    const httpsmsApiKey = "<sms-api-key>"; 
+    const systemPhoneNumber = "<dedicated-phone-number>"; 
     
     // 1 min
     const scheduleTime = new Date(Date.now() + 30000); 
